@@ -8,7 +8,12 @@ import { profile } from '@/data/profile'
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
-const introParagraphs = computed(() => profile.introLong.split(/\n\s*\n/))
+const introParagraphs = computed(() =>
+  profile.introLong
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean),
+)
 </script>
 
 <template>
@@ -17,7 +22,7 @@ const introParagraphs = computed(() => profile.introLong.split(/\n\s*\n/))
     <div class="grid gap-10 md:grid-cols-[240px,1fr]">
       <img
         :src="profile.avatar"
-        alt="头像"
+        :alt="profile.name"
         class="h-60 w-60 rounded-2xl border border-white/10 object-cover"
         loading="lazy"
       />
@@ -33,8 +38,8 @@ const introParagraphs = computed(() => profile.introLong.split(/\n\s*\n/))
             v-for="s in profile.socials"
             :key="s.label"
             :href="s.url"
-            target="_blank"
-            rel="noopener"
+            :target="s.url.startsWith('mailto:') ? undefined : '_blank'"
+            :rel="s.url.startsWith('mailto:') ? undefined : 'noopener'"
             class="text-primary hover:underline"
           >
             {{ s.label }}
