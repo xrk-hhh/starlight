@@ -60,4 +60,7 @@
   .blog-content pre { @apply my-4 overflow-x-auto rounded-lg border border-white/10 p-4 text-sm; }
   .blog-content code { @apply font-mono; }
   .blog-content a { @apply text-primary hover:underline; }
+  .blog-content table { @apply my-4 w-full border-collapse text-sm; }
+  .blog-content th, .blog-content td { @apply border border-white/10 px-3 py-2 text-left; }
+  .blog-content th { @apply bg-surface text-text; }
 }
