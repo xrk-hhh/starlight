@@ -12,9 +12,13 @@
     "postbuild": "node scripts/postbuild.mjs"
   },
   "dependencies": {
+    "@shikijs/langs": "^4.4.3",
+    "@shikijs/markdown-it": "^4.4.3",
+    "@shikijs/themes": "^4.4.3",
     "gray-matter": "^4.0.3",
     "gsap": "^3.15.0",
     "markdown-it": "^15.0.0",
+    "shiki": "^4.4.3",
     "three": "^0.185.1",
     "vue": "^3.5.41",
     "vue-router": "^5.2.0"
