@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0a12;
+  --color-surface: #12121e;
+  --color-primary: #22d3ee;
+  --color-accent: #8b5cf6;
+  --color-text: #f4f4f5;
+  --color-text-muted: #9ca3af;
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+@layer base {
+  html {
+    /* 静态环境光渐变：WebGL 不可用时的回退背景（§5.3），粒子层正常时被 canvas 覆盖 */
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(34, 211, 238, 0.08), transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.08), transparent 60%),
+      var(--color-bg);
+  }
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-primary) 30%, transparent);
+  }
+}
+
+@layer components {
+  .section-container {
+    @apply mx-auto w-full max-w-5xl px-6 py-24;
+  }
+  .card {
+    @apply rounded-xl border border-white/10 bg-surface/80;
+  }
+  .glow-text {
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium
+      transition-opacity duration-200;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    color: #0a0a12;
+  }
+  .btn-primary:hover {
+    opacity: 0.85;
+  }
+}
