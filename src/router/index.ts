@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { particlesState } from '@/stores/particles'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -39,6 +40,7 @@ const router = createRouter({
 router.afterEach((to) => {
   const siteName = '个人网站'
   document.title = to.meta.title ? `${to.meta.title} | ${siteName}` : siteName
+  particlesState.density = to.meta.particles ?? 'low'
 })
 
 export default router
