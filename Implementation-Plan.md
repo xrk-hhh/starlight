@@ -127,7 +127,7 @@ npm install -D vite @vitejs/plugin-vue typescript vue-tsc tailwindcss @tailwindc
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "postbuild": "node scripts/postbuild.mjs"
   }
@@ -180,12 +180,13 @@ export default defineConfig({
 
 - [ ] **Step 6: 写 tsconfig.json 与 tsconfig.node.json**
 
-`tsconfig.json`：
+`tsconfig.json`（根，solution 形态）：
 
 ```json
 {
   "files": [],
   "references": [
+    { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ]
 }
@@ -196,6 +197,8 @@ export default defineConfig({
 ```json
 {
   "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -217,6 +220,8 @@ export default defineConfig({
 {
   "compilerOptions": {
     "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
@@ -226,7 +231,9 @@ export default defineConfig({
 }
 ```
 
-（`types: ["vite/client"]` 使 `?raw` 导入有类型，对应补充 8；安装 `@types/node` 供 tsconfig.node.json 使用：`npm i -D @types/node`。实际文件形态以 ctx7 核验的当前模板为准，若 Vite 模板已改单文件 tsconfig，遵循新形态。）
+> **T2 实施时修正（2026-08-13）**：原计划写的是 `vue-tsc --noEmit` + 根 tsconfig 仅引用 node——实测该形态下 vue-tsc **不检查 src**（类型门失效）。改为官方模板形态：根引用 app+node 两个工程、`vue-tsc -b` 构建模式、两工程 `composite: true`。同时 `typescript` 需固定 `^5.9.3`（npm 的 typescript@latest 已是 7.x，与 vue-tsc 不兼容）。
+
+（`types: ["vite/client"]` 使 `?raw` 导入有类型，对应补充 8；安装 `@types/node` 供 tsconfig.node.json 使用：`npm i -D @types/node`。）
 
 - [ ] **Step 7: 写 index.html**
 
@@ -314,14 +321,16 @@ Run: `npx ctx7@latest library tailwindcss "tailwind v4 vite plugin @theme custom
 
 @layer base {
   html {
-    /* 静态环境光渐变：WebGL 不可用时的回退背景（§5.3），粒子层正常时被 canvas 覆盖 */
+    background: var(--color-bg);
+  }
+  body {
+    @apply text-text font-sans antialiased;
+    /* 静态环境光渐变：WebGL 不可用时的回退背景（§5.3），粒子层正常时被 canvas 覆盖。
+       注意：渐变必须在 body 上（T3 审查发现：body 的不透明背景会盖住 html 上的渐变） */
     background:
       radial-gradient(ellipse at 30% 20%, rgba(34, 211, 238, 0.08), transparent 60%),
       radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.08), transparent 60%),
       var(--color-bg);
-  }
-  body {
-    @apply bg-bg text-text font-sans antialiased;
   }
   ::selection {
     background: color-mix(in oklab, var(--color-primary) 30%, transparent);

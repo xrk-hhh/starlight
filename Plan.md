@@ -14,7 +14,7 @@
 
 **目标**：搭建个人网站，包含 首页（Hero + 粒子背景 + 入场动画）、关于（简介 + 技能标签）、项目（卡片网格 + 截图 + 链接）、博客（Markdown 文章）四个页面，通过 GitHub Actions 自动部署到 GitHub Pages。
 
-**技术栈**：Vue 3 + TypeScript + Vite · Tailwind CSS v4 · Three.js（粒子背景）· GSAP（滚动/入场动画）· vue-router 4 · markdown-it + shiki + gray-matter（博客）· GitHub Actions（部署）
+**技术栈**：Vue 3 + TypeScript + Vite · Tailwind CSS v4 · Three.js（粒子背景）· GSAP（滚动/入场动画）· vue-router 5 · markdown-it + shiki + js-yaml（博客）· GitHub Actions（部署）
 
 **已确认的关键决策**：
 | 决策点 | 选择 |
@@ -258,7 +258,7 @@ src/blog/*.md                        → glob 收集（`as: 'raw'`，否则 Vite
    - 默认创建 `main` 分支，另建 `dev` 分支用于日常开发。
    - 开发流程：`dev` 上推进 → 阶段验收通过 → merge 到 `main` → Actions 自动部署。
    - 禁止直接在 `main` 上开发。
-2. **相对路径**：`vite.config.ts` 设 `base: './'`（构建产物全相对路径，兼容 `username.github.io/<repo>/` 子路径）。
+2. **绝对 base**：`vite.config.ts` 设 `base: command === 'serve' ? '/' : '/starlight/'`（T18 实施时修正：`createWebHistory` 需要绝对 base，相对路径方案在子路径部署下路由全部空白；仓库名已定为 `starlight`，参考 choslion/portfolio 的 `base: '/portfolio/'` 做法）。
 3. **SPA 404 回退（嵌套路由安全）**：单纯复制 `index.html` 为 `404.html` 在二级以上路由（如 `/repo/blog/文章`）刷新时仍会 404——`base: './'` 的相对资源路径会解析到错误的目录层级。采用 sessionStorage 重定向方案，**禁止用 `new URL('.', location.href)` 作重定向目标**（只爬一级，对嵌套路由无效）。
 
    `scripts/postbuild.mjs`（完整实现）：
