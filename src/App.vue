@@ -10,9 +10,9 @@ import AppFooter from '@/components/layout/AppFooter.vue'
     <ParticleBackground />
     <AppNav />
     <main class="relative z-10">
-      <RouterView v-slot="{ Component }">
+      <RouterView v-slot="{ Component, route }">
         <Transition name="page" mode="out-in">
-          <component :is="Component" />
+          <component :is="Component" :key="route.path" />
         </Transition>
       </RouterView>
     </main>
