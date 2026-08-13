@@ -3,10 +3,14 @@
   <head>
     <script>
       (function () {
-        var redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        if (redirect && redirect !== location.href) {
-          history.replaceState(null, '', redirect);
+        try {
+          var redirect = sessionStorage.redirect;
+          if (redirect && redirect !== location.href) {
+            delete sessionStorage.redirect;
+            history.replaceState(null, '', redirect);
+          }
+        } catch (e) {
+          /* storage 不可用时静默降级 */
         }
       })();
     </script>
