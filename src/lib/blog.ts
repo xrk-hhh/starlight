@@ -1,4 +1,4 @@
-import matter from 'gray-matter'
+import { load } from 'js-yaml'
 
 export interface BlogMeta {
   slug: string
@@ -9,8 +9,12 @@ export interface BlogMeta {
   content: string
 }
 
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
+
 export function parseBlogPost(raw: string, slug: string): BlogMeta {
-  const { data, content } = matter(raw)
+  const match = raw.match(FRONTMATTER_RE)
+  const data = match ? ((load(match[1]) as Record<string, unknown>) ?? {}) : {}
+  const content = match ? raw.slice(match[0].length) : raw
   if (typeof data.title !== 'string' || !data.title) {
     throw new Error(`[blog] ${slug}: frontmatter 缺少 title`)
   }
