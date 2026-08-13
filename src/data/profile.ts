@@ -17,7 +17,7 @@ export const profile = {
     '我享受把想法落地的过程：做过 Java Swing 纵版射击游戏（Galaxy Defender），做过 PySide6 + OpenCV 的 AI 风格迁移桌面应用（Art Style Transfer），也搭过含 14 种 AI 策略的 2048 竞技场（2048 Strategy Arena）。算法与工程的结合是我最感兴趣的方向。\n\n' +
     '这个网站本身也是我的作品：Vue 3 + TypeScript + Three.js + GSAP，从设计文档到 GitHub Pages 自动部署，全程控制在性能预算之内。\n\n' +
     '如果你想聊合作、交流题目或者讨论有意思的项目，欢迎通过邮箱联系我。',
-  avatar: `${import.meta.env.BASE_URL}images/avatar.jpg`,
+  avatar: `${import.meta.env.BASE_URL}images/avatar.webp`,
   skills: [
     { name: 'Java', level: '熟练' },
     { name: 'Python', level: '熟练' },
