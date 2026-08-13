@@ -10,6 +10,8 @@ export function useGsapReveal(
   let observer: IntersectionObserver | null = null
 
   function setup(el: HTMLElement) {
+    ctx?.revert()          // 防止 scope 重复填充时旧 tween/context 泄漏
+    observer?.disconnect() // 防止旧 IntersectionObserver 持有已分离节点
     ctx = gsap.context(() => {
       const items = el.querySelectorAll('[data-reveal]')
       gsap.set(items, { opacity: 0, y })
