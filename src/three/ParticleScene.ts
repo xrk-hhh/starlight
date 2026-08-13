@@ -26,13 +26,14 @@ export class ParticleScene {
   private pageVisible = true
   private reducedMotion = false
   private disposed = false
+  private initialized = false
   private onResizeBound = () => this.onResize()
   private onVisibilityBound = () => this.onVisibility()
 
   constructor(private canvas: HTMLCanvasElement) {}
 
   init(options: ParticleSceneOptions): void {
-    if (this.disposed) return
+    if (this.initialized) return
     this.scene = new THREE.Scene()
     this.camera = new THREE.PerspectiveCamera(
       60,
@@ -51,10 +52,13 @@ export class ParticleScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
     this.buildPoints(options.count, options.colorA, options.colorB)
+    this.applyDensity()
 
     window.addEventListener('resize', this.onResizeBound)
     document.addEventListener('visibilitychange', this.onVisibilityBound)
     this.onResize()
+    this.disposed = false
+    this.initialized = true
     this.tick()
   }
 
@@ -70,6 +74,7 @@ export class ParticleScene {
 
   setReducedMotion(reduced: boolean): void {
     this.reducedMotion = reduced
+    if (!reduced) this.renderedStatic = false
   }
 
   setParallaxTarget(x: number, y: number): void {
@@ -87,7 +92,6 @@ export class ParticleScene {
     if (!this.scene) return
     const positions = new Float32Array(count * 3)
     const sizes = new Float32Array(count)
-    const angles = new Float32Array(count)
     const radii = new Float32Array(count)
     const speeds = new Float32Array(count)
     const drifts = new Float32Array(count)
@@ -99,7 +103,6 @@ export class ParticleScene {
       positions[i * 3 + 1] = (Math.random() - 0.5) * 36
       positions[i * 3 + 2] = (Math.random() - 0.5) * 30
       sizes[i] = Math.random() * 1.6 + 0.4
-      angles[i] = Math.random() * Math.PI * 2
       radii[i] = Math.random() * 1.2 + 0.2
       speeds[i] = Math.random() * 0.4 + 0.1
       drifts[i] = Math.random() * Math.PI * 2
@@ -109,7 +112,6 @@ export class ParticleScene {
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     this.geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1))
-    this.geometry.setAttribute('aAngle', new THREE.BufferAttribute(angles, 1))
     this.geometry.setAttribute('aRadius', new THREE.BufferAttribute(radii, 1))
     this.geometry.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1))
     this.geometry.setAttribute('aDrift', new THREE.BufferAttribute(drifts, 1))
@@ -121,8 +123,6 @@ export class ParticleScene {
       uniforms: {
         uTime: { value: 0 },
         uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
-        uParallaxX: { value: 0 },
-        uParallaxY: { value: 0 },
         uColorA: { value: new THREE.Color(colorA) },
         uColorB: { value: new THREE.Color(colorB) },
       },
@@ -144,6 +144,9 @@ export class ParticleScene {
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    if (this.material) {
+      this.material.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2)
+    }
   }
 
   private onVisibility(): void {
@@ -180,6 +183,7 @@ export class ParticleScene {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
+    this.initialized = false
     cancelAnimationFrame(this.rafId)
     window.removeEventListener('resize', this.onResizeBound)
     document.removeEventListener('visibilitychange', this.onVisibilityBound)

@@ -1,12 +1,9 @@
 uniform float uTime;
 uniform float uPixelRatio;
-uniform float uParallaxX;
-uniform float uParallaxY;
 uniform vec3 uColorA;
 uniform vec3 uColorB;
 
 attribute float aSize;
-attribute float aAngle;
 attribute float aRadius;
 attribute float aSpeed;
 attribute float aDrift;
