@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import ParticleBackground from '@/components/particles/ParticleBackground.vue'
 import AppNav from '@/components/layout/AppNav.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 </script>
 
 <template>
   <div class="relative min-h-screen">
+    <ParticleBackground />
     <AppNav />
     <main class="relative z-10">
       <RouterView v-slot="{ Component }">
