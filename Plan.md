@@ -14,7 +14,7 @@
 
 **目标**：搭建个人网站，包含 首页（Hero + 粒子背景 + 入场动画）、关于（简介 + 技能标签）、项目（卡片网格 + 截图 + 链接）、博客（Markdown 文章）四个页面，通过 GitHub Actions 自动部署到 GitHub Pages。
 
-**技术栈**：Vue 3 + TypeScript + Vite · Tailwind CSS v4 · Three.js（粒子背景）· GSAP（滚动/入场动画）· vue-router 4 · markdown-it + shiki + gray-matter（博客）· GitHub Actions（部署）
+**技术栈**：Vue 3 + TypeScript + Vite · Tailwind CSS v4 · Three.js（粒子背景）· GSAP（滚动/入场动画）· vue-router 5 · markdown-it + shiki + js-yaml（博客）· GitHub Actions（部署）
 
 **已确认的关键决策**：
 | 决策点 | 选择 |
