@@ -86,6 +86,10 @@ export class ParticleScene {
     if (!this.points || !this.material) return
     const count = resolveParticleCount(this.density, this.isMobile)
     this.points.visible = count > 0
+    if (count === 0) {
+      // 清掉上一帧残留画面，防止"冻结星空"（alpha renderer 清为透明）
+      this.renderer?.clear()
+    }
   }
 
   private buildPoints(count: number, colorA: string, colorB: string): void {
