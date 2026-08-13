@@ -41,6 +41,7 @@ export function listPosts(modules: Record<string, string>): BlogMeta[] {
 // TODO（性能扩展点，Plan §7）：文章数超过 15 篇时，
 // 评估 shiki 构建时预编译或按需加载渲染依赖。
 export const blogModules = import.meta.glob('../blog/*.md', {
-  as: 'raw',
+  query: '?raw',
+  import: 'default',
   eager: true,
 }) as Record<string, string>
