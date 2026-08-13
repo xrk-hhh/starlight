@@ -18,13 +18,14 @@ describe('真实文章内容', () => {
     }
   })
 
-  it('文章正文可安全渲染（无原始 script，正文标题存在）', () => {
+  it('文章正文可安全渲染（无原始 script，正文不含重复 h1）', () => {
     for (const [path, raw] of entries) {
       const slug = path.split('/').pop()!.replace(/\.md$/, '')
       const post = parseBlogPost(raw, slug)
       const html = renderMarkdown(post.content)
       expect(html).not.toContain('<script>')
-      expect(html).toContain(`<h1>${post.title}</h1>`)
+      // h1 由 BlogPostView 用 post.title 渲染，正文里不应再出现
+      expect(html).not.toContain('<h1>')
     }
   })
 })

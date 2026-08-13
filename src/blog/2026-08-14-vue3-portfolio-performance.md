@@ -5,8 +5,6 @@ tags: [Web, Vue, 性能]
 desc: 全局粒子层、冻结星空、类型检查失效——本网站开发中真实的三个坑
 ---
 
-# 从零搭建 Vue3 + Three.js 个人网站：性能优化实录
-
 你正在浏览的这个网站，技术栈是 Vue 3 + TypeScript + Vite + Tailwind CSS 4 + Three.js + GSAP，部署在 GitHub Pages。开发过程中定了一条铁律：**性能优先，克制动画**。分享三个真实的坑。
 
 ## 坑一：类型检查根本没生效
