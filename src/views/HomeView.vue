@@ -8,6 +8,8 @@ let ctx: gsap.Context | null = null
 
 onMounted(() => {
   if (!heroRef.value) return
+  // reduced-motion：跳过入场动画，hero 保持可见终态（ctx 为 null，onUnmounted 的 ctx?.revert() 安全）
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   ctx = gsap.context(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1 } })
     tl.from('.hero-title', { y: 50, opacity: 0 })

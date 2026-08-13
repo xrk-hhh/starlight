@@ -86,7 +86,10 @@ export class ParticleScene {
     if (!this.points || !this.material) return
     const count = resolveParticleCount(this.density, this.isMobile)
     this.points.visible = count > 0
-    if (count === 0) {
+    if (count > 0) {
+      this.geometry?.setDrawRange(0, count) // 密度分档真实生效（1000/300）
+      this.renderedStatic = false // 密度 off→on 恢复时重置静态帧标记（§5.3）
+    } else {
       // 清掉上一帧残留画面，防止"冻结星空"（alpha renderer 清为透明）
       this.renderer?.clear()
     }

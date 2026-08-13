@@ -10,6 +10,10 @@ export function useGsapReveal(
   let observer: IntersectionObserver | null = null
 
   function setup(el: HTMLElement) {
+    // reduced-motion：不隐藏元素、不建 IO，直接呈现终态
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
     ctx?.revert()          // 防止 scope 重复填充时旧 tween/context 泄漏
     observer?.disconnect() // 防止旧 IntersectionObserver 持有已分离节点
     ctx = gsap.context(() => {
