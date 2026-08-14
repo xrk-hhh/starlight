@@ -5,7 +5,7 @@ export function useGsapReveal(
   scope: Ref<HTMLElement | null>,
   options: { y?: number; stagger?: number } = {},
 ) {
-  const { y = 40, stagger = 0.1 } = options
+  const { y = 40, stagger = 0.05 } = options
   let ctx: gsap.Context | null = null
   let observer: IntersectionObserver | null = null
 
@@ -28,7 +28,7 @@ export function useGsapReveal(
             gsap.to(target, {
               opacity: 1,
               y: 0,
-              duration: 0.8,
+              duration: 0.45,
               ease: 'power3.out',
               delay: index * stagger,
             })
