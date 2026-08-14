@@ -21,7 +21,7 @@ export const profile = {
   introShort: '一名热爱写代码的学生开发者，喜欢把算法思路变成能跑的应用——从游戏到 AI 工具再到 Web。',
   typedPhrases: ['写代码', '刷算法', '折腾前端', '做点有意思的东西'],
   introLong:
-    '你好，我是 xrk-hhh，一名计算机相关专业的学生开发者。我对 ACM-XCPC 一类的算法竞赛很感兴趣，日常在洛谷和牛客上刷题（ID 都是 xrk_hhh），目前最好的成绩是蓝桥杯 C++ B 组全国二等奖。\n\n' +
+    '你好，我是 xrk-hhh，一名计算机相关专业的学生开发者。我对 ACM-XCPC 一类的算法竞赛很感兴趣，日常在洛谷和牛客上刷题，目前最好的成绩是蓝桥杯 C++ B 组全国二等奖。\n\n' +
     '日常开发中我大量使用 AI Agent 辅助——Claude Code 这类工具已经是我工作流的核心：这个网站从设计文档到任务实现、审查、部署上线，全程由 AI Agent 驱动完成。\n\n' +
     '2026 年上半年的产出：6 月完成了 Galaxy Defender（Java Swing 纵版射击 + Roguelike 升级）和 Art Style Transfer（PySide6 + OpenCV 风格迁移，云端/离线双引擎）；7 月完成了 2048 Strategy Arena（14 种 AI 策略同台竞技，Bitboard 引擎 74% 胜率）。每个项目都有对应的博客复盘，欢迎翻看。\n\n' +
     '代码之外：喜欢拆解技术原理、折腾编辑器与系统配置。如果你也在刷题，或者做着什么有意思的小项目，欢迎通过邮箱找我交流。',

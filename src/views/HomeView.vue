@@ -4,8 +4,6 @@ import gsap from 'gsap'
 import { profile } from '@/data/profile'
 import { projects } from '@/data/projects'
 import { listPosts, blogModules } from '@/lib/blog'
-import ProjectCard from '@/components/ui/ProjectCard.vue'
-import BlogCard from '@/components/ui/BlogCard.vue'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useTypewriter } from '@/composables/useTypewriter'
@@ -68,16 +66,40 @@ onUnmounted(() => {
   <div ref="scopeRef">
     <section class="section-container py-16">
       <SectionTitle title="精选项目" />
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <ProjectCard v-for="p in featuredProjects" :key="p.slug" :project="p" />
-      </div>
+      <ul class="flex flex-col divide-y divide-white/5">
+        <li v-for="p in featuredProjects" :key="p.slug" data-reveal>
+          <a
+            :href="p.github"
+            target="_blank"
+            rel="noopener"
+            class="group flex items-baseline justify-between gap-6 py-4 transition-colors"
+          >
+            <span>
+              <span class="font-semibold text-text group-hover:text-primary">{{ p.title }}</span>
+              <span class="ml-3 text-sm text-text-muted">{{ p.description.slice(0, 42) }}{{ p.description.length > 42 ? '…' : '' }}</span>
+            </span>
+            <span class="shrink-0 font-mono text-xs text-text-muted transition-transform group-hover:translate-x-0.5">GitHub →</span>
+          </a>
+        </li>
+      </ul>
+      <RouterLink to="/projects" data-reveal class="mt-6 inline-flex text-sm text-primary hover:underline">
+        查看全部项目 →
+      </RouterLink>
     </section>
 
     <section class="section-container py-16">
       <SectionTitle title="最新文章" />
-      <div class="grid gap-6 md:grid-cols-2">
-        <BlogCard v-for="post in latestPosts" :key="post.slug" :post="post" />
-      </div>
+      <ul class="flex flex-col divide-y divide-white/5">
+        <li v-for="post in latestPosts" :key="post.slug" data-reveal>
+          <RouterLink :to="`/blog/${post.slug}`" class="group flex items-baseline justify-between gap-6 py-4">
+            <span class="font-semibold text-text group-hover:text-primary">{{ post.title }}</span>
+            <span class="shrink-0 font-mono text-xs text-text-muted">{{ post.date }}</span>
+          </RouterLink>
+        </li>
+      </ul>
+      <RouterLink to="/blog" data-reveal class="mt-6 inline-flex text-sm text-primary hover:underline">
+        查看全部文章 →
+      </RouterLink>
     </section>
   </div>
 </template>
