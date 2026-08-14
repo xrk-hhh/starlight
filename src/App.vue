@@ -6,6 +6,7 @@ import AppNav from '@/components/layout/AppNav.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import CommandPalette from '@/components/overlay/CommandPalette.vue'
 import BackToTop from '@/components/layout/BackToTop.vue'
+import NavLoadingBar from '@/components/layout/NavLoadingBar.vue'
 import { useKonami } from '@/composables/useKonami'
 
 const konami = ref(false)
@@ -29,6 +30,7 @@ useKonami(() => {
     <AppFooter />
     <CommandPalette />
     <BackToTop />
+    <NavLoadingBar />
     <Transition name="fade">
       <div v-if="konami" class="pointer-events-none fixed bottom-8 left-1/2 z-[70] -translate-x-1/2">
         <p class="glow-text rounded-full border border-primary/40 bg-bg/90 px-5 py-2 text-sm">

@@ -378,3 +378,22 @@ src/blog/*.md                        → glob 收集（`as: 'raw'`，否则 Vite
 **约束**：延续 §1 核心原则；新增动画全部 transform/opacity 且尊重 prefers-reduced-motion；主星导航在 pointer:coarse 设备禁用交互；数据全部走 src/data（项目 over-label/状态、档案行内容、平台矩阵说明均为数据字段）；不引入 webfont/新依赖。
 
 **验收标准**：`npm test`/`npm run build` 全绿；每轮浏览器 + vision 截图走查；移动端布局无回归；粒子主星导航 raycast 命中率与性能（8 点 pointermove 无感）；部署 v1.2.0 后线上复验。
+
+## 14. v1.3.0 星空渲染进阶包（2026-08-15）
+
+**背景**：用户反馈渲染设计需加强。调研（three r185 源码核对 + Codrops galaxy 文 + GitHub starfield 项目）结论：现有 procedural 光斑粒子方向正确，升级分三档；用户选择**进阶包**。
+
+**范围**（进阶包 = 保守包全部 + 四项新对象）：
+| 项 | 做法 |
+|---|---|
+| 闪烁 twinkle | frag 复用 aSpeed/aDrift 作相位频率，alpha × (0.75~1.0)，幅度克制 |
+| 暖色金星 | 新 attribute aWarm（~5% 概率=1）+ uColorC 琥珀色三维 mix |
+| 主星十字星芒 | 新 attribute aNav（nav=1）+ frag 四芒衍射项（smoothstep 细条 × exp 衰减），aHover 同步增强 |
+| 星云雾霭层 | 12-20 个 THREE.Sprite（canvas 生成 256px 径向渐变纹理 + SpriteMaterial color 染色），opacity 0.04-0.09，慢速漂移，随密度隐藏 |
+| 景深分层 | 粒子重构为 3 层（620/280/100，近大远小、速度分层），每层独立 Group 带视差系数；setDrawRange 按层按比例缩放（低密度档保持分层感） |
+| 流星 | 独立 40 顶点 Points + 专用小 shader（uTime mod 周期 40-70s，头部亮点尾部指数衰减），reduced-motion/移动端隐藏 |
+| 鼠标排斥场 | vert 加 uMouse/uRepelRadius/uRepelStrength，ParticleScene 提供 setRepelPoint(clientX,clientY)（内部 unproject + 场景旋转逆变换）；coarse/reduced-motion 时强度归零 |
+
+**约束**：不引新依赖（THREE.Sprite 内置）；公开 API 不变（init/setDensity/setMobile/setReducedMotion/setParallaxTarget/setNavStarHover/pickNavStar/navStarScreenPositions/dispose）；渲染主循环不动；总粒子数 1000 不变；dispose 需覆盖新对象（Sprite material/texture、流星 geometry）；性能验收：桌面 rAF 不降（实测 ≥140 回调/s）、移动端照旧关闭。
+
+**验收标准**：`npm test`/`npm run build` 全绿；桌面/移动/文章页三场景 vision 截图对比（星云底衬、分层纵深、流星、暖星可见）；reduced-motion 静态帧正常；部署 v1.3.0 后线上复验。
