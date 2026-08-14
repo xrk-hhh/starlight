@@ -343,3 +343,23 @@ src/blog/*.md                        → glob 收集（`as: 'raw'`，否则 Vite
 | 中文排版 FOUT | 系统字体栈，不引 webfont |
 | Tailwind 自定义色静默失效（devportfolio 踩过） | 颜色一律走 `@theme` 令牌定义，不写未定义类 |
 | 依赖版本 API 变化（Tailwind 4 / Vite 8 等） | 每个阶段开始前用 ctx7 拉取对应库最新文档核对 API |
+
+## 12. v1.1.0 内容增强计划（2026-08-14）
+
+**背景**：v1.0.x 上线后用户反馈"内容偏简陋"。调研 20+ 个国内外个人站（中文内容型站、国际知名作品集、交互亮点站，含国内网络可达性实测）后，结论：差距不在页面数量，而在**每页信息密度**——标杆站首页普遍 4-6 个板块，本站只有 Hero。
+
+**范围**（用户勾选确认）：
+| 包 | 内容 |
+|---|---|
+| 首页扩版 | Hero 座右铭一句 + 精选项目区（复用 featured 项目）+ 最新文章区（复用博客前 3 篇） |
+| 关于页强化 | 简介扩成 4 段式（定位/现在/过往/爱好，代拟初稿待用户审）；纯 CSS 时间线 4-6 节点（基于公开事实，细节待用户补） |
+| 打字机+进度条 | 自写 `useTypewriter` composable（不引依赖）；文章页阅读进度条 + 字数/阅读时长（`lib/blog.ts` 计算 + 单测） |
+| 快捷键面板 | `CommandPalette.vue`（`?`/`K` 唤起：g+h/g+b/c 复制邮箱） |
+| 彩蛋包 | catch-all 路由 → 终端风 404 页（`command not found: /xxx`，顺带修复未知路径空白页）；Konami 码触发横幅 |
+| 评论+统计 | giscus 评论（点击后懒加载 iframe）；GitHub 统计由 Actions 构建时用 `GITHUB_TOKEN` 拉 api.github.com 写静态 JSON + 每日 cron（不依赖被墙的 Vercel 服务） |
+
+**约束（沿用 §1 核心原则）**：性能优先克制动画；所有新动画走 transform/opacity 且尊重 `prefers-reduced-motion`；零新运行时依赖（打字机自写）；第三方请求全部懒加载（giscus 点击才加载）。
+
+**需用户提供**：① 时间线真实细节（学校/竞赛名次/里程碑时间）；② giscus 一次性配置（开启 Discussions → giscus.app 拿参数）；③ 4 段式简介的审改。
+
+**验收标准**：`npm test`/`npm run build` 全绿；桌面 5 页 + 404 页 vision 走查通过；giscus 评论区懒加载生效（配置完成后）；首页从 1 板块增至 4 板块；部署 v1.1.0 后线上复验。
