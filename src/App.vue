@@ -24,8 +24,8 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 .page-enter-active,
 .page-leave-active {
   transition:
-    opacity 0.25s ease,
-    transform 0.25s ease;
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 .page-enter-from {
   opacity: 0;
