@@ -7,14 +7,26 @@ defineProps<{ project: Project }>()
 </script>
 
 <template>
-  <article data-reveal class="card group overflow-hidden transition-colors hover:border-white/20">
-    <div v-if="project.image" class="aspect-video overflow-hidden bg-surface">
+  <article
+    data-reveal
+    class="card group relative overflow-hidden transition-colors hover:border-white/20"
+  >
+    <span
+      class="absolute inset-y-0 left-0 z-10 w-[3px]"
+      :class="project.status === 'active' ? 'bg-gradient-to-b from-primary to-accent' : 'bg-white/15'"
+    ></span>
+    <div v-if="project.image" class="relative aspect-video overflow-hidden bg-surface">
       <img
         :src="`${BASE_URL}projects/${project.image}`"
         :alt="project.title"
         loading="lazy"
         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
       />
+      <span
+        v-if="project.over"
+        class="absolute left-3 top-3 font-mono text-[10px] uppercase tracking-[0.25em] text-white/80"
+        >{{ project.over }}</span
+      >
     </div>
     <div class="p-6">
       <h3 class="text-lg font-semibold">{{ project.title }}</h3>

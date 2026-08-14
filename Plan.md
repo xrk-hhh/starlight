@@ -363,3 +363,18 @@ src/blog/*.md                        → glob 收集（`as: 'raw'`，否则 Vite
 **需用户提供**：① 时间线真实细节（学校/竞赛名次/里程碑时间）；② giscus 一次性配置（开启 Discussions → giscus.app 拿参数）；③ 4 段式简介的审改。
 
 **验收标准**：`npm test`/`npm run build` 全绿；桌面 5 页 + 404 页 vision 走查通过；giscus 评论区懒加载生效（配置完成后）；首页从 1 板块增至 4 板块；部署 v1.1.0 后线上复验。
+
+## 13. v1.2.0 视觉质感增强计划（2026-08-14）
+
+**背景**：用户提供 4 个参考站（continueyn.site / qqhamburger.top / mypresentboxes.com / bzdshumo.com）要求头脑风暴借鉴。调研结论的核心原则：**深色星空底上的高级感来自"层级"（字号差/透明度差/细线），而非堆装饰**。不照搬，全部改写为符合本站星空主题的版本。
+
+**范围**（用户勾选确认，分三轮实施）：
+| 轮次 | 项 | 灵感来源（改写后） |
+|---|---|---|
+| R1 排版包 | ① 双语 section 标题（英文 over-title + 中文主标）② Hero 微型档案行（hairline 列表）③ 项目卡英文 over-label + 状态竖条 ④ 页脚平台矩阵 + ↑ TOP ⑤ 幽默空态文案（星空拟人版"墨水还在路上"） | mpb 杂志层级、bzd 双语标题制与金色竖条索引、qqhamburger 空态幽默 |
+| R2 视觉亮点 | ⑥ Hero 名字渐变发光（glow-text 加大字号）⑦ 博客目录行式列表（分类+日期/标题/↗）⑧ 统计数字滚动动画（IO 触发 0→N）⑨ 项目板块描边背景字 marquee（PROJECTS // 作品） | continueyn 书法名与描边字、mpb 目录行 |
+| R3 大件 | ⑩ 三步逛站卡（01 看项目→02 读博客→03 找 GitHub）⑪ 漂浮成就纸片（项目截图+蓝桥杯文字纸片，rotate+低透明度）⑫ 粒子主星导航（6-8 颗主星 hover 光晕+板块名，raycast 点击跳转；顶部导航保留作可访问性兜底） | bzd 步骤卡与证书墙、qqhamburger 3D 入口的渐进式降级版 |
+
+**约束**：延续 §1 核心原则；新增动画全部 transform/opacity 且尊重 prefers-reduced-motion；主星导航在 pointer:coarse 设备禁用交互；数据全部走 src/data（项目 over-label/状态、档案行内容、平台矩阵说明均为数据字段）；不引入 webfont/新依赖。
+
+**验收标准**：`npm test`/`npm run build` 全绿；每轮浏览器 + vision 截图走查；移动端布局无回归；粒子主星导航 raycast 命中率与性能（8 点 pointermove 无感）；部署 v1.2.0 后线上复验。
