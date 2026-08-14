@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
+import { useCountUp } from '@/composables/useCountUp'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import SkillTag from '@/components/ui/SkillTag.vue'
+import FloatingBadges from '@/components/ui/FloatingBadges.vue'
 import { profile } from '@/data/profile'
 
 const scopeRef = ref<HTMLElement | null>(null)
@@ -17,6 +19,8 @@ const introParagraphs = computed(() =>
 
 const BASE_URL = import.meta.env.BASE_URL
 const stats = ref<{ repos: number; stars: number; updatedAt: string } | null>(null)
+const statsRowEl = ref<HTMLElement | null>(null)
+const { values } = useCountUp(statsRowEl, () => (stats.value ? [stats.value.repos, stats.value.stars] : []))
 onMounted(() => {
   fetch(`${BASE_URL}github-stats.json`)
     .then((r) => (r.ok ? r.json() : null))
@@ -26,9 +30,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <section ref="scopeRef" class="section-container min-h-screen">
+  <section ref="scopeRef" class="section-container relative min-h-screen">
     <SectionTitle over="About" title="关于我" :subtitle="profile.title" />
-    <div class="grid gap-10 md:grid-cols-[240px,1fr]">
+    <FloatingBadges />
+    <div class="relative z-10 grid gap-10 md:grid-cols-[240px,1fr]">
       <img
         :src="profile.avatar"
         :alt="profile.name"
@@ -61,13 +66,13 @@ onMounted(() => {
             {{ s.label }}
           </a>
         </div>
-        <div v-if="stats" data-reveal class="mt-10 flex gap-8 border-t border-white/10 pt-6">
+        <div v-if="stats" ref="statsRowEl" class="mt-10 flex gap-8 border-t border-white/10 pt-6">
           <div class="text-center">
-            <p class="text-2xl font-semibold text-text">{{ stats.repos }}</p>
+            <p class="text-2xl font-semibold text-text">{{ values[0] ?? stats.repos }}</p>
             <p class="text-xs text-text-muted">公开仓库</p>
           </div>
           <div class="text-center">
-            <p class="text-2xl font-semibold text-text">{{ stats.stars }}</p>
+            <p class="text-2xl font-semibold text-text">{{ values[1] ?? stats.stars }}</p>
             <p class="text-xs text-text-muted">总 Star</p>
           </div>
           <div class="text-center">
