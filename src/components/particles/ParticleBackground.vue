@@ -35,12 +35,21 @@ const navRoutes = computed(() => {
 // 监听回调必须与移除时引用一致，故定义为组件作用域具名函数
 const applyMobile = () => {
   scene?.setMobile(mediaMobile?.matches ?? false)
-  if (mediaMobile?.matches) clearHover()
+  if (mediaMobile?.matches) {
+    clearHover()
+    scene?.clearRepelPoint()
+  }
 }
 const applyReduced = () => {
   scene?.setReducedMotion(mediaReduced?.matches ?? false)
-  if (mediaReduced?.matches) clearHover()
+  if (mediaReduced?.matches) {
+    clearHover()
+    scene?.clearRepelPoint()
+  }
 }
+
+// 指针离开窗口/失焦时清除排斥场，避免指针停在原地不动时星空持续凹陷
+const clearRepel = () => scene?.clearRepelPoint()
 
 function clearHover() {
   hoverIdx = null
@@ -81,6 +90,8 @@ function onPointerMove(e: PointerEvent) {
   )
   // 主星 hover：coarse（触屏）/ reduced-motion 下跳过
   if (!scene || coarse || (mediaReduced?.matches ?? false)) return
+  // 鼠标排斥场（同样仅非 coarse / 非 reduced-motion 时生效）
+  scene.setRepelPoint(e.clientX, e.clientY)
   const idx = scene.pickNavStar(e.clientX, e.clientY)
   if (idx === hoverIdx) return
   hoverIdx = idx
@@ -140,6 +151,8 @@ onMounted(() => {
   applyReduced()
   window.addEventListener('pointermove', onPointerMove, { passive: true })
   window.addEventListener('click', onClick)
+  window.addEventListener('blur', clearRepel)
+  document.documentElement.addEventListener('mouseleave', clearRepel)
 })
 
 watch(
@@ -155,6 +168,8 @@ onUnmounted(() => {
   stopLabelTrack()
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('click', onClick)
+  window.removeEventListener('blur', clearRepel)
+  document.documentElement.removeEventListener('mouseleave', clearRepel)
   mediaMobile?.removeEventListener('change', applyMobile)
   mediaReduced?.removeEventListener('change', applyReduced)
   scene?.dispose()
