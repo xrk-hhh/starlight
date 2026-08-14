@@ -1,8 +1,50 @@
+<script setup lang="ts">
+import { profile } from '@/data/profile'
+
+const socials = profile.socials
+
+function scrollTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+</script>
+
 <template>
-  <footer class="relative z-10 border-t border-white/10 py-8">
-    <p class="text-center text-sm text-text-muted">
-      © {{ new Date().getFullYear() }} · 用 Vue 3 + Three.js + GSAP 构建
-    </p>
-    <p class="mt-1 text-center text-xs text-text-muted">按 ? 查看快捷键</p>
+  <footer class="relative z-10 border-t border-white/10">
+    <div class="mx-auto max-w-5xl px-6 py-12">
+      <div class="grid gap-10 md:grid-cols-[1fr_auto]">
+        <div>
+          <p class="glow-text font-mono text-lg font-bold">STARLIGHT</p>
+          <p class="mt-2 text-sm text-text-muted">用 Vue 3 + Three.js + GSAP 构建 · 记录代码与思考</p>
+        </div>
+        <div class="flex gap-12 text-sm">
+          <ul class="space-y-2">
+            <li class="font-mono text-xs uppercase tracking-[0.25em] text-text-muted/70">导航</li>
+            <li><RouterLink to="/" class="text-text-muted hover:text-text">首页</RouterLink></li>
+            <li><RouterLink to="/projects" class="text-text-muted hover:text-text">项目</RouterLink></li>
+            <li><RouterLink to="/blog" class="text-text-muted hover:text-text">博客</RouterLink></li>
+          </ul>
+          <ul class="space-y-2">
+            <li class="font-mono text-xs uppercase tracking-[0.25em] text-text-muted/70">联系</li>
+            <li v-for="s in socials" :key="s.label">
+              <a
+                :href="s.url"
+                class="text-text-muted hover:text-text"
+                :target="s.url.startsWith('mailto:') ? undefined : '_blank'"
+                :rel="s.url.startsWith('mailto:') ? undefined : 'noopener'"
+                >{{ s.label }}</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="mt-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-text-muted"
+      >
+        <p>© {{ new Date().getFullYear() }} xrk-hhh · 按 ? 查看快捷键</p>
+        <button class="font-mono text-text-muted transition-colors hover:text-text" @click="scrollTop">
+          ↑ TOP
+        </button>
+      </div>
+    </div>
   </footer>
 </template>

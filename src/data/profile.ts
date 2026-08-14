@@ -8,6 +8,11 @@ export interface SocialLink {
   url: string
 }
 
+export interface QuickFact {
+  label: string
+  value: string
+}
+
 export interface TimelineItem {
   date: string
   title: string
@@ -49,6 +54,12 @@ export const profile = {
     { label: 'GitHub', url: 'https://github.com/xrk-hhh' },
     { label: '邮箱', url: 'mailto:xxjh2487657826@outlook.com' },
   ] as SocialLink[],
+  quickFacts: [
+    { label: 'TECH', value: 'Vue · TS · Three.js · Python · Java' },
+    { label: 'FOCUS', value: '算法与 AI 应用' },
+    { label: 'NOW', value: 'v1.2 视觉增强中' },
+    { label: 'UPDATED', value: '2026-08' },
+  ] as QuickFact[],
 } satisfies {
   name: string
   title: string
@@ -60,4 +71,5 @@ export const profile = {
   skills: Skill[]
   timeline: TimelineItem[]
   socials: SocialLink[]
+  quickFacts: QuickFact[]
 }

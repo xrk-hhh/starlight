@@ -27,7 +27,7 @@ onMounted(() => {
 
 <template>
   <section ref="scopeRef" class="section-container min-h-screen">
-    <SectionTitle title="关于我" :subtitle="profile.title" />
+    <SectionTitle over="About" title="关于我" :subtitle="profile.title" />
     <div class="grid gap-10 md:grid-cols-[240px,1fr]">
       <img
         :src="profile.avatar"

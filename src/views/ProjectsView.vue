@@ -11,7 +11,7 @@ useGsapReveal(scopeRef)
 
 <template>
   <section ref="scopeRef" class="section-container min-h-screen">
-    <SectionTitle title="项目" subtitle="我做过的部分项目" />
+    <SectionTitle over="Projects" title="项目" subtitle="我做过的部分项目" />
     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <ProjectCard v-for="p in projects" :key="p.slug" :project="p" />
     </div>

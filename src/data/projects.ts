@@ -7,6 +7,8 @@ export interface Project {
   github?: string
   demo?: string
   featured?: boolean
+  over?: string
+  status?: 'active' | 'done'
 }
 
 export const projects: Project[] = [
@@ -19,6 +21,8 @@ export const projects: Project[] = [
     image: 'galaxy-defender.webp',
     github: 'https://github.com/xrk-hhh/Galaxy-Defender',
     featured: true,
+    over: 'JAVA · SWING',
+    status: 'done',
   },
   {
     slug: 'art-style-transfer',
@@ -29,6 +33,8 @@ export const projects: Project[] = [
     image: 'art-style-transfer.webp',
     github: 'https://github.com/xrk-hhh/Art-Style-Transfer',
     featured: true,
+    over: 'PYTHON · AI',
+    status: 'done',
   },
   {
     slug: '2048-strategy-arena',
@@ -39,5 +45,7 @@ export const projects: Project[] = [
     image: '2048-arena.webp',
     github: 'https://github.com/xrk-hhh/2048-Strategy-Arena',
     featured: true,
+    over: 'ALGORITHM · AI',
+    status: 'done',
   },
 ]

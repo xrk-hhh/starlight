@@ -61,11 +61,22 @@ onUnmounted(() => {
         关于我
       </RouterLink>
     </div>
+    <dl class="hero-cta mt-12 max-w-md">
+      <div
+        v-for="f in profile.quickFacts"
+        :key="f.label"
+        data-reveal
+        class="flex items-baseline justify-between gap-6 border-b border-white/10 py-1.5"
+      >
+        <dt class="font-mono text-xs tracking-[0.25em] text-text-muted/70">{{ f.label }}</dt>
+        <dd class="text-sm text-text">{{ f.value }}</dd>
+      </div>
+    </dl>
   </section>
 
   <div ref="scopeRef">
     <section class="section-container py-16">
-      <SectionTitle title="精选项目" />
+      <SectionTitle over="Featured Work" title="精选项目" />
       <ul class="flex flex-col divide-y divide-white/5">
         <li v-for="p in featuredProjects" :key="p.slug" data-reveal>
           <a
@@ -88,7 +99,7 @@ onUnmounted(() => {
     </section>
 
     <section class="section-container py-16">
-      <SectionTitle title="最新文章" />
+      <SectionTitle over="From The Blog" title="最新文章" />
       <ul class="flex flex-col divide-y divide-white/5">
         <li v-for="post in latestPosts" :key="post.slug" data-reveal>
           <RouterLink :to="`/blog/${post.slug}`" class="group flex items-baseline justify-between gap-6 py-4">
