@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import SkillTag from '@/components/ui/SkillTag.vue'
@@ -14,6 +14,15 @@ const introParagraphs = computed(() =>
     .map((p) => p.trim())
     .filter(Boolean),
 )
+
+const BASE_URL = import.meta.env.BASE_URL
+const stats = ref<{ repos: number; stars: number; updatedAt: string } | null>(null)
+onMounted(() => {
+  fetch(`${BASE_URL}github-stats.json`)
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null)
+    .then((v) => (stats.value = v))
+})
 </script>
 
 <template>
@@ -30,6 +39,13 @@ const introParagraphs = computed(() =>
         <p v-for="(para, i) in introParagraphs" :key="i" data-reveal class="leading-relaxed text-text-muted">
           {{ para }}
         </p>
+        <div data-reveal class="mt-10 space-y-6 border-l border-white/10 pl-6">
+          <div v-for="(item, i) in profile.timeline" :key="i">
+            <div class="font-mono text-xs text-primary">{{ item.date }}</div>
+            <div class="mt-1 font-semibold">{{ item.title }}</div>
+            <div class="mt-1 text-sm text-text-muted">{{ item.desc }}</div>
+          </div>
+        </div>
         <div data-reveal class="mt-6 flex flex-wrap gap-2">
           <SkillTag v-for="s in profile.skills" :key="s.name" :name="s.name" :level="s.level" />
         </div>
@@ -44,6 +60,20 @@ const introParagraphs = computed(() =>
           >
             {{ s.label }}
           </a>
+        </div>
+        <div v-if="stats" data-reveal class="mt-10 flex gap-8 border-t border-white/10 pt-6">
+          <div class="text-center">
+            <p class="text-2xl font-semibold text-text">{{ stats.repos }}</p>
+            <p class="text-xs text-text-muted">公开仓库</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-semibold text-text">{{ stats.stars }}</p>
+            <p class="text-xs text-text-muted">总 Star</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-semibold text-text">{{ stats.updatedAt }}</p>
+            <p class="text-xs text-text-muted">数据更新于</p>
+          </div>
         </div>
       </div>
     </div>

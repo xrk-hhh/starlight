@@ -1,8 +1,17 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { RouterView } from 'vue-router'
 import ParticleBackground from '@/components/particles/ParticleBackground.vue'
 import AppNav from '@/components/layout/AppNav.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
+import CommandPalette from '@/components/overlay/CommandPalette.vue'
+import { useKonami } from '@/composables/useKonami'
+
+const konami = ref(false)
+useKonami(() => {
+  konami.value = true
+  setTimeout(() => (konami.value = false), 3000)
+})
 </script>
 
 <template>
@@ -17,6 +26,14 @@ import AppFooter from '@/components/layout/AppFooter.vue'
       </RouterView>
     </main>
     <AppFooter />
+    <CommandPalette />
+    <Transition name="fade">
+      <div v-if="konami" class="pointer-events-none fixed bottom-8 left-1/2 z-[70] -translate-x-1/2">
+        <p class="glow-text rounded-full border border-primary/40 bg-bg/90 px-5 py-2 text-sm">
+          🎮 Konami 彩蛋：代码的隐藏关卡 +1
+        </p>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -33,5 +50,22 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 }
 .page-leave-to {
   opacity: 0;
+}
+</style>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.12s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: none;
+  }
 }
 </style>
