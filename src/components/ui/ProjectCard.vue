@@ -12,7 +12,7 @@ defineProps<{ project: Project }>()
     class="card group relative overflow-hidden transition-colors hover:border-white/20"
   >
     <span
-      class="absolute inset-y-0 left-0 w-[3px]"
+      class="absolute inset-y-0 left-0 z-10 w-[3px]"
       :class="project.status === 'active' ? 'bg-gradient-to-b from-primary to-accent' : 'bg-white/15'"
     ></span>
     <div v-if="project.image" class="relative aspect-video overflow-hidden bg-surface">

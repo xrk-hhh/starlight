@@ -65,7 +65,6 @@ onUnmounted(() => {
       <div
         v-for="f in profile.quickFacts"
         :key="f.label"
-        data-reveal
         class="flex items-baseline justify-between gap-6 border-b border-white/10 py-1.5"
       >
         <dt class="font-mono text-xs tracking-[0.25em] text-text-muted/70">{{ f.label }}</dt>
