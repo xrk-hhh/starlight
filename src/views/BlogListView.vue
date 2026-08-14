@@ -24,8 +24,8 @@ useGsapReveal(scopeRef)
         data-reveal
         class="group flex items-baseline gap-6 border-b border-white/10 py-4 transition-colors hover:border-white/20"
       >
-        <span class="w-24 shrink-0 font-mono text-xs text-text-muted">{{ post.date }}</span>
-        <span class="flex-1 text-base font-semibold text-text transition-all group-hover:translate-x-1 group-hover:text-primary">{{ post.title }}</span>
+        <span class="w-28 shrink-0 font-mono text-xs text-text-muted">{{ post.date }}</span>
+        <span class="flex-1 text-base font-semibold text-text transition-all group-hover:translate-x-1 group-hover:text-primary md:text-lg">{{ post.title }}</span>
         <span class="shrink-0 text-text-muted transition-transform group-hover:translate-x-1">↗</span>
       </RouterLink>
     </div>

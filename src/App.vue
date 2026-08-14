@@ -22,7 +22,7 @@ useKonami(() => {
     <AppNav />
     <main class="relative z-10">
       <RouterView v-slot="{ Component, route }">
-        <Transition name="page" mode="out-in">
+        <Transition name="page">
           <component :is="Component" :key="route.path" />
         </Transition>
       </RouterView>
@@ -42,8 +42,15 @@ useKonami(() => {
 </template>
 
 <style>
-.page-enter-active,
+.page-enter-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
 .page-leave-active {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
   transition:
     opacity 0.15s ease,
     transform 0.15s ease;

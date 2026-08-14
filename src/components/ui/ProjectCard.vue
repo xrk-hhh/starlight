@@ -29,13 +29,18 @@ defineProps<{ project: Project }>()
       >
     </div>
     <div class="p-6">
-      <h3 class="text-lg font-semibold">{{ project.title }}</h3>
-      <p class="mt-2 text-sm leading-relaxed text-text-muted">{{ project.description }}</p>
+      <h3 class="text-lg font-semibold md:text-xl">{{ project.title }}</h3>
+      <p class="mt-2 text-sm leading-6 text-text-muted">{{ project.description }}</p>
       <ul class="mt-4 flex flex-wrap gap-2">
         <li
           v-for="tag in project.tags"
           :key="tag"
-          class="rounded-full border border-white/10 px-3 py-1 text-xs text-text-muted"
+          :title="tag"
+          class="rounded-full border border-white/10 text-text-muted"
+          :class="[
+            project.tags.length <= 3 ? 'px-3 py-1 text-xs' : 'px-2.5 py-0.5 text-[11px]',
+            tag.length > 14 ? 'max-w-[10rem] truncate' : '',
+          ]"
         >
           {{ tag }}
         </li>
