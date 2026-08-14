@@ -42,6 +42,20 @@ export function listPosts(modules: Record<string, string>): BlogMeta[] {
     .sort((a, b) => (a.date < b.date ? 1 : -1))
 }
 
+/** 统计字数：中文按字符计，英文按空格分词计；忽略代码块与 markdown 标记 */
+export function countWords(markdown: string): number {
+  const noCode = markdown.replace(/```[\s\S]*?```/g, ' ')
+  const noMarkdown = noCode.replace(/[#>*`\-_[]()!|]/g, ' ')
+  const cjk = (noMarkdown.match(/[\u4e00-\u9fff]/g) ?? []).length
+  const latin = (noMarkdown.match(/[a-zA-Z0-9]+/g) ?? []).length
+  return cjk + latin
+}
+
+/** 阅读时长（分钟，向上取整）：中文 400 字/分，英文 200 词/分（简化：总字数按 400/分） */
+export function readingTimeMinutes(markdown: string): number {
+  return Math.max(1, Math.ceil(countWords(markdown) / 400))
+}
+
 // TODO（性能扩展点，Plan §7）：文章数超过 15 篇时，
 // 评估 shiki 构建时预编译或按需加载渲染依赖。
 export const blogModules = import.meta.glob('../blog/*.md', {

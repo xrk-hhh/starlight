@@ -8,12 +8,15 @@ import ProjectCard from '@/components/ui/ProjectCard.vue'
 import BlogCard from '@/components/ui/BlogCard.vue'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
+import { useTypewriter } from '@/composables/useTypewriter'
 
 const heroRef = ref<HTMLElement | null>(null)
 let ctx: gsap.Context | null = null
 
 const featuredProjects = projects.filter((p) => p.featured).slice(0, 3)
 const latestPosts = listPosts(blogModules).slice(0, 3)
+
+const { text: typed } = useTypewriter(profile.typedPhrases)
 
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
@@ -49,6 +52,7 @@ onUnmounted(() => {
     </p>
     <p class="hero-subtitle mt-6 max-w-xl text-lg text-text-muted">
       {{ profile.introShort }}
+      <span class="text-primary">{{ typed }}<span class="hero-caret">▍</span></span>
     </p>
     <div class="hero-cta mt-10 flex gap-4">
       <RouterLink to="/projects" class="btn-primary">看看项目</RouterLink>
@@ -77,3 +81,21 @@ onUnmounted(() => {
     </section>
   </div>
 </template>
+
+<style scoped>
+.hero-caret {
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-caret {
+    animation: none;
+  }
+}
+</style>

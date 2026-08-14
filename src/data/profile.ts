@@ -19,6 +19,7 @@ export const profile = {
   title: '全栈开发 / 算法爱好者',
   motto: '把想法变成能跑的东西。',
   introShort: '一名热爱写代码的学生开发者，喜欢把算法思路变成能跑的应用——从游戏到 AI 工具再到 Web。',
+  typedPhrases: ['写代码', '刷算法', '折腾前端', '做点有意思的东西'],
   introLong:
     '你好，我是 xrk-hhh，一名计算机相关专业的学生开发者。我的日常是把想法变成能跑的东西——从算法竞赛到桌面应用，再到你现在看到的这个网站。\n\n' +
     '最近在做三件事：持续刷算法题保持手感、把这个网站的内容做得更充实（v1.1 内容增强进行中）、探索 AI 应用与前端工程化的结合——Art Style Transfer 的云端+离线双引擎、2048 Arena 的策略进化，都来自这条兴趣线。\n\n' +
@@ -52,6 +53,7 @@ export const profile = {
   title: string
   motto: string
   introShort: string
+  typedPhrases: string[]
   introLong: string
   avatar: string
   skills: Skill[]
