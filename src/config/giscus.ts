@@ -7,6 +7,6 @@
 export const giscusConfig = {
   repo: 'xrk-hhh/starlight',
   repoId: 'R_kgDOT3vtog',
-  category: '',
-  categoryId: '',
+  category: 'Announcements',
+  categoryId: 'DIC_kwDOT3vtos4DDXrN',
 }
