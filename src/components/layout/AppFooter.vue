@@ -2,11 +2,6 @@
 import { profile } from '@/data/profile'
 
 const socials = profile.socials
-
-function scrollTop() {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
-}
 </script>
 
 <template>
@@ -42,9 +37,6 @@ function scrollTop() {
         class="mt-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-text-muted"
       >
         <p>© {{ new Date().getFullYear() }} xrk-hhh · 按 ? 查看快捷键</p>
-        <button class="font-mono text-text-muted transition-colors hover:text-text" @click="scrollTop">
-          ↑ TOP
-        </button>
       </div>
     </div>
   </footer>
