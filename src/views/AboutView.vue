@@ -30,6 +30,13 @@ const introParagraphs = computed(() =>
         <p v-for="(para, i) in introParagraphs" :key="i" data-reveal class="leading-relaxed text-text-muted">
           {{ para }}
         </p>
+        <div data-reveal class="mt-10 space-y-6 border-l border-white/10 pl-6">
+          <div v-for="(item, i) in profile.timeline" :key="i">
+            <div class="font-mono text-xs text-primary">{{ item.date }}</div>
+            <div class="mt-1 font-semibold">{{ item.title }}</div>
+            <div class="mt-1 text-sm text-text-muted">{{ item.desc }}</div>
+          </div>
+        </div>
         <div data-reveal class="mt-6 flex flex-wrap gap-2">
           <SkillTag v-for="s in profile.skills" :key="s.name" :name="s.name" :level="s.level" />
         </div>
