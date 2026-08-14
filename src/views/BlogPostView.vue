@@ -32,7 +32,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="fixed left-0 top-0 z-40 h-0.5 bg-primary transition-[width] duration-150"
+    class="fixed left-0 top-0 z-[60] h-0.5 bg-primary transition-[width] duration-150"
     :style="{ width: progress + '%' }"
     aria-hidden="true"
   ></div>

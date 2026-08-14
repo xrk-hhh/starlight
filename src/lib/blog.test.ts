@@ -51,6 +51,10 @@ describe('countWords', () => {
   it('代码块不计入字数', () => {
     expect(countWords('```python\nprint(1)\n```\n\n你好')).toBe(2)
   })
+
+  it('markdown 标记不计入字数（#、** 等被剥离）', () => {
+    expect(countWords('# 标题\n\n**加粗** 内容')).toBe(6)
+  })
 })
 
 describe('readingTimeMinutes', () => {

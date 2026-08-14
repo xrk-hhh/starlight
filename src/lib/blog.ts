@@ -45,7 +45,8 @@ export function listPosts(modules: Record<string, string>): BlogMeta[] {
 /** 统计字数：中文按字符计，英文按空格分词计；忽略代码块与 markdown 标记 */
 export function countWords(markdown: string): number {
   const noCode = markdown.replace(/```[\s\S]*?```/g, ' ')
-  const noMarkdown = noCode.replace(/[#>*`\-_[]()!|]/g, ' ')
+  // eslint-disable-next-line no-useless-escape -- \[ 必须保留：V8 实测类内未转义的 [ 会使后续 ] 提前闭合字符类（()!| 被挤出类外），ESLint 判为无用转义属误报
+  const noMarkdown = noCode.replace(/[#>*`\-_\[\]()!|]/g, ' ')
   const cjk = (noMarkdown.match(/[\u4e00-\u9fff]/g) ?? []).length
   const latin = (noMarkdown.match(/[a-zA-Z0-9]+/g) ?? []).length
   return cjk + latin

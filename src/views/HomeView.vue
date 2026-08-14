@@ -52,7 +52,7 @@ onUnmounted(() => {
     </p>
     <p class="hero-subtitle mt-6 max-w-xl text-lg text-text-muted">
       {{ profile.introShort }}
-      <span class="text-primary">{{ typed }}<span class="hero-caret">▍</span></span>
+      <span class="text-primary">{{ typed }}<span class="hero-caret" aria-hidden="true">▍</span></span>
     </p>
     <div class="hero-cta mt-10 flex gap-4">
       <RouterLink to="/projects" class="btn-primary">看看项目</RouterLink>
