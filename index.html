@@ -28,6 +28,44 @@
   </head>
   <body>
     <div id="app"></div>
+    <div id="boot-hint">
+      <div class="boot-spinner"></div>
+      <p>正在进入星港…</p>
+    </div>
+    <style>
+      #boot-hint {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #0a0a12;
+        color: #9ca3af;
+        font-size: 14px;
+        z-index: 9999;
+        transition: opacity 0.3s ease;
+      }
+      .boot-spinner {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid rgba(139, 92, 246, 0.3);
+        border-top-color: #22d3ee;
+        animation: boot-spin 0.9s linear infinite;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-spinner {
+          animation: none;
+        }
+      }
+    </style>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
