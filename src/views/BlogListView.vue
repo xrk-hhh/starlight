@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { listPosts, blogModules } from '@/lib/blog'
-import BlogCard from '@/components/ui/BlogCard.vue'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 
@@ -17,8 +16,18 @@ useGsapReveal(scopeRef)
       <p class="text-4xl">🛰️</p>
       <p class="mt-4 text-text">信号还在深空漂移……第一条日志即将抵达。</p>
     </div>
-    <div v-else class="grid gap-6 md:grid-cols-2">
-      <BlogCard v-for="post in posts" :key="post.slug" :post="post" />
+    <div v-else class="flex flex-col">
+      <RouterLink
+        v-for="post in posts"
+        :key="post.slug"
+        :to="`/blog/${post.slug}`"
+        data-reveal
+        class="group flex items-baseline gap-6 border-b border-white/10 py-4 transition-colors hover:border-white/20"
+      >
+        <span class="w-24 shrink-0 font-mono text-xs text-text-muted">{{ post.date }}</span>
+        <span class="flex-1 text-base font-semibold text-text transition-all group-hover:translate-x-1 group-hover:text-primary">{{ post.title }}</span>
+        <span class="shrink-0 text-text-muted transition-transform group-hover:translate-x-1">↗</span>
+      </RouterLink>
     </div>
   </section>
 </template>
