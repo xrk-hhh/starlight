@@ -124,6 +124,7 @@ export class ParticleScene {
   setReducedMotion(reduced: boolean): void {
     this.reducedMotion = reduced
     if (!reduced) this.renderedStatic = false
+    this.syncMeteorVisibility() // §14：流星是动态效果，reduced-motion 下隐藏而非冻结
   }
 
   setParallaxTarget(x: number, y: number): void {
@@ -179,7 +180,7 @@ export class ParticleScene {
       if (!this.navPoints.visible) this.setNavStarHover(null)
     }
     if (this.nebulaGroup) this.nebulaGroup.visible = count > 0
-    if (this.meteorPoints) this.meteorPoints.visible = count > 0
+    this.syncMeteorVisibility() // 与密度联动：count > 0 且非 reduced-motion（§14：reduced-motion/移动端隐藏）
     if (count > 0) {
       this.renderedStatic = false // 密度 off→on 恢复时重置静态帧标记（§5.3）
     } else {
@@ -187,6 +188,13 @@ export class ParticleScene {
       // 清掉上一帧残留画面，防止"冻结星空"（alpha renderer 清为透明）
       this.renderer?.clear()
     }
+  }
+
+  /** 流星可见性 = 密度非零（桌面非 off）且非 reduced-motion；setReducedMotion 与 applyDensity 共用，避免互相覆盖 */
+  private syncMeteorVisibility(): void {
+    if (!this.meteorPoints) return
+    this.meteorPoints.visible =
+      resolveParticleCount(this.density, this.isMobile) > 0 && !this.reducedMotion
   }
 
   /** 三层景深粒子（远/中/近），每层独立 group（视差系数）+ geometry/material（uniforms 独立） */
