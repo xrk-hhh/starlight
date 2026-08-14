@@ -18,15 +18,16 @@ const hoveredLabel = ref<string | null>(null)
 const labelX = ref(0)
 const labelY = ref(0)
 
-// 主星导航路由：邮箱从 profile.socials 推导，避免硬编码
+// 主星导航路由：GitHub/邮箱从 profile.socials 推导，避免硬编码
 const navRoutes = computed(() => {
   const email = profile.socials.find((s) => s.label === '邮箱')?.url
+  const githubUrl = profile.socials.find((s) => s.label === 'GitHub')?.url ?? 'https://github.com/'
   return [
     { label: '首页', to: '/' },
     { label: '关于', to: '/about' },
     { label: '项目', to: '/projects' },
     { label: '博客', to: '/blog' },
-    { label: 'GitHub', to: 'https://github.com/xrk-hhh' },
+    { label: 'GitHub', to: githubUrl },
     { label: '邮箱', to: email ?? 'mailto:xxjh2487657826@outlook.com' },
   ]
 })
@@ -58,14 +59,17 @@ function stopLabelTrack() {
   labelRaf = 0
 }
 
+// label 位置写入（left 以星为中心偏移 -40 并 clamp 在视口内，避免溢出）
+function applyLabelPos(pos: { x: number; y: number }) {
+  labelX.value = Math.min(Math.max(pos.x - 40, 8), window.innerWidth - 96)
+  labelY.value = pos.y
+}
+
 // hover 期间让 label 跟随主星（主星有漂移 + 视差，需逐帧定位）
 function trackLabel() {
   if (hoverIdx !== null && scene) {
     const pos = scene.navStarScreenPositions()[hoverIdx]
-    if (pos) {
-      labelX.value = pos.x
-      labelY.value = pos.y
-    }
+    if (pos) applyLabelPos(pos)
     labelRaf = requestAnimationFrame(trackLabel)
   }
 }
@@ -84,10 +88,7 @@ function onPointerMove(e: PointerEvent) {
   hoveredLabel.value = idx === null ? null : (navRoutes.value[idx]?.label ?? null)
   if (idx !== null) {
     const pos = scene.navStarScreenPositions()[idx]
-    if (pos) {
-      labelX.value = pos.x
-      labelY.value = pos.y
-    }
+    if (pos) applyLabelPos(pos)
     startLabelTrack()
   } else {
     stopLabelTrack()
@@ -95,15 +96,18 @@ function onPointerMove(e: PointerEvent) {
 }
 
 // canvas 保持 pointer-events-none，点击用 window 级监听；
-// 点击时重校验命中（pickNavStar），只有真点在主星上才消费，避免与页面元素点击冲突
+// 先跳过交互元素（按钮/链接等）避免双触发，再重校验命中（pickNavStar），
+// 只有真点在主星上才消费，避免与页面元素点击冲突
 function onClick(e: MouseEvent) {
   if (!scene || coarse || (mediaReduced?.matches ?? false)) return
+  const t = e.target as Element | null
+  if (t?.closest?.('a,button,input,select,textarea,[role="button"]')) return
   const idx = scene.pickNavStar(e.clientX, e.clientY)
   if (idx === null) return
   const target = navRoutes.value[idx]?.to
   if (!target) return
   if (target.startsWith('http') || target.startsWith('mailto:')) {
-    window.open(target, '_blank')
+    window.open(target, '_blank', 'noopener')
   } else {
     void router.push(target)
   }
@@ -167,6 +171,7 @@ onUnmounted(() => {
   <Transition name="fade">
     <span
       v-if="hoveredLabel"
+      aria-hidden="true"
       class="pointer-events-none fixed z-30 rounded-full border border-primary/40 bg-bg/90 px-3 py-1 font-mono text-xs text-text"
       :style="{ left: labelX + 'px', top: labelY - 34 + 'px' }"
     >

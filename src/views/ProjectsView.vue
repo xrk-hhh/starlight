@@ -11,7 +11,9 @@ useGsapReveal(scopeRef)
 
 <template>
   <section ref="scopeRef" class="section-container relative min-h-screen overflow-hidden">
-    <SectionTitle over="Projects" title="项目" subtitle="我做过的部分项目" />
+    <div class="relative z-10">
+      <SectionTitle over="Projects" title="项目" subtitle="我做过的部分项目" />
+    </div>
     <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-16 z-0 overflow-hidden">
       <div class="marquee-track flex whitespace-nowrap">
         <span class="marquee-item font-mono text-8xl font-bold leading-none text-transparent" style="-webkit-text-stroke: 1px rgba(139,92,246,0.18)">PROJECTS // 作品&nbsp;&nbsp;</span>

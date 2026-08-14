@@ -25,6 +25,7 @@ export class ParticleScene {
   private hoveredIndex: number | null = null
   private colorA = '#22d3ee'
   private colorB = '#8b5cf6'
+  private raycaster = new THREE.Raycaster()
   private rafId = 0
   private clock = new THREE.Clock()
   private elapsed = 0
@@ -238,11 +239,10 @@ export class ParticleScene {
       ((clientX - rect.left) / rect.width) * 2 - 1,
       -((clientY - rect.top) / rect.height) * 2 + 1,
     )
-    const raycaster = new THREE.Raycaster()
     // 主星在 shader 中漂移（最大 ~1.4 units），阈值需覆盖漂移幅度 + 星体半径，保证 hover 稳定
-    raycaster.params.Points.threshold = 2.0
-    raycaster.setFromCamera(ndc, this.camera)
-    const hits = raycaster.intersectObject(this.navPoints, false)
+    this.raycaster.params.Points.threshold = 2.0
+    this.raycaster.setFromCamera(ndc, this.camera)
+    const hits = this.raycaster.intersectObject(this.navPoints, false)
     return hits.length > 0 ? (hits[0].index ?? null) : null
   }
 

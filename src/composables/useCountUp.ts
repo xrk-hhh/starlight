@@ -30,6 +30,7 @@ export function useCountUp(el: Ref<HTMLElement | null>, targets: () => number[],
   }
 
   watch(el, (node) => {
+    observer?.disconnect() // 元素变化时先断开旧实例，防止泄漏
     if (!node) return
     observer = new IntersectionObserver(
       (entries) => {
