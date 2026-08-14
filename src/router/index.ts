@@ -46,8 +46,8 @@ const router = createRouter({
   ],
 })
 
-// beforeResolve→afterEach 正好覆盖异步组件下载期（懒 chunk 下载窗口）
-router.beforeResolve(() => {
+// beforeEach→afterEach 覆盖懒加载分包下载窗口；失败路径由 onError 清理
+router.beforeEach(() => {
   loadingState.navigating = true
 })
 
@@ -56,6 +56,10 @@ router.afterEach((to) => {
   const siteName = '个人网站'
   document.title = to.meta.title ? `${to.meta.title} | ${siteName}` : siteName
   particlesState.density = to.meta.particles ?? 'low'
+})
+
+router.onError(() => {
+  loadingState.navigating = false
 })
 
 // 空闲时后台预取全部分包：用户首次点击导航时模块已在缓存（慢链路关键优化）
