@@ -35,6 +35,12 @@ const router = createRouter({
       component: () => import('@/views/BlogPostView.vue'),
       meta: { title: '文章', particles: 'off' },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { title: '404', particles: 'low' },
+    },
   ],
 })
 
