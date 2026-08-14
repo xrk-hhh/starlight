@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '37 1 * * *'
 
 permissions:
   contents: read
@@ -23,6 +25,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Fetch GitHub stats
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/fetch-github-stats.mjs
       - run: npm ci
       - run: npm test
       - run: npm run build

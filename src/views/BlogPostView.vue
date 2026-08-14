@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { listPosts, blogModules, countWords, readingTimeMinutes } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
+import GiscusComments from '@/components/blog/GiscusComments.vue'
 
 const route = useRoute()
 const post = computed(() =>
@@ -46,6 +47,7 @@ onUnmounted(() => {
       </div>
       <!-- eslint-disable-next-line vue/no-v-html -- 内容经 markdown-it（html:false）+ shiki 渲染，无原始 HTML 通过，XSS 面有测试覆盖 -->
       <div class="blog-content mt-10" v-html="html"></div>
+      <GiscusComments />
     </div>
     <p v-else class="text-text-muted">文章不存在</p>
   </article>
