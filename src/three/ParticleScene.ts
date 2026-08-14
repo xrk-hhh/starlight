@@ -7,6 +7,8 @@ export interface ParticleSceneOptions {
   count: number
   colorA: string
   colorB: string
+  /** 导航主星数量（默认 6，0 表示不构建） */
+  navStars?: number
 }
 
 export class ParticleScene {
@@ -16,6 +18,13 @@ export class ParticleScene {
   private points: THREE.Points | null = null
   private material: THREE.ShaderMaterial | null = null
   private geometry: THREE.BufferGeometry | null = null
+  private navPoints: THREE.Points | null = null
+  private navGeometry: THREE.BufferGeometry | null = null
+  private navMaterial: THREE.ShaderMaterial | null = null
+  private navCount = 0
+  private hoveredIndex: number | null = null
+  private colorA = '#22d3ee'
+  private colorB = '#8b5cf6'
   private rafId = 0
   private clock = new THREE.Clock()
   private elapsed = 0
@@ -51,7 +60,11 @@ export class ParticleScene {
     })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+    this.colorA = options.colorA
+    this.colorB = options.colorB
     this.buildPoints(options.count, options.colorA, options.colorB)
+    const navStars = options.navStars ?? 6
+    if (navStars > 0) this.buildNavStars(navStars)
     this.applyDensity()
 
     window.addEventListener('resize', this.onResizeBound)
@@ -86,6 +99,11 @@ export class ParticleScene {
     if (!this.points || !this.material) return
     const count = resolveParticleCount(this.density, this.isMobile)
     this.points.visible = count > 0
+    // 主星与主粒子同规则隐藏（density off / 移动端）
+    if (this.navPoints) {
+      this.navPoints.visible = count > 0
+      if (!this.navPoints.visible) this.setNavStarHover(null)
+    }
     if (count > 0) {
       this.geometry?.setDrawRange(0, count) // 密度分档真实生效（1000/300）
       this.renderedStatic = false // 密度 off→on 恢复时重置静态帧标记（§5.3）
@@ -143,6 +161,116 @@ export class ParticleScene {
     this.scene.add(this.points)
   }
 
+  /** 导航主星：环绕视野中部的环带，可与主粒子共用同一 shader（aHover 控制高亮） */
+  private buildNavStars(count: number): void {
+    if (!this.scene) return
+    const positions = new Float32Array(count * 3)
+    const sizes = new Float32Array(count)
+    const radii = new Float32Array(count)
+    const speeds = new Float32Array(count)
+    const drifts = new Float32Array(count)
+    const colorMixes = new Float32Array(count)
+    const hovers = new Float32Array(count)
+
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2
+      positions[i * 3] = Math.cos(angle) * 18
+      positions[i * 3 + 1] = Math.sin(angle) * 6
+      positions[i * 3 + 2] = Math.sin(angle) * 10 - 5
+      sizes[i] = Math.random() * 0.6 + 2.2 // 2.2~2.8，明显大于背景粒子
+      radii[i] = Math.random() * 1.2 + 0.2 // 与主粒子相同的漂移参数
+      speeds[i] = Math.random() * 0.4 + 0.1
+      drifts[i] = Math.random() * Math.PI * 2
+      colorMixes[i] = 0.5
+      hovers[i] = 0
+    }
+
+    this.navGeometry = new THREE.BufferGeometry()
+    this.navGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    this.navGeometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1))
+    this.navGeometry.setAttribute('aRadius', new THREE.BufferAttribute(radii, 1))
+    this.navGeometry.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1))
+    this.navGeometry.setAttribute('aDrift', new THREE.BufferAttribute(drifts, 1))
+    this.navGeometry.setAttribute('aColorMix', new THREE.BufferAttribute(colorMixes, 1))
+    this.navGeometry.setAttribute('aHover', new THREE.BufferAttribute(hovers, 1))
+
+    this.navMaterial = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uTime: { value: 0 },
+        uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+        uColorA: { value: new THREE.Color(this.colorA) },
+        uColorB: { value: new THREE.Color(this.colorB) },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+
+    this.navPoints = new THREE.Points(this.navGeometry, this.navMaterial)
+    this.navPoints.frustumCulled = false
+    this.navCount = count
+    this.scene.add(this.navPoints)
+  }
+
+  /** 设置主星 hover 高亮（i 为 null 清除），aHover 属性驱动 shader 放大/增亮 */
+  setNavStarHover(i: number | null): void {
+    if (this.hoveredIndex === i) return
+    if (this.hoveredIndex !== null && this.navGeometry) {
+      const arr = this.navGeometry.getAttribute('aHover') as THREE.BufferAttribute
+      arr.setX(this.hoveredIndex, 0)
+      arr.needsUpdate = true
+    }
+    this.hoveredIndex = i
+    if (i !== null && this.navGeometry) {
+      const arr = this.navGeometry.getAttribute('aHover') as THREE.BufferAttribute
+      arr.setX(i, 1)
+      arr.needsUpdate = true
+    }
+  }
+
+  /** client 坐标（px）→ 命中的主星索引或 null */
+  pickNavStar(clientX: number, clientY: number): number | null {
+    if (!this.navPoints || !this.camera || !this.renderer || !this.navPoints.visible) return null
+    const rect = this.renderer.domElement.getBoundingClientRect()
+    const ndc = new THREE.Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1,
+    )
+    const raycaster = new THREE.Raycaster()
+    // 主星在 shader 中漂移（最大 ~1.4 units），阈值需覆盖漂移幅度 + 星体半径，保证 hover 稳定
+    raycaster.params.Points.threshold = 2.0
+    raycaster.setFromCamera(ndc, this.camera)
+    const hits = raycaster.intersectObject(this.navPoints, false)
+    return hits.length > 0 ? (hits[0].index ?? null) : null
+  }
+
+  /** 主星屏幕坐标（px，供 HTML label 定位）；复刻 shader 漂移 + 场景视差旋转 */
+  navStarScreenPositions(): { x: number; y: number }[] {
+    if (!this.navGeometry || !this.camera || !this.renderer || !this.scene) return []
+    const positions = this.navGeometry.getAttribute('position') as THREE.BufferAttribute
+    const radii = this.navGeometry.getAttribute('aRadius') as THREE.BufferAttribute
+    const speeds = this.navGeometry.getAttribute('aSpeed') as THREE.BufferAttribute
+    const drifts = this.navGeometry.getAttribute('aDrift') as THREE.BufferAttribute
+    const rect = this.renderer.domElement.getBoundingClientRect()
+    const v = new THREE.Vector3()
+    const out: { x: number; y: number }[] = []
+    for (let i = 0; i < positions.count; i++) {
+      // 与 particles.vert 的漂移公式保持一致（uTime === this.elapsed）
+      const t = this.elapsed * speeds.getX(i) + drifts.getX(i)
+      v.set(
+        positions.getX(i) + Math.sin(t) * radii.getX(i),
+        positions.getY(i) + Math.cos(t * 0.8) * radii.getX(i) * 0.6,
+        positions.getZ(i) + Math.cos(t * 0.5) * radii.getX(i),
+      )
+      v.applyEuler(this.scene.rotation) // 视差作用在 scene 上，需同步旋转
+      v.project(this.camera)
+      out.push({ x: (v.x * 0.5 + 0.5) * rect.width, y: (-v.y * 0.5 + 0.5) * rect.height })
+    }
+    return out
+  }
+
   private onResize(): void {
     if (!this.renderer || !this.camera) return
     const w = window.innerWidth
@@ -153,6 +281,9 @@ export class ParticleScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     if (this.material) {
       this.material.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2)
+    }
+    if (this.navMaterial) {
+      this.navMaterial.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2)
     }
   }
 
@@ -175,6 +306,10 @@ export class ParticleScene {
       this.elapsed += dt
       if (this.material) {
         this.material.uniforms.uTime.value = this.elapsed
+      }
+      // 主星与主粒子共享 uTime 语义（漂移动画），需每帧同步
+      if (this.navMaterial) {
+        this.navMaterial.uniforms.uTime.value = this.elapsed
       }
       // 视差：指数趋近（帧率无关），作用在场景整体
       const k = 2.5
@@ -209,5 +344,10 @@ export class ParticleScene {
     this.points = null
     this.material = null
     this.geometry = null
+    this.navPoints = null
+    this.navGeometry = null
+    this.navMaterial = null
+    this.navCount = 0
+    this.hoveredIndex = null
   }
 }
