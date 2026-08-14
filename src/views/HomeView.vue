@@ -42,7 +42,7 @@ onUnmounted(() => {
     <p class="hero-subtitle font-mono text-sm text-primary">
       {{ profile.title }}
     </p>
-    <h1 class="hero-title mt-4 text-5xl font-bold leading-tight md:text-7xl">
+    <h1 class="hero-title glow-text mt-4 text-5xl font-bold leading-tight md:text-7xl [text-shadow:0_0_40px_rgba(139,92,246,0.35)]">
       {{ profile.name }}
     </h1>
     <p class="hero-motto mt-3 font-mono text-sm text-primary/70">
@@ -110,6 +110,30 @@ onUnmounted(() => {
       <RouterLink to="/blog" data-reveal class="mt-6 inline-flex text-sm text-primary hover:underline">
         查看全部文章 →
       </RouterLink>
+    </section>
+
+    <section class="section-container py-16">
+      <SectionTitle title="本站怎么逛" over="Start Here" />
+      <div class="grid gap-6 md:grid-cols-3">
+        <div data-reveal class="card flex flex-col p-6">
+          <span class="font-mono text-2xl text-primary">01</span>
+          <h3 class="mt-3 font-semibold">看项目</h3>
+          <p class="mt-1 flex-1 text-sm text-text-muted">从 Galaxy Defender 到 2048 Arena，都是能跑的东西。</p>
+          <RouterLink to="/projects" class="mt-4 text-sm text-primary hover:underline">前往项目 →</RouterLink>
+        </div>
+        <div data-reveal class="card flex flex-col p-6">
+          <span class="font-mono text-2xl text-primary">02</span>
+          <h3 class="mt-3 font-semibold">读博客</h3>
+          <p class="mt-1 flex-1 text-sm text-text-muted">算法复盘、项目笔记与建站实录，都在这里。</p>
+          <RouterLink to="/blog" class="mt-4 text-sm text-primary hover:underline">前往博客 →</RouterLink>
+        </div>
+        <div data-reveal class="card flex flex-col p-6">
+          <span class="font-mono text-2xl text-primary">03</span>
+          <h3 class="mt-3 font-semibold">找 GitHub</h3>
+          <p class="mt-1 flex-1 text-sm text-text-muted">所有项目源码与历史提交，公开可见。</p>
+          <a :href="'https://github.com/' + profile.name" target="_blank" rel="noopener" class="mt-4 text-sm text-primary hover:underline">前往 GitHub →</a>
+        </div>
+      </div>
     </section>
   </div>
 </template>
