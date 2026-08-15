@@ -125,11 +125,12 @@ function onClick(e: MouseEvent) {
   }
 }
 
-// v1.4 打字即流星：单字符键（忽略修饰/组合键）让流星从头划过；120ms 限速；
+// v1.4 打字即流星：单字符键让流星从头划过；120ms 限速；
 // 仅桌面非 coarse、非 reduced-motion 且密度非 off 时触发。
 // 不 preventDefault，输入框内打字同样触发且不拦截输入。
 function onKeydown(e: KeyboardEvent) {
-  if (e.key.length !== 1) return
+  if (e.key.length !== 1) return // 组合键/功能键（Enter/Backspace/方向键等）忽略
+  if (e.ctrlKey || e.metaKey || e.altKey) return // 修饰键组合忽略（Shift 不算：Shift+字母仍是打字）
   if (coarse || (mediaReduced?.matches ?? false)) return
   if (particlesState.density === 'off') return
   const now = performance.now()

@@ -13,11 +13,14 @@ const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
 // v1.4 星系横移：桌面（≥1024px）pin 住区段，项目卡横向穿过星场；
-// reduced-motion 跳过 pin（隐藏横移容器，回退纵向 grid），媒体查询变化时重建
+// reduced-motion 跳过 pin（隐藏横移容器，回退纵向 grid），媒体查询变化时重建。
+// MQL 实例存为组件作用域变量：add/remove 必须用同一引用（同 ParticleBackground 的 mediaMobile 模式）
+let mediaReduced: MediaQueryList | null = null
+let mediaDesktop: MediaQueryList | null = null
 const pinRef = ref<HTMLElement | null>(null)
 const trackRef = ref<HTMLElement | null>(null)
-const isReduced = ref(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-const isDesktop = ref(window.matchMedia('(min-width: 1024px)').matches)
+const isReduced = ref(false)
+const isDesktop = ref(false)
 
 let ctx: gsap.Context | null = null
 
@@ -48,20 +51,26 @@ function buildPin() {
 }
 
 const onMediaChange = () => {
-  isReduced.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  isDesktop.value = window.matchMedia('(min-width: 1024px)').matches
+  isReduced.value = mediaReduced?.matches ?? false
+  isDesktop.value = mediaDesktop?.matches ?? false
   buildPin()
 }
 
 onMounted(() => {
-  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', onMediaChange)
-  window.matchMedia('(min-width: 1024px)').addEventListener('change', onMediaChange)
+  mediaReduced = window.matchMedia('(prefers-reduced-motion: reduce)')
+  mediaDesktop = window.matchMedia('(min-width: 1024px)')
+  isReduced.value = mediaReduced.matches
+  isDesktop.value = mediaDesktop.matches
+  mediaReduced.addEventListener('change', onMediaChange)
+  mediaDesktop.addEventListener('change', onMediaChange)
   buildPin()
 })
 
 onUnmounted(() => {
-  window.matchMedia('(prefers-reduced-motion: reduce)').removeEventListener('change', onMediaChange)
-  window.matchMedia('(min-width: 1024px)').removeEventListener('change', onMediaChange)
+  mediaReduced?.removeEventListener('change', onMediaChange)
+  mediaDesktop?.removeEventListener('change', onMediaChange)
+  mediaReduced = null
+  mediaDesktop = null
   ctx?.revert() // 覆盖 ScrollTrigger 清理（pin 样式/补位 spacer）
   ctx = null
 })
