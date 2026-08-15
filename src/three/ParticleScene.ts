@@ -54,6 +54,8 @@ export class ParticleScene {
   private meteorPoints: THREE.Points | null = null
   private meteorGeometry: THREE.BufferGeometry | null = null
   private meteorMaterial: THREE.ShaderMaterial | null = null
+  /** v1.4 打字即流星：相位偏移，供 burstMeteor 把 tick 重算的 uProgress 立即归零 */
+  private meteorPhaseOffset = 0
   private colorA = '#22d3ee'
   private colorB = '#8b5cf6'
   private raycaster = new THREE.Raycaster()
@@ -163,6 +165,16 @@ export class ParticleScene {
     for (const layer of this.layers) {
       layer.material.uniforms.uRepelStrength.value = 0
     }
+  }
+
+  /** v1.4 打字即流星：把流星进度立即重置（回到星轨起点，从头划过）。
+   *  tick 每帧由 CPU 重算 uProgress（elapsed/周期 + 相位），直接改 uniform 下一帧即被覆盖，
+   *  故改为调整相位偏移使下一帧进度归零（等效于把 uProgress 立即重置到 1.0 的环绕点）。 */
+  burstMeteor(): void {
+    if (!this.meteorMaterial) return
+    const x = this.elapsed / METEOR_PERIOD + METEOR_PHASE
+    const current = (x + this.meteorPhaseOffset) % 1.0
+    this.meteorPhaseOffset = (this.meteorPhaseOffset - current + 1) % 1.0
   }
 
   private applyDensity(): void {
@@ -553,10 +565,10 @@ export class ParticleScene {
           sprite.position.y = d.baseY + Math.cos(this.elapsed * d.speed + d.phase) * 4 * d.axisY
         }
       }
-      // 流星进度循环（周期 50s），头部最亮点随 uProgress 前进
+      // 流星进度循环（周期 50s），头部最亮点随 uProgress 前进；相位偏移由 burstMeteor 调整
       if (this.meteorMaterial) {
         this.meteorMaterial.uniforms.uProgress.value =
-          (this.elapsed / METEOR_PERIOD + METEOR_PHASE) % 1.0
+          (this.elapsed / METEOR_PERIOD + METEOR_PHASE + this.meteorPhaseOffset) % 1.0
       }
     }
     if (!this.layers.some((layer) => layer.points.visible)) {

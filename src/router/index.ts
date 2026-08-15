@@ -38,6 +38,12 @@ const router = createRouter({
       meta: { title: '文章', particles: 'off' },
     },
     {
+      path: '/versions',
+      name: 'versions',
+      component: () => import('@/views/VersionArchiveView.vue'),
+      meta: { title: '版本', particles: 'low' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

@@ -13,6 +13,7 @@ let mediaReduced: MediaQueryList | null = null
 let coarse = false // 触屏设备：主星渲染但不交互
 let hoverIdx: number | null = null
 let labelRaf = 0
+let lastMeteorBurst = 0
 
 const hoveredLabel = ref<string | null>(null)
 const labelX = ref(0)
@@ -124,6 +125,19 @@ function onClick(e: MouseEvent) {
   }
 }
 
+// v1.4 打字即流星：单字符键（忽略修饰/组合键）让流星从头划过；120ms 限速；
+// 仅桌面非 coarse、非 reduced-motion 且密度非 off 时触发。
+// 不 preventDefault，输入框内打字同样触发且不拦截输入。
+function onKeydown(e: KeyboardEvent) {
+  if (e.key.length !== 1) return
+  if (coarse || (mediaReduced?.matches ?? false)) return
+  if (particlesState.density === 'off') return
+  const now = performance.now()
+  if (now - lastMeteorBurst < 120) return
+  lastMeteorBurst = now
+  scene?.burstMeteor()
+}
+
 onMounted(() => {
   const canvas = canvasRef.value
   if (!canvas) return
@@ -151,6 +165,7 @@ onMounted(() => {
   applyReduced()
   window.addEventListener('pointermove', onPointerMove, { passive: true })
   window.addEventListener('click', onClick)
+  window.addEventListener('keydown', onKeydown, { passive: true })
   window.addEventListener('blur', clearRepel)
   document.documentElement.addEventListener('mouseleave', clearRepel)
 })
@@ -168,6 +183,7 @@ onUnmounted(() => {
   stopLabelTrack()
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('click', onClick)
+  window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('blur', clearRepel)
   document.documentElement.removeEventListener('mouseleave', clearRepel)
   mediaMobile?.removeEventListener('change', applyMobile)
