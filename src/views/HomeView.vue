@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import gsap from 'gsap'
 import { profile } from '@/data/profile'
 import { projects } from '@/data/projects'
 import { listPosts, blogModules } from '@/lib/blog'
@@ -17,6 +16,9 @@ const latestPosts = listPosts(blogModules).slice(0, 3)
 
 const { text: typed } = useTypewriter(profile.typedPhrases)
 
+// 打字区用最长短语做不可见占位（绝对定位真实文本），打字过程不改变布局（防 CLS）
+const typedPhrasesMax = [...profile.typedPhrases].sort((a, b) => b.length - a.length)[0]
+
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
@@ -24,13 +26,17 @@ onMounted(() => {
   if (!heroRef.value) return
   // reduced-motion：跳过入场动画，hero 保持可见终态（ctx 为 null，onUnmounted 的 ctx?.revert() 安全）
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  ctx = gsap.context(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1 } })
-    tl.from('.hero-title', { y: 50, opacity: 0 })
-      .from('.hero-motto', { y: 20, opacity: 0 }, '-=0.7')
-      .from('.hero-subtitle', { y: 30, opacity: 0 }, '-=0.7')
-      .from('.hero-cta', { y: 20, opacity: 0 }, '-=0.7')
-  }, heroRef.value)
+  void (async () => {
+    const gsap = (await import('gsap')).default
+    if (!heroRef.value) return // await 期间组件卸载
+    ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 1 } })
+      tl.from('.hero-title', { y: 50, opacity: 0 })
+        .from('.hero-motto', { y: 20, opacity: 0 }, '-=0.7')
+        .from('.hero-subtitle', { y: 30, opacity: 0 }, '-=0.7')
+        .from('.hero-cta', { y: 20, opacity: 0 }, '-=0.7')
+    }, heroRef.value)
+  })()
 })
 
 onUnmounted(() => {
@@ -62,7 +68,12 @@ onUnmounted(() => {
       </p>
       <p class="hero-subtitle mt-6 max-w-xl text-base text-text-muted md:text-lg">
         {{ profile.introShort }}
-        <span class="text-primary">{{ typed }}<span class="hero-caret" aria-hidden="true">▍</span></span>
+        <span class="relative inline-block whitespace-nowrap align-baseline">
+          <span class="invisible">{{ typedPhrasesMax }}</span>
+          <span class="absolute left-0 top-0 whitespace-nowrap text-primary"
+            >{{ typed }}<span class="hero-caret" aria-hidden="true">▍</span></span
+          >
+        </span>
       </p>
       <ElasticHeading
         class="hero-cta mt-8 text-xl text-text-muted md:text-2xl"

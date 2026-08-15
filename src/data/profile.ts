@@ -57,7 +57,7 @@ export const profile = {
   quickFacts: [
     { label: 'TECH', value: 'Vue · TS · Three.js · Python · Java' },
     { label: 'FOCUS', value: '算法与 AI 应用' },
-    { label: 'NOW', value: 'v1.2 视觉增强中' },
+    { label: 'NOW', value: 'v1.4 趣味交互增强中' },
     { label: 'UPDATED', value: '2026-08' },
   ] as QuickFact[],
 } satisfies {

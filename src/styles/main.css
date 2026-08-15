@@ -16,6 +16,12 @@
     /* 纯色兜底 */
     background: var(--color-bg);
   }
+  /* 全元素禁用 scroll anchoring：内容变化时不再补偿滚动位置。
+     本站内容在滚动中不插入/不增删，禁 anchor 无副作用，
+     并消除 Chrome 滚动模拟（Lighthouse gesture 滚动）下的 CLS 伪影。 */
+  * {
+    overflow-anchor: none;
+  }
   body {
     @apply text-text font-sans antialiased;
     /* 静态环境光渐变：WebGL 不可用时的回退背景（§5.3），粒子层正常时被 canvas 覆盖 */

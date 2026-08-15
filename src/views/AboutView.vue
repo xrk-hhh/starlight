@@ -58,7 +58,7 @@ onUnmounted(() => {
       @keydown.enter.prevent="triggerGlitch"
       @keydown.space.prevent="triggerGlitch"
     >
-      <SectionTitle over="About" title="关于我" :subtitle="profile.title" />
+      <SectionTitle over="About" title="关于我" as="h1" :subtitle="profile.title" />
     </div>
     <FloatingBadges />
     <div class="relative z-10 grid gap-10 md:grid-cols-[240px,1fr]">
@@ -114,14 +114,14 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 标题 glitch：三层叠放 = 真实 h2 文字 + ::before(青 #22d3ee) + ::after(紫 #8b5cf6) */
-.glitch-title :deep(h2) {
+/* 标题 glitch：三层叠放 = 真实 h1 文字 + ::before(青 #22d3ee) + ::after(紫 #8b5cf6) */
+.glitch-title :deep(h1) {
   position: relative;
 }
 
-.glitch-title.glitching :deep(h2)::before,
-.glitch-title.glitching :deep(h2)::after {
-  /* 站点结构文案硬编码（无法在不改 SectionTitle 的情况下给 h2 注入 data-text） */
+.glitch-title.glitching :deep(h1)::before,
+.glitch-title.glitching :deep(h1)::after {
+  /* 站点结构文案硬编码（无法在不改 SectionTitle 的情况下给 h1 注入 data-text） */
   content: '关于我';
   position: absolute;
   inset: 0;
@@ -130,13 +130,13 @@ onUnmounted(() => {
   animation-timing-function: steps(2, jump-none);
 }
 
-.glitch-title.glitching :deep(h2)::before {
+.glitch-title.glitching :deep(h1)::before {
   color: #22d3ee;
   animation-name: glitch-a;
   animation-duration: 90ms;
 }
 
-.glitch-title.glitching :deep(h2)::after {
+.glitch-title.glitching :deep(h1)::after {
   color: #8b5cf6;
   animation-name: glitch-b;
   animation-duration: 150ms;
@@ -206,8 +206,8 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glitch-title.glitching :deep(h2)::before,
-  .glitch-title.glitching :deep(h2)::after {
+  .glitch-title.glitching :deep(h1)::before,
+  .glitch-title.glitching :deep(h1)::after {
     animation: none;
     content: none;
   }
