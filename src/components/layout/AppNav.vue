@@ -2,8 +2,11 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const scrolled = ref(false)
+const scrollProgress = ref(0)
 function onScroll() {
   scrolled.value = window.scrollY > 50
+  const max = document.documentElement.scrollHeight - window.innerHeight
+  scrollProgress.value = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0
 }
 onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
 onUnmounted(() => window.removeEventListener('scroll', onScroll))
@@ -35,5 +38,11 @@ const links = [
         </li>
       </ul>
     </nav>
+    <div v-if="scrolled" class="absolute inset-x-0 bottom-0 h-[3px] bg-white/5">
+      <div
+        class="h-full bg-gradient-to-r from-primary to-accent shadow-[0_0_8px_rgba(139,92,246,0.6)] transition-[width] duration-100 ease-out"
+        :style="{ width: scrollProgress + '%' }"
+      ></div>
+    </div>
   </header>
 </template>
