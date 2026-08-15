@@ -37,14 +37,21 @@
   <body>
     <div id="app" style="min-height: 100vh"></div>
     <script>
-      // 首帧高度占位：SPA mount 前 #app 的高度对齐最终内容高度，
-      // 消除 Vue mount「空→满」的文档高度跳变（CLS，v1.5 定位）。
-      // 占位取「当前内容高度 + 少量余量」：内容增长时 min-height 不限制（无跳变），
-      // 内容收缩时留白可接受；改版后若首页高度变化明显，同步更新这两个值。
+      // 首帧高度占位（v1.5）：仅首页设置——SPA mount 前 #app 高度对齐最终内容高度，
+      // 消除 Vue mount「空→满」的文档高度跳变（CLS 伪影）。
+      // 其他页面用 100vh 即可，避免短内容页底部留白。
+      // 占位取「内容高度 + 少量余量」：内容增长时 min-height 不限制（无跳变）；
+      // 改版后若首页高度变化明显，同步更新这两个值。
       (function () {
         var app = document.getElementById('app');
         if (!app) return;
-        app.style.minHeight = window.innerWidth < 768 ? '3150px' : '2800px';
+        var seg = location.pathname.split('/');
+        var root = seg[1] ? '/' + seg[1] + '/' : '/';
+        if (location.pathname === root) {
+          app.style.minHeight = window.innerWidth < 768 ? '3150px' : '2800px';
+        } else {
+          app.style.minHeight = '100vh';
+        }
       })();
     </script>
     <div id="boot-hint" aria-hidden="true">

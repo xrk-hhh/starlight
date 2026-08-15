@@ -30,11 +30,16 @@ const links = [
         <li v-for="link in links" :key="link.to">
           <RouterLink
             :to="link.to"
-            class="transition-colors hover:text-text"
+            class="group relative inline-block py-1 transition-colors hover:text-text"
             active-class="text-text"
             exact-active-class="text-text"
-            >{{ link.label }}</RouterLink
           >
+            {{ link.label }}
+            <span
+              aria-hidden="true"
+              class="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-gradient-to-r from-primary to-accent transition-transform duration-300 group-hover:scale-x-100"
+            ></span>
+          </RouterLink>
         </li>
       </ul>
     </nav>

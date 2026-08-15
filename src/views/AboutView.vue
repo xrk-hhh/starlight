@@ -62,20 +62,30 @@ onUnmounted(() => {
     </div>
     <FloatingBadges />
     <div class="relative z-10 grid gap-10 md:grid-cols-[240px,1fr]">
-      <img
-        :src="profile.avatar"
-        :alt="profile.name"
-        class="h-60 w-60 rounded-2xl border border-white/10 object-cover"
-        loading="lazy"
-      />
+      <div class="relative h-60 w-60">
+        <div
+          aria-hidden="true"
+          class="absolute -inset-2 rounded-3xl bg-gradient-to-br from-primary/20 via-transparent to-accent/20 blur-xl"
+        ></div>
+        <img
+          :src="profile.avatar"
+          :alt="profile.name"
+          class="relative h-60 w-60 rounded-2xl border border-white/10 object-cover"
+          loading="lazy"
+        />
+      </div>
       <div>
         <p v-for="(para, i) in introParagraphs" :key="i" data-reveal class="leading-relaxed text-text-muted">
           {{ para }}
         </p>
         <div data-reveal class="mt-10 space-y-6 border-l border-white/10 pl-6">
-          <div v-for="(item, i) in profile.timeline" :key="i">
+          <div v-for="(item, i) in profile.timeline" :key="i" class="group relative">
+            <span
+              aria-hidden="true"
+              class="absolute -left-[30.5px] top-1.5 h-2 w-2 rounded-full border border-primary/50 bg-bg transition-all duration-200 group-hover:scale-150 group-hover:bg-primary"
+            ></span>
             <div class="font-mono text-xs text-primary">{{ item.date }}</div>
-            <div class="mt-1 text-base font-semibold">{{ item.title }}</div>
+            <div class="mt-1 text-base font-semibold transition-colors group-hover:text-primary">{{ item.title }}</div>
             <div class="mt-1 text-sm leading-6 text-text-muted">{{ item.desc }}</div>
           </div>
         </div>

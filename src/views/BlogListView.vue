@@ -38,11 +38,11 @@ function setRowRef(index: number, node: unknown) {
         :ref="(node) => setRowRef(i, node)"
         :to="`/blog/${post.slug}`"
         data-reveal
-        class="group flex items-baseline gap-6 border-b border-white/10 py-4 transition-colors hover:border-white/20"
+        class="group -mx-3 flex items-baseline gap-6 rounded-lg border-b border-white/10 px-3 py-4 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.03]"
       >
-        <span class="w-28 shrink-0 font-mono text-xs text-text-muted">{{ post.date }}</span>
+        <span class="w-28 shrink-0 font-mono text-xs text-text-muted transition-colors group-hover:text-primary/80">{{ post.date }}</span>
         <span class="flex-1 text-base font-semibold text-text transition-all group-hover:translate-x-1 group-hover:text-primary md:text-lg">{{ post.title }}</span>
-        <span class="shrink-0 text-text-muted transition-transform group-hover:translate-x-1">↗</span>
+        <span class="shrink-0 text-text-muted transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary">↗</span>
       </RouterLink>
     </div>
   </section>

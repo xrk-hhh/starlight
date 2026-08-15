@@ -41,14 +41,14 @@ useGsapReveal(scopeRef)
     <SectionTitle over="Star Map" title="版本星图" as="h1" />
     <!-- 垂直时间线：复用关于页样式（border-l + pl-6），节点圆点挂在细线上 -->
     <div data-reveal class="relative z-10 space-y-8 border-l border-white/10 pl-6">
-      <div v-for="(item, i) in versions" :key="item.v" class="relative">
+      <div v-for="(item, i) in versions" :key="item.v" class="group relative">
         <span
           aria-hidden="true"
-          class="absolute -left-[29px] top-1.5 h-2 w-2 rounded-full"
-          :class="i === 0 ? 'bg-primary' : 'bg-white/20'"
+          class="absolute -left-[29px] top-1.5 h-2 w-2 rounded-full transition-all duration-200 group-hover:scale-150"
+          :class="i === 0 ? 'bg-primary shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-white/20 group-hover:bg-primary/60'"
         ></span>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span class="font-mono text-primary">{{ item.v }}</span>
+          <span class="font-mono text-primary transition-colors group-hover:text-accent">{{ item.v }}</span>
           <span class="font-mono text-xs text-text-muted">{{ item.date }}</span>
           <span
             v-if="i === 0"

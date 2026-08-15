@@ -9,7 +9,16 @@ import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useTypewriter } from '@/composables/useTypewriter'
 
 const heroRef = ref<HTMLElement | null>(null)
+const hintRef = ref<HTMLElement | null>(null)
 let ctx: gsap.Context | null = null
+let hintHidden = false
+function onHintScroll() {
+  const hide = window.scrollY > 80
+  if (hide !== hintHidden) {
+    hintHidden = hide
+    hintRef.value?.classList.toggle('scroll-hint-hidden', hide)
+  }
+}
 
 const featuredProjects = projects.filter((p) => p.featured).slice(0, 3)
 const latestPosts = listPosts(blogModules).slice(0, 3)
@@ -23,6 +32,7 @@ const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
 onMounted(() => {
+  window.addEventListener('scroll', onHintScroll, { passive: true })
   if (!heroRef.value) return
   // reduced-motion：跳过入场动画，hero 保持可见终态（ctx 为 null，onUnmounted 的 ctx?.revert() 安全）
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -40,13 +50,14 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('scroll', onHintScroll)
   ctx?.revert()
 })
 </script>
 
 <template>
   <div>
-    <section ref="heroRef" class="section-container flex min-h-screen flex-col justify-center">
+    <section ref="heroRef" class="section-container relative flex min-h-screen flex-col justify-center">
       <p class="hero-subtitle font-mono text-sm text-primary">
         {{ profile.title }}
       </p>
@@ -99,6 +110,16 @@ onUnmounted(() => {
           <dd class="text-sm text-text">{{ f.value }}</dd>
         </div>
       </dl>
+      <!-- 滚动指示器：首屏底部缓动下落箭头，滚动后淡出（v1.5 设计增强） -->
+      <div
+        ref="hintRef"
+        class="scroll-hint absolute bottom-8 left-1/2 -translate-x-1/2"
+        aria-hidden="true"
+      >
+        <div class="flex h-9 w-5 items-start justify-center rounded-full border border-white/15 pt-1.5">
+          <span class="scroll-hint-dot h-1.5 w-1 rounded-full bg-primary/80"></span>
+        </div>
+      </div>
     </section>
 
     <div ref="scopeRef">
@@ -110,18 +131,19 @@ onUnmounted(() => {
               :href="p.github"
               target="_blank"
               rel="noopener"
-              class="group flex items-baseline justify-between gap-6 py-4 transition-colors"
+              class="group -mx-3 flex items-baseline justify-between gap-6 rounded-lg px-3 py-4 transition-all duration-200 hover:bg-white/[0.03]"
             >
               <span>
-                <span class="font-semibold text-text group-hover:text-primary">{{ p.title }}</span>
+                <span class="font-semibold text-text transition-colors group-hover:text-primary">{{ p.title }}</span>
                 <span class="ml-3 text-sm text-text-muted">{{ p.description.slice(0, 42) }}{{ p.description.length > 42 ? '…' : '' }}</span>
               </span>
-              <span class="shrink-0 font-mono text-xs text-text-muted transition-transform group-hover:translate-x-0.5">GitHub →</span>
+              <span class="shrink-0 font-mono text-xs text-text-muted transition-transform duration-200 group-hover:translate-x-1">GitHub →</span>
             </a>
           </li>
         </ul>
-        <RouterLink to="/projects" data-reveal class="mt-6 inline-flex text-sm text-primary hover:underline">
-          查看全部项目 →
+        <RouterLink to="/projects" data-reveal class="group mt-6 inline-flex items-center gap-1 text-sm text-primary">
+          <span class="transition-colors group-hover:text-accent">查看全部项目</span>
+          <span class="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </RouterLink>
       </section>
 
@@ -129,14 +151,18 @@ onUnmounted(() => {
         <SectionTitle over="From The Blog" title="最新文章" />
         <ul class="flex flex-col divide-y divide-white/5">
           <li v-for="post in latestPosts" :key="post.slug" data-reveal>
-            <RouterLink :to="`/blog/${post.slug}`" class="group flex items-baseline justify-between gap-6 py-4">
-              <span class="font-semibold text-text group-hover:text-primary">{{ post.title }}</span>
-              <span class="shrink-0 font-mono text-xs text-text-muted">{{ post.date }}</span>
+            <RouterLink
+              :to="`/blog/${post.slug}`"
+              class="group -mx-3 flex items-baseline justify-between gap-6 rounded-lg px-3 py-4 transition-all duration-200 hover:bg-white/[0.03]"
+            >
+              <span class="font-semibold text-text transition-colors group-hover:text-primary">{{ post.title }}</span>
+              <span class="shrink-0 font-mono text-xs text-text-muted transition-transform duration-200 group-hover:-translate-x-1">{{ post.date }}</span>
             </RouterLink>
           </li>
         </ul>
-        <RouterLink to="/blog" data-reveal class="mt-6 inline-flex text-sm text-primary hover:underline">
-          查看全部文章 →
+        <RouterLink to="/blog" data-reveal class="group mt-6 inline-flex items-center gap-1 text-sm text-primary">
+          <span class="transition-colors group-hover:text-accent">查看全部文章</span>
+          <span class="transition-transform duration-200 group-hover:translate-x-1">→</span>
         </RouterLink>
       </section>
 
@@ -178,6 +204,31 @@ onUnmounted(() => {
   }
 }
 
+/* 滚动指示器：点下落循环；滚动 80px 后整体淡出（js 控制 opacity class） */
+.scroll-hint {
+  transition: opacity 0.3s ease;
+}
+.scroll-hint.scroll-hint-hidden {
+  opacity: 0;
+}
+.scroll-hint-dot {
+  animation: hint-drop 1.6s ease-in-out infinite;
+}
+@keyframes hint-drop {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+
 .svg-name {
   font-size: 84px;
   fill: transparent;
@@ -202,6 +253,10 @@ onUnmounted(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-caret {
+    animation: none;
+  }
+
+  .scroll-hint-dot {
     animation: none;
   }
 

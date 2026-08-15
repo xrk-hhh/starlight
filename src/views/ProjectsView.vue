@@ -32,8 +32,13 @@ function buildPin() {
   const trackEl = trackRef.value
   if (!pinEl || !trackEl) return
   ctx = gsap.context(() => {
-    // 横移距离 = 轨道溢出量 + 128px 余量；超宽屏（轨道比视口窄）钳到 0，只路过不横移
-    const dist = () => Math.max(0, trackEl.scrollWidth - window.innerWidth + 128)
+    // 横移距离 = 轨道右缘超出视口部分 + 128px 余量（v1.5 修复：以轨道实际左缘为准，
+    // 原先 scrollWidth - innerWidth 少算了轨道在 section 内的起始偏移，末卡被遮挡无法右移）
+    const dist = () => {
+      const rect = trackEl.getBoundingClientRect()
+      const trackLeft = rect.left + window.scrollX
+      return Math.max(0, trackLeft + trackEl.scrollWidth - window.innerWidth + 128)
+    }
     gsap.to(trackEl, {
       x: () => -dist(),
       ease: 'none',
