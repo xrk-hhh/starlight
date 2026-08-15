@@ -5,6 +5,7 @@ import { profile } from '@/data/profile'
 import { projects } from '@/data/projects'
 import { listPosts, blogModules } from '@/lib/blog'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
+import ElasticHeading from '@/components/ui/ElasticHeading.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useTypewriter } from '@/composables/useTypewriter'
 
@@ -42,8 +43,26 @@ onUnmounted(() => {
     <p class="hero-subtitle font-mono text-sm text-primary">
       {{ profile.title }}
     </p>
-    <h1 class="hero-title glow-text mt-4 text-4xl font-bold leading-tight md:text-7xl [text-shadow:0_0_40px_rgba(139,92,246,0.35)]">
-      {{ profile.name }}
+    <h1 class="hero-title mt-4 text-5xl font-bold leading-tight md:text-7xl">
+      <svg viewBox="0 0 420 110" class="h-auto w-full max-w-xl" role="img" :aria-label="profile.name">
+        <text
+          x="4"
+          y="78"
+          pathLength="1"
+          class="svg-name"
+          fill="url(#nameGrad)"
+          stroke="url(#nameGrad)"
+          stroke-width="1.5"
+        >
+          {{ profile.name }}
+        </text>
+        <defs>
+          <linearGradient id="nameGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#22d3ee" />
+            <stop offset="1" stop-color="#8b5cf6" />
+          </linearGradient>
+        </defs>
+      </svg>
     </h1>
     <p class="hero-motto mt-3 font-mono text-sm text-primary/70">
       {{ profile.motto }}
@@ -52,6 +71,11 @@ onUnmounted(() => {
       {{ profile.introShort }}
       <span class="text-primary">{{ typed }}<span class="hero-caret" aria-hidden="true">▍</span></span>
     </p>
+    <ElasticHeading
+      class="hero-cta mt-8 text-xl text-text-muted md:text-2xl"
+      text="代码 · 算法 · 星空 —— 记录每一次航行"
+    />
+    <p class="hero-cta mt-3 font-serif text-sm italic text-text-muted/70">coding among the stars ✦</p>
     <div class="hero-cta mt-10 flex gap-4">
       <RouterLink to="/projects" class="btn-primary">看看项目</RouterLink>
       <RouterLink
@@ -149,8 +173,37 @@ onUnmounted(() => {
   }
 }
 
+.svg-name {
+  font-size: 84px;
+  fill: transparent;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation:
+    name-draw 2.4s ease-in-out 0.6s forwards,
+    name-fill 0.5s ease-in-out 2.6s forwards;
+}
+
+@keyframes name-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes name-fill {
+  to {
+    fill: url(#nameGrad);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-caret {
+    animation: none;
+  }
+
+  .svg-name {
+    fill: url(#nameGrad);
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
     animation: none;
   }
 }
