@@ -48,7 +48,7 @@
         var seg = location.pathname.split('/');
         var root = seg[1] ? '/' + seg[1] + '/' : '/';
         if (location.pathname === root) {
-          app.style.minHeight = window.innerWidth < 768 ? '3150px' : '2800px';
+          app.style.minHeight = window.innerWidth < 768 ? '3600px' : '3120px';
         } else {
           app.style.minHeight = '100vh';
         }
@@ -110,6 +110,7 @@
               <li><a data-spa href="%BASE_URL%" class="text-text-muted hover:text-text">首页</a></li>
               <li><a data-spa href="%BASE_URL%projects" class="text-text-muted hover:text-text">项目</a></li>
               <li><a data-spa href="%BASE_URL%blog" class="text-text-muted hover:text-text">博客</a></li>
+              <li><a data-spa href="%BASE_URL%now" class="text-text-muted hover:text-text">日志</a></li>
             </ul>
             <ul class="space-y-2">
               <li class="font-mono text-xs uppercase tracking-[0.25em] text-text-muted/70">联系</li>

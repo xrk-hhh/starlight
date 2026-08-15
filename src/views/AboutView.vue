@@ -3,7 +3,6 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useCountUp } from '@/composables/useCountUp'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
-import SkillTag from '@/components/ui/SkillTag.vue'
 import FloatingBadges from '@/components/ui/FloatingBadges.vue'
 import { profile } from '@/data/profile'
 
@@ -47,7 +46,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section ref="scopeRef" class="section-container relative min-h-screen">
+  <section ref="scopeRef" class="section-container relative min-h-[60vh]">
     <div
       ref="glitchRoot"
       class="glitch-title cursor-pointer select-none"
@@ -89,8 +88,22 @@ onUnmounted(() => {
             <div class="mt-1 text-sm leading-6 text-text-muted">{{ item.desc }}</div>
           </div>
         </div>
-        <div data-reveal class="mt-6 flex flex-wrap gap-2">
-          <SkillTag v-for="s in profile.skills" :key="s.name" :name="s.name" :level="s.level" />
+        <div data-reveal class="mt-8">
+          <p class="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-text-muted/70">技能</p>
+          <div class="grid gap-x-10 gap-y-3 sm:grid-cols-2">
+            <div v-for="s in profile.skills" :key="s.name" class="group">
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="text-text transition-colors group-hover:text-primary">{{ s.name }}</span>
+                <span class="font-mono text-[10px] text-text-muted/60">{{ s.level }}</span>
+              </div>
+              <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-white/5">
+                <div
+                  class="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-700"
+                  :class="s.level === '熟练' ? 'w-[88%]' : 'w-[52%]'"
+                ></div>
+              </div>
+            </div>
+          </div>
         </div>
         <div data-reveal class="mt-8 flex gap-4">
           <a

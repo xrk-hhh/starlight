@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { projects } from '@/data/projects'
@@ -23,6 +23,10 @@ const isReduced = ref(false)
 const isDesktop = ref(false)
 
 let ctx: gsap.Context | null = null
+
+// 横移进度（v1.6）：ScrollTrigger onUpdate 驱动，显示当前卡片序号
+const progress = ref(0)
+const currentIdx = computed(() => Math.round(progress.value * (projects.length - 1)))
 
 function buildPin() {
   ctx?.revert()
@@ -50,6 +54,9 @@ function buildPin() {
         pin: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          progress.value = self.progress
+        },
       },
     })
   }, pinEl)
@@ -82,7 +89,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section ref="scopeRef" class="section-container relative min-h-screen overflow-hidden">
+  <section ref="scopeRef" class="section-container relative min-h-[60vh] overflow-hidden">
     <div class="relative z-10">
       <SectionTitle over="Projects" title="项目" as="h1" subtitle="我做过的部分项目" />
     </div>
@@ -99,10 +106,18 @@ onUnmounted(() => {
         <div
           v-for="p in projects"
           :key="p.slug"
-          class="w-[420px] shrink-0 opacity-70 blur-[1px] transition-all duration-300 hover:opacity-100 hover:blur-0"
+          class="w-[420px] shrink-0 opacity-95 transition-all duration-300 hover:opacity-100"
         >
           <ProjectCard :project="p" />
         </div>
+      </div>
+      <div class="mt-8 flex items-center justify-between font-mono text-xs text-text-muted/70">
+        <span class="tracking-[0.3em]">← 滚动探索 →</span>
+        <span class="tabular-nums">
+          <span class="text-primary">{{ String(currentIdx + 1).padStart(2, '0') }}</span>
+          <span class="mx-1 text-white/20">/</span>
+          {{ String(projects.length).padStart(2, '0') }}
+        </span>
       </div>
     </div>
 

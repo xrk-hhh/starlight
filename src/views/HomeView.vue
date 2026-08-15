@@ -5,6 +5,8 @@ import { projects } from '@/data/projects'
 import { listPosts, blogModules } from '@/lib/blog'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import ElasticHeading from '@/components/ui/ElasticHeading.vue'
+import OrbitText from '@/components/ui/OrbitText.vue'
+import StarStats from '@/components/ui/StarStats.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useTypewriter } from '@/composables/useTypewriter'
 
@@ -58,6 +60,10 @@ onUnmounted(() => {
 <template>
   <div>
     <section ref="heroRef" class="section-container relative flex min-h-screen flex-col justify-center">
+      <!-- 旋转轨道文字：hero 右下装饰（仅 md 以上） -->
+      <div class="absolute bottom-24 right-10 hidden md:block">
+        <OrbitText text="STARLIGHT ✦ PORTFOLIO ✦ CODING AMONG THE STARS ✦ " />
+      </div>
       <p class="hero-subtitle font-mono text-sm text-primary">
         {{ profile.title }}
       </p>
@@ -188,6 +194,11 @@ onUnmounted(() => {
             <a :href="'https://github.com/' + profile.name" target="_blank" rel="noopener" class="mt-4 text-sm text-primary hover:underline">前往 GitHub →</a>
           </div>
         </div>
+      </section>
+
+      <!-- 星光统计带 + 星港时钟（v1.6） -->
+      <section class="section-container pb-24 pt-4">
+        <StarStats />
       </section>
     </div>
   </div>

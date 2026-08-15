@@ -37,7 +37,7 @@ onUnmounted(() => {
     :style="{ width: progress + '%' }"
     aria-hidden="true"
   ></div>
-  <article class="section-container min-h-screen max-w-3xl">
+  <article class="section-container min-h-[60vh] max-w-3xl">
     <div v-if="post">
       <h1 class="text-3xl font-bold md:text-4xl">{{ post.title }}</h1>
       <div class="mt-3 flex items-center gap-4 font-mono text-sm text-text-muted">

@@ -14,6 +14,7 @@ const shortcuts: { keys: string[]; desc: string; feedback?: boolean }[] = [
   { keys: ['g', 'a'], desc: '关于' },
   { keys: ['g', 'p'], desc: '项目' },
   { keys: ['g', 'b'], desc: '博客' },
+  { keys: ['g', 'n'], desc: '日志' },
   { keys: ['c'], desc: '复制邮箱', feedback: true },
   { keys: ['esc'], desc: '关闭' },
 ]
@@ -62,7 +63,7 @@ function onKeydown(e: KeyboardEvent) {
     return
   }
   if (pendingG.value) {
-    const targets: Record<string, string> = { h: '/', a: '/about', p: '/projects', b: '/blog' }
+    const targets: Record<string, string> = { h: '/', a: '/about', p: '/projects', b: '/blog', n: '/now' }
     const path = targets[e.key]
     if (path) {
       void router.push(path)

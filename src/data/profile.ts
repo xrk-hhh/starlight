@@ -19,6 +19,13 @@ export interface TimelineItem {
   desc: string
 }
 
+export interface NowItem {
+  doing: string[]
+  reading: string[]
+  learning: string[]
+  next: string[]
+}
+
 export const profile = {
   name: 'xrk-hhh',
   title: '全栈开发 / 算法爱好者',
@@ -57,9 +64,20 @@ export const profile = {
   quickFacts: [
     { label: 'TECH', value: 'Vue · TS · Three.js · Python · Java' },
     { label: 'FOCUS', value: '算法与 AI 应用' },
-    { label: 'NOW', value: 'v1.4 趣味交互增强中' },
+    { label: 'NOW', value: 'v1.6 星港深化中' },
     { label: 'UPDATED', value: '2026-08' },
   ] as QuickFact[],
+  // /now 星港日志（v1.6）：改这里即可更新「现在」页
+  now: {
+    doing: [
+      '本站 v1.6 迭代中：设计深化 + 新模块（统计带 / 日志页 / 标签筛选）',
+      '洛谷 / 牛客刷题保持手感，备战下一场算法赛',
+      '用 AI Agent 重构工作流：从设计文档到部署全链路自动化',
+    ],
+    reading: ['Vue 3 官方文档（响应式原理）', 'Three.js Shader 入门笔记'],
+    learning: ['WebGL 粒子系统与性能优化', 'GSAP ScrollTrigger 高级模式'],
+    next: ['v2.0：评论开放 + RSS 订阅', '更多算法复盘系列文章'],
+  } as NowItem,
 } satisfies {
   name: string
   title: string
@@ -72,4 +90,5 @@ export const profile = {
   timeline: TimelineItem[]
   socials: SocialLink[]
   quickFacts: QuickFact[]
+  now: NowItem
 }

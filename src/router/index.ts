@@ -38,6 +38,12 @@ const router = createRouter({
       meta: { title: '文章', particles: 'off' },
     },
     {
+      path: '/now',
+      name: 'now',
+      component: () => import('@/views/NowView.vue'),
+      meta: { title: '日志', particles: 'low' },
+    },
+    {
       path: '/versions',
       name: 'versions',
       component: () => import('@/views/VersionArchiveView.vue'),

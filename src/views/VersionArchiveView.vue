@@ -37,7 +37,7 @@ useGsapReveal(scopeRef)
 </script>
 
 <template>
-  <section ref="scopeRef" class="section-container relative min-h-screen">
+  <section ref="scopeRef" class="section-container relative min-h-[60vh]">
     <SectionTitle over="Star Map" title="版本星图" as="h1" />
     <!-- 垂直时间线：复用关于页样式（border-l + pl-6），节点圆点挂在细线上 -->
     <div data-reveal class="relative z-10 space-y-8 border-l border-white/10 pl-6">

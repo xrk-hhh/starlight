@@ -16,6 +16,7 @@ const links = [
   { to: '/about', label: '关于' },
   { to: '/projects', label: '项目' },
   { to: '/blog', label: '博客' },
+  { to: '/now', label: '日志' },
 ]
 </script>
 
