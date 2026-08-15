@@ -43,6 +43,16 @@ function onPointerMove(e: PointerEvent) {
   }
 }
 
+// 构建 base（dev '/'，线上 '/starlight/'）：href 先规范化为 pathname 再匹配
+const basePath = new URL(import.meta.env.BASE_URL, location.origin).pathname.replace(/\/$/, '')
+
+function labelFor(pathname: string): string {
+  if (pathname.endsWith('/blog') || pathname.includes('/blog/')) return '阅读'
+  if (pathname.endsWith('/projects') || pathname.includes('/projects/')) return '探索'
+  if (pathname === basePath || pathname === `${basePath}/` || pathname === '/') return '返航'
+  return 'GO'
+}
+
 // hover 语义：document 级事件委托，通用规则映射标签
 function onPointerOver(e: PointerEvent) {
   const target = e.target
@@ -57,10 +67,10 @@ function onPointerOver(e: PointerEvent) {
     bubble.value = ''
     return
   }
-  if (link.closest('a[href^="/blog"]')) bubble.value = '阅读'
-  else if (link.closest('a[href^="/projects"]')) bubble.value = '探索'
-  else if (link.closest('a[href="/"]')) bubble.value = '返航'
-  else bubble.value = 'GO'
+  // 取实际携带 href 的锚点（button 嵌套在链接内时向上找）
+  const anchor = link instanceof HTMLAnchorElement ? link : link.closest('a')
+  const href = anchor instanceof HTMLAnchorElement ? anchor.href : ''
+  bubble.value = href ? labelFor(new URL(href, location.origin).pathname) : 'GO'
   hovering.value = true
 }
 

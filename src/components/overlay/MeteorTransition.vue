@@ -24,7 +24,10 @@ function play() {
   headColor.value = TRACKS[Math.floor(Math.random() * TRACKS.length)]
   tailColor.value = TRACKS[Math.floor(Math.random() * TRACKS.length)]
 
-  const len = path.getTotalLength()
+  // vector-effect="non-scaling-stroke" 下 dash 按宿主（屏幕像素）空间铺设，
+  // 不能用 getTotalLength()（viewBox 单位，只占路径零头，会变成虚线淡入）；
+  // 用视口对角线长近似宿主空间路径长（弧线 ≥ 对角线，误差 <2%，两端被 opacity 掩盖）
+  const len = Math.hypot(window.innerWidth, window.innerHeight)
   gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 })
   gsap.set(glow, { opacity: 0 })
 
@@ -42,7 +45,7 @@ onMounted(() => {
     const path = pathRef.value
     const glow = glowRef.value
     if (!path || !glow) return
-    const len = path.getTotalLength()
+    const len = Math.hypot(window.innerWidth, window.innerHeight)
     gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 })
     gsap.set(glow, { opacity: 0 })
   }, overlayRef.value ?? undefined)
