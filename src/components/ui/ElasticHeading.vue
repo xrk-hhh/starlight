@@ -44,13 +44,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <p ref="rootRef" :class="props.class" aria-hidden="false">
-    <span
-      v-for="(ch, i) in text.split('')"
-      :key="i"
-      class="eh-char inline-block will-change-transform"
-      :aria-hidden="i === 0 ? undefined : 'true'"
-    >
+  <p ref="rootRef" :class="props.class" :aria-label="text">
+    <span v-for="(ch, i) in text.split('')" :key="i" class="eh-char inline-block will-change-transform" aria-hidden="true">
       {{ ch }}
     </span>
   </p>
