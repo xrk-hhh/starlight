@@ -12,7 +12,11 @@ export default tseslint.config(
   {
     files: ['**/*.vue'],
     languageOptions: {
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        // gsap 的 Context/Timeline 等类型在全局 namespace（gsap 类型声明），运行时无此全局
+        gsap: 'readonly',
+      },
       parserOptions: { parser: tseslint.parser },
     },
   },

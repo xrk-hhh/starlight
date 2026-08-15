@@ -27,6 +27,8 @@ onMounted(attach)
       <img
         :src="`${BASE_URL}projects/${project.image}`"
         :alt="project.title"
+        width="640"
+        height="360"
         loading="lazy"
         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
       />
@@ -37,7 +39,7 @@ onMounted(attach)
       >
     </div>
     <div class="p-6">
-      <h3 class="text-lg font-semibold md:text-xl">{{ project.title }}</h3>
+      <h2 class="text-lg font-semibold md:text-xl">{{ project.title }}</h2>
       <p class="mt-2 text-sm leading-6 text-text-muted">{{ project.description }}</p>
       <ul class="mt-4 flex flex-wrap gap-2">
         <li

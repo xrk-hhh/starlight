@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ParticleScene } from '@/three/ParticleScene'
 import { particlesState } from '@/stores/particles'
 import { profile } from '@/data/profile'
 
+// three.js 不进首屏主包：动态导入 + requestIdleCallback 延迟初始化，
+// 让首屏渲染与 Vue 挂载优先完成（粒子是装饰层，晚 1s 出现无感知）。
+type ParticleSceneCtor = typeof import('@/three/ParticleScene').ParticleScene
+
 const router = useRouter()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-let scene: ParticleScene | null = null
+let scene: InstanceType<ParticleSceneCtor> | null = null
 let mediaMobile: MediaQueryList | null = null
 let mediaReduced: MediaQueryList | null = null
 let coarse = false // 触屏设备：主星渲染但不交互
@@ -142,33 +145,46 @@ function onKeydown(e: KeyboardEvent) {
 onMounted(() => {
   const canvas = canvasRef.value
   if (!canvas) return
-  try {
-    scene = new ParticleScene(canvas)
-    scene.init({
-      count: 1000,
-      colorA: '#22d3ee',
-      colorB: '#8b5cf6',
-      navStars: navRoutes.value.length,
-    })
-  } catch (err) {
-    // WebGL 不可用（§5.3）：隐藏 canvas，回退 main.css 里的 CSS 渐变背景
-    console.warn('[particles] WebGL 初始化失败，回退静态背景', err)
-    canvas.style.display = 'none'
-    return
-  }
-  scene.setDensity(particlesState.density) // 补上初始密度（watch 无 immediate）
-  mediaMobile = window.matchMedia('(max-width: 767px)')
-  mediaReduced = window.matchMedia('(prefers-reduced-motion: reduce)')
-  coarse = window.matchMedia('(pointer: coarse)').matches
-  mediaMobile.addEventListener('change', applyMobile)
-  mediaReduced.addEventListener('change', applyReduced)
-  applyMobile()
-  applyReduced()
-  window.addEventListener('pointermove', onPointerMove, { passive: true })
-  window.addEventListener('click', onClick)
-  window.addEventListener('keydown', onKeydown, { passive: true })
-  window.addEventListener('blur', clearRepel)
-  document.documentElement.addEventListener('mouseleave', clearRepel)
+  // 延迟初始化：idle 后再加载 three 分包并建场景（不抢首屏主线程）
+  const schedule =
+    'requestIdleCallback' in window
+      ? (fn: () => void) => window.requestIdleCallback(fn, { timeout: 2000 })
+      : (fn: () => void) => window.setTimeout(fn, 300)
+  schedule(() => {
+    if (!canvasRef.value) return // 组件已卸载
+    void (async () => {
+      try {
+        const mod = await import('@/three/ParticleScene')
+        if (!canvasRef.value) return // await 期间组件卸载
+        scene = new mod.ParticleScene(canvasRef.value)
+        scene.init({
+          count: 1000,
+          colorA: '#22d3ee',
+          colorB: '#8b5cf6',
+          navStars: navRoutes.value.length,
+        })
+      } catch (err) {
+        // WebGL 不可用（§5.3）：隐藏 canvas，回退 main.css 里的 CSS 渐变背景
+        console.warn('[particles] WebGL 初始化失败，回退静态背景', err)
+        const el = canvasRef.value
+        if (el) el.style.display = 'none'
+        return
+      }
+      scene!.setDensity(particlesState.density) // 补上初始密度（watch 无 immediate）
+      mediaMobile = window.matchMedia('(max-width: 767px)')
+      mediaReduced = window.matchMedia('(prefers-reduced-motion: reduce)')
+      coarse = window.matchMedia('(pointer: coarse)').matches
+      mediaMobile.addEventListener('change', applyMobile)
+      mediaReduced.addEventListener('change', applyReduced)
+      applyMobile()
+      applyReduced()
+      window.addEventListener('pointermove', onPointerMove, { passive: true })
+      window.addEventListener('click', onClick)
+      window.addEventListener('keydown', onKeydown, { passive: true })
+      window.addEventListener('blur', clearRepel)
+      document.documentElement.addEventListener('mouseleave', clearRepel)
+    })()
+  })
 })
 
 watch(

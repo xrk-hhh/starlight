@@ -4,5 +4,6 @@ dist/
 .env
 .env.*
 .DS_Store
+.accept/
 .vscode/*
 !.vscode/settings.json

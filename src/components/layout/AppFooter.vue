@@ -5,7 +5,9 @@ const socials = profile.socials
 </script>
 
 <template>
-  <footer class="relative z-10 border-t border-white/10">
+  <footer
+    class="relative z-10 border-t border-white/10 [contain:layout_style_paint] [content-visibility:auto] [contain-intrinsic-size:300px]"
+  >
     <div class="mx-auto max-w-5xl px-6 py-12">
       <div class="grid gap-10 md:grid-cols-[1fr_auto]">
         <div>

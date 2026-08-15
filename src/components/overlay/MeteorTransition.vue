@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import gsap from 'gsap'
 import router from '@/router'
 
 const overlayRef = ref<HTMLDivElement | null>(null)
@@ -12,6 +11,7 @@ const TRACKS = ['#22d3ee', '#8b5cf6', '#fbbf24']
 const headColor = ref('#22d3ee')
 const tailColor = ref('#8b5cf6')
 
+let gsap: (typeof import('gsap'))['default'] | null = null
 let ctx: gsap.Context | null = null
 let tl: gsap.core.Timeline | null = null
 
@@ -19,7 +19,7 @@ function play() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const path = pathRef.value
   const glow = glowRef.value
-  if (!path || !glow) return
+  if (!path || !glow || !gsap) return
 
   headColor.value = TRACKS[Math.floor(Math.random() * TRACKS.length)]
   tailColor.value = TRACKS[Math.floor(Math.random() * TRACKS.length)]
@@ -41,14 +41,18 @@ function play() {
 }
 
 onMounted(() => {
-  ctx = gsap.context(() => {
-    const path = pathRef.value
-    const glow = glowRef.value
-    if (!path || !glow) return
-    const len = Math.hypot(window.innerWidth, window.innerHeight)
-    gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 })
-    gsap.set(glow, { opacity: 0 })
-  }, overlayRef.value ?? undefined)
+  void (async () => {
+    gsap ??= (await import('gsap')).default
+    if (!overlayRef.value) return
+    ctx = gsap.context(() => {
+      const path = pathRef.value
+      const glow = glowRef.value
+      if (!path || !glow) return
+      const len = Math.hypot(window.innerWidth, window.innerHeight)
+      gsap!.set(path, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 })
+      gsap!.set(glow, { opacity: 0 })
+    }, overlayRef.value ?? undefined)
+  })()
   // App 级单例组件，声明周期=应用期：afterEach 不注销
   router.afterEach(() => play())
 })

@@ -79,7 +79,7 @@ onUnmounted(() => {
 <template>
   <section ref="scopeRef" class="section-container relative min-h-screen overflow-hidden">
     <div class="relative z-10">
-      <SectionTitle over="Projects" title="项目" subtitle="我做过的部分项目" />
+      <SectionTitle over="Projects" title="项目" as="h1" subtitle="我做过的部分项目" />
     </div>
     <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-16 z-0 overflow-hidden">
       <div class="marquee-track flex whitespace-nowrap">
