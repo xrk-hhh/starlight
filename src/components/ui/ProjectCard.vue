@@ -1,13 +1,21 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import type { Project } from '@/data/projects'
+import { useInertiaTilt } from '@/composables/useInertiaTilt'
 
 const BASE_URL = import.meta.env.BASE_URL
 
 defineProps<{ project: Project }>()
+
+// 磁吸惯性：transform 加在 article 上，不干扰卡片内链接/按钮点击
+const cardEl = ref<HTMLElement | null>(null)
+const { attach } = useInertiaTilt(cardEl)
+onMounted(attach)
 </script>
 
 <template>
   <article
+    ref="cardEl"
     data-reveal
     class="card group relative overflow-hidden transition-colors hover:border-white/20"
   >

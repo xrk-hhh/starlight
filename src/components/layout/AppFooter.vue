@@ -37,6 +37,10 @@ const socials = profile.socials
         class="mt-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-text-muted"
       >
         <p>© {{ new Date().getFullYear() }} xrk-hhh · 按 ? 查看快捷键</p>
+        <!-- 当前站点版本号（写死）：发版时需同步更新 VersionArchiveView 的 versions 数组与 index.html 的 STELLAR MAP 注释 -->
+        <RouterLink to="/versions" class="font-mono text-text-muted/70 hover:text-primary"
+          >v1.4.0</RouterLink
+        >
       </div>
     </div>
   </footer>

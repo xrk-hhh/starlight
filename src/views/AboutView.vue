@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useCountUp } from '@/composables/useCountUp'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
@@ -27,11 +27,39 @@ onMounted(() => {
     .catch(() => null)
     .then((v) => (stats.value = v))
 })
+
+// 标题 glitch：点击根容器加 .glitching 900ms；300ms 锁防连点；reduced-motion 不触发
+const glitchRoot = ref<HTMLElement | null>(null)
+let glitchTimer: number | undefined
+let glitchLockedAt = 0
+function triggerGlitch() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const root = glitchRoot.value
+  if (!root || performance.now() - glitchLockedAt < 300) return
+  glitchLockedAt = performance.now()
+  if (glitchTimer !== undefined) window.clearTimeout(glitchTimer)
+  root.classList.add('glitching')
+  glitchTimer = window.setTimeout(() => root.classList.remove('glitching'), 900)
+}
+onUnmounted(() => {
+  if (glitchTimer !== undefined) window.clearTimeout(glitchTimer)
+})
 </script>
 
 <template>
   <section ref="scopeRef" class="section-container relative min-h-screen">
-    <SectionTitle over="About" title="关于我" :subtitle="profile.title" />
+    <div
+      ref="glitchRoot"
+      class="glitch-title cursor-pointer select-none"
+      role="button"
+      tabindex="0"
+      aria-label="关于我：点击触发标题故障效果"
+      @click="triggerGlitch"
+      @keydown.enter.prevent="triggerGlitch"
+      @keydown.space.prevent="triggerGlitch"
+    >
+      <SectionTitle over="About" title="关于我" :subtitle="profile.title" />
+    </div>
     <FloatingBadges />
     <div class="relative z-10 grid gap-10 md:grid-cols-[240px,1fr]">
       <img
@@ -84,3 +112,104 @@ onMounted(() => {
     </div>
   </section>
 </template>
+
+<style scoped>
+/* 标题 glitch：三层叠放 = 真实 h2 文字 + ::before(青 #22d3ee) + ::after(紫 #8b5cf6) */
+.glitch-title :deep(h2) {
+  position: relative;
+}
+
+.glitch-title.glitching :deep(h2)::before,
+.glitch-title.glitching :deep(h2)::after {
+  /* 站点结构文案硬编码（无法在不改 SectionTitle 的情况下给 h2 注入 data-text） */
+  content: '关于我';
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  animation-iteration-count: infinite;
+  animation-timing-function: steps(2, jump-none);
+}
+
+.glitch-title.glitching :deep(h2)::before {
+  color: #22d3ee;
+  animation-name: glitch-a;
+  animation-duration: 90ms;
+}
+
+.glitch-title.glitching :deep(h2)::after {
+  color: #8b5cf6;
+  animation-name: glitch-b;
+  animation-duration: 150ms;
+}
+
+/* 6 帧近似随机：translate(±4px, ±3px) 位移 + clip-path 裁切 */
+@keyframes glitch-a {
+  0% {
+    transform: translate(4px, -3px);
+    clip-path: inset(10% 0 55% 0);
+  }
+  16.6% {
+    transform: translate(-4px, 3px);
+    clip-path: inset(65% 0 12% 0);
+  }
+  33.3% {
+    transform: translate(2px, -2px);
+    clip-path: inset(30% 0 45% 0);
+  }
+  50% {
+    transform: translate(-3px, 1px);
+    clip-path: inset(75% 0 5% 0);
+  }
+  66.6% {
+    transform: translate(4px, 3px);
+    clip-path: inset(5% 0 72% 0);
+  }
+  83.3% {
+    transform: translate(-2px, -3px);
+    clip-path: inset(45% 0 25% 0);
+  }
+  100% {
+    transform: translate(4px, -3px);
+    clip-path: inset(10% 0 55% 0);
+  }
+}
+
+@keyframes glitch-b {
+  0% {
+    transform: translate(-4px, 3px);
+    clip-path: inset(55% 0 10% 0);
+  }
+  16.6% {
+    transform: translate(3px, -1px);
+    clip-path: inset(12% 0 65% 0);
+  }
+  33.3% {
+    transform: translate(-2px, -3px);
+    clip-path: inset(40% 0 30% 0);
+  }
+  50% {
+    transform: translate(4px, 2px);
+    clip-path: inset(5% 0 75% 0);
+  }
+  66.6% {
+    transform: translate(-4px, 3px);
+    clip-path: inset(70% 0 8% 0);
+  }
+  83.3% {
+    transform: translate(1px, -2px);
+    clip-path: inset(25% 0 50% 0);
+  }
+  100% {
+    transform: translate(-4px, 3px);
+    clip-path: inset(55% 0 10% 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch-title.glitching :deep(h2)::before,
+  .glitch-title.glitching :deep(h2)::after {
+    animation: none;
+    content: none;
+  }
+}
+</style>

@@ -397,3 +397,18 @@ src/blog/*.md                        → glob 收集（`as: 'raw'`，否则 Vite
 **约束**：不引新依赖（THREE.Sprite 内置）；公开 API 不变（init/setDensity/setMobile/setReducedMotion/setParallaxTarget/setNavStarHover/pickNavStar/navStarScreenPositions/dispose）；渲染主循环不动；总粒子数 1000 不变；dispose 需覆盖新对象（Sprite material/texture、流星 geometry）；性能验收：桌面 rAF 不降（实测 ≥140 回调/s）、移动端照旧关闭。
 
 **验收标准**：`npm test`/`npm run build` 全绿；桌面/移动/文章页三场景 vision 截图对比（星云底衬、分层纵深、流星、暖星可见）；reduced-motion 静态帧正常；部署 v1.3.0 后线上复验。
+
+## 15. v1.4.0 趣味交互增强计划（2026-08-15）
+
+**背景**：用户要求页面设计/布局更创新有趣生动美观，提供同学站源码（ContinueYN/website_3.0，已做代码级拆解）并授权广搜参考。两路调研（同学源码拆解 + Awwwards 类创意站源码通读）共 20+ 候选，用户勾选 9 项。
+
+**范围**（全部改写为星空主题版，不照搬）：
+| 组 | 项 | 灵感来源（改写后） |
+|---|---|---|
+| 高感知 | ① 流星光标（四芒星跟随+拖尾+hover 语义气泡，移动端禁用）② SVG 描边标题（hero 名字描边书写动画，pathLength=1 文本描边方案，无字体文件）③ 混排弹性大标题（hero 第二行衬线斜体点缀 + 逐字 elastic 弹入组件） | Truus CursorBubble、同学站 Hero drawPath、Truus HorizontalWords |
+| 转场卡片 | ④ 流星划痕转场（SVG 轨迹划入满屏划出，叠加现有交叉淡入）⑤ glitch 标题（关于页点击撕裂）+ 流星尾迹滚动进度条（导航底）⑥ 磁吸惯性卡片（hover 微倾+甩动归位+彗星贴纸入场） | Truus TransitionScribble、同学站 glitch/scroll-progress、Truus MotionCards |
+| 特色玩法 | ⑦ 打字即流星（全局击键撒微流星，限速）⑧ 版本星图档案页（/versions 星图时间轴 + 页脚版本徽章 + index.html ASCII 彩蛋）⑨ 星系横移项目区（GSAP pin 横滚，桌面限定，移动端纵向退化） | 3D_portfolio 输入联动降维、lynnandtonic 版本叙事、同学站 Projects pin |
+
+**约束**：延续 §1 核心原则；新动画全部尊重 prefers-reduced-motion；移动端（coarse/<768）禁用光标/惯性/横移；转场不替换现有交叉淡入（避免重蹈 out-in 卡死）；SVG 描边用 pathLength=1 文本方案；不引入新依赖（GSAP/Three 已有）。
+
+**验收标准**：`npm test`/`npm run build` 全绿；每项浏览器 + vision 走查；帧率不降（≥140 rAF/s）；导航往返 3 次无空白回归；部署 v1.4.0 线上复验。

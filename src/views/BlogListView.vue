@@ -1,12 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { listPosts, blogModules } from '@/lib/blog'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
+import { useInertiaTilt } from '@/composables/useInertiaTilt'
 
 const posts = listPosts(blogModules)
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
+
+// 目录行磁吸惯性：每行一个实例；行是 RouterLink 渲染的 <a>，经组件实例 $el 取 DOM
+const rowTilts = posts.map(() => {
+  const el = ref<HTMLElement | null>(null)
+  const { attach } = useInertiaTilt(el, 3)
+  return { el, attach }
+})
+onMounted(() => rowTilts.forEach((t) => t.attach()))
+
+function setRowRef(index: number, node: unknown) {
+  const inst = node as { $el?: unknown } | null
+  const el = inst && inst.$el instanceof HTMLElement ? inst.$el : null
+  rowTilts[index].el.value = el
+}
 </script>
 
 <template>
@@ -18,8 +33,9 @@ useGsapReveal(scopeRef)
     </div>
     <div v-else class="flex flex-col">
       <RouterLink
-        v-for="post in posts"
+        v-for="(post, i) in posts"
         :key="post.slug"
+        :ref="(node) => setRowRef(i, node)"
         :to="`/blog/${post.slug}`"
         data-reveal
         class="group flex items-baseline gap-6 border-b border-white/10 py-4 transition-colors hover:border-white/20"
