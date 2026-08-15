@@ -44,7 +44,7 @@
       (function () {
         var app = document.getElementById('app');
         if (!app) return;
-        app.style.minHeight = window.innerWidth < 768 ? '3150px' : '2500px';
+        app.style.minHeight = window.innerWidth < 768 ? '3150px' : '2800px';
       })();
     </script>
     <div id="boot-hint" aria-hidden="true">
@@ -85,6 +85,41 @@
         }
       }
     </style>
+    <!--
+      footer 静态化（v1.5）：首帧即存在于 DOM，避免 Vue mount「空→满」插入的 CLS 伪影。
+      站内链接带 data-spa，由 App.vue 的 click 委托接管为无刷新路由跳转。
+      维护：社交链接/版本号变更时，同步更新 src/data/profile.ts 与 VersionArchiveView.vue。
+    -->
+    <footer class="relative z-10 border-t border-white/10">
+      <div class="mx-auto max-w-5xl px-6 py-12">
+        <div class="grid gap-10 md:grid-cols-[1fr_auto]">
+          <div>
+            <p class="glow-text font-mono text-lg font-bold">STARLIGHT</p>
+            <p class="mt-2 text-sm text-text-muted">用 Vue 3 + Three.js + GSAP 构建 · 记录代码与思考</p>
+          </div>
+          <div class="flex gap-12 text-sm">
+            <ul class="space-y-2">
+              <li class="font-mono text-xs uppercase tracking-[0.25em] text-text-muted/70">导航</li>
+              <li><a data-spa href="%BASE_URL%" class="text-text-muted hover:text-text">首页</a></li>
+              <li><a data-spa href="%BASE_URL%projects" class="text-text-muted hover:text-text">项目</a></li>
+              <li><a data-spa href="%BASE_URL%blog" class="text-text-muted hover:text-text">博客</a></li>
+            </ul>
+            <ul class="space-y-2">
+              <li class="font-mono text-xs uppercase tracking-[0.25em] text-text-muted/70">联系</li>
+              <li><a href="https://github.com/xrk-hhh" target="_blank" rel="noopener" class="text-text-muted hover:text-text">GitHub</a></li>
+              <li><a href="mailto:xxjh2487657826@outlook.com" class="text-text-muted hover:text-text">邮箱</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-text-muted">
+          <p>© <span id="footer-year">2026</span> xrk-hhh · 按 ? 查看快捷键</p>
+          <a data-spa href="%BASE_URL%versions" class="font-mono text-text-muted/70 hover:text-primary">v1.4.0</a>
+        </div>
+      </div>
+    </footer>
+    <script>
+      document.getElementById('footer-year').textContent = String(new Date().getFullYear());
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

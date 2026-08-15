@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterView } from 'vue-router'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { RouterView, useRouter } from 'vue-router'
 import ParticleBackground from '@/components/particles/ParticleBackground.vue'
 import AppNav from '@/components/layout/AppNav.vue'
-import AppFooter from '@/components/layout/AppFooter.vue'
 import CommandPalette from '@/components/overlay/CommandPalette.vue'
 import StarCursor from '@/components/overlay/StarCursor.vue'
 import MeteorTransition from '@/components/overlay/MeteorTransition.vue'
@@ -16,6 +15,21 @@ useKonami(() => {
   konami.value = true
   setTimeout(() => (konami.value = false), 3000)
 })
+
+// footer 是 index.html 里的静态 HTML（首帧即存在，避免 Vue mount 插入的 CLS 伪影）。
+// 这里用 click 委托接管其站内链接，保持 SPA 无刷新导航。
+const router = useRouter()
+function onFooterNav(e: MouseEvent) {
+  const target = (e.target as Element | null)?.closest?.('a[data-spa]')
+  if (!target) return
+  const href = target.getAttribute('href')
+  if (!href || href.startsWith('http') || href.startsWith('mailto:')) return
+  e.preventDefault()
+  const path = href.replace(import.meta.env.BASE_URL, '/')
+  if (path !== router.currentRoute.value.path) void router.push(path)
+}
+onMounted(() => document.addEventListener('click', onFooterNav))
+onUnmounted(() => document.removeEventListener('click', onFooterNav))
 </script>
 
 <template>
@@ -29,7 +43,6 @@ useKonami(() => {
         </Transition>
       </RouterView>
     </main>
-    <AppFooter />
     <CommandPalette />
     <BackToTop />
     <NavLoadingBar />
