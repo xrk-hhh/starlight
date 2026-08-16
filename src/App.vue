@@ -57,6 +57,13 @@ onMounted(() => {
   window.setTimeout(() => {
     nextTick(() => requestAnimationFrame(settleAppHeight))
   }, 1200)
+  // 控制台彩蛋：给打开 devtools 的旅行者指路
+  console.info(
+    '%c✦ 星港日志 %c 你好，好奇的旅行者 👋\n%c按 ? 唤出命令面板，站点源码见 github.com/xrk-hhh/starlight',
+    'font-weight:bold;padding:2px 8px;border-radius:4px;background:#22d3ee;color:#0a0a12',
+    'color:#22d3ee',
+    'color:inherit',
+  )
 })
 watch(
   () => router.currentRoute.value.path,
