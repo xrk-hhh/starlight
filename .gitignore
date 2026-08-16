@@ -7,3 +7,7 @@ dist/
 .accept/
 .vscode/*
 !.vscode/settings.json
+
+# 本地工具配置与散置素材（站点未引用）
+.claude/
+奶龙.png

@@ -5,7 +5,22 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ command }) => ({
   base: command === 'serve' ? '/' : '/starlight/',
-  plugins: [vue(), tailwindcss()],
+  plugins: [
+    vue(),
+    tailwindcss(),
+    // dev：把生产子路径 /starlight/* 重写回根路径，
+    // 博文里的绝对图片链接（/starlight/images/…）本地预览时也能显示
+    {
+      name: 'starlight-base-rewrite-dev',
+      apply: 'serve',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url?.startsWith('/starlight')) req.url = req.url.slice('/starlight'.length) || '/'
+          next()
+        })
+      },
+    },
+  ],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

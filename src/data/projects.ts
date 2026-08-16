@@ -48,4 +48,17 @@ export const projects: Project[] = [
     over: 'ALGORITHM · AI',
     status: 'done',
   },
+  {
+    slug: 'starlight-site',
+    title: 'Starlight 星港 · 本网站',
+    description:
+      '你正在逛的这座星港：Vue 3 + Three.js + GSAP 打造——GPU 粒子星海、奶龙/奶蛙桌宠、5 套主题换肤、贡献星图、算法星域与多页内容。从设计文档到任务拆解、实现、视觉验收、部署上线，全程由 deepseek-v4-pro + Claude Code 的 Agent 工作流驱动完成，开源可复建。',
+    tags: ['Vue 3', 'TypeScript', 'Three.js', 'GSAP'],
+    image: 'starlight-site.webp',
+    github: 'https://github.com/xrk-hhh/starlight',
+    demo: '/',
+    featured: true,
+    over: 'WEB · AGENT-DRIVEN',
+    status: 'active',
+  },
 ]

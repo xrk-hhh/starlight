@@ -29,6 +29,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node scripts/fetch-github-stats.mjs
+      - name: Fetch OJ stats
+        env:
+          # 洛谷个人主页 uid（luogu.com.cn/user/{uid}）；未配置则跳过，前端用手填数据
+          LUOGU_UID: ${{ vars.LUOGU_UID }}
+        run: node scripts/fetch-oj-stats.mjs
       - run: npm ci
       - run: npm test
       - run: npm run build

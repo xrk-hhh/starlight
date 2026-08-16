@@ -4,6 +4,9 @@ import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useCountUp } from '@/composables/useCountUp'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import FloatingBadges from '@/components/ui/FloatingBadges.vue'
+import SkillNebula from '@/components/ui/SkillNebula.vue'
+import ContributionStarfield from '@/components/ui/ContributionStarfield.vue'
+import OjStats from '@/components/ui/OjStats.vue'
 import { profile } from '@/data/profile'
 
 const scopeRef = ref<HTMLElement | null>(null)
@@ -17,6 +20,17 @@ const introParagraphs = computed(() =>
 )
 
 const BASE_URL = import.meta.env.BASE_URL
+
+// 技能星云（v1.7）：雷达轴由技能列表归纳为六大方向，数值为自评（0-100）
+const nebulaAxes = [
+  { label: '算法', value: 90 },
+  { label: 'Java · Python', value: 85 },
+  { label: 'AI Agent', value: 88 },
+  { label: '前端 Vue · TS', value: 80 },
+  { label: 'C++ · 竞赛', value: 80 },
+  { label: '数模 · 数竞', value: 62 },
+]
+
 const stats = ref<{ repos: number; stars: number; updatedAt: string } | null>(null)
 const statsRowEl = ref<HTMLElement | null>(null)
 const { values } = useCountUp(statsRowEl, () => (stats.value ? [stats.value.repos, stats.value.stars] : []))
@@ -73,7 +87,8 @@ onUnmounted(() => {
           loading="lazy"
         />
       </div>
-      <div>
+      <!-- min-w-0：网格项默认 min-width:auto，内部星图 min-w-[540px] 会把轨道撑破移动端视口 -->
+      <div class="min-w-0">
         <p v-for="(para, i) in introParagraphs" :key="i" data-reveal class="leading-relaxed text-text-muted">
           {{ para }}
         </p>
@@ -88,19 +103,26 @@ onUnmounted(() => {
             <div class="mt-1 text-sm leading-6 text-text-muted">{{ item.desc }}</div>
           </div>
         </div>
-        <div data-reveal class="mt-8">
-          <p class="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-text-muted/70">技能</p>
-          <div class="grid gap-x-10 gap-y-3 sm:grid-cols-2">
-            <div v-for="s in profile.skills" :key="s.name" class="group">
-              <div class="flex items-baseline justify-between gap-3 text-sm">
-                <span class="text-text transition-colors group-hover:text-primary">{{ s.name }}</span>
-                <span class="font-mono text-[10px] text-text-muted/60">{{ s.level }}</span>
-              </div>
-              <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-white/5">
-                <div
-                  class="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-700"
-                  :class="s.level === '熟练' ? 'w-[88%]' : 'w-[52%]'"
-                ></div>
+        <div data-reveal class="mt-14">
+          <SectionTitle over="Skills" title="技能星云" />
+          <div class="grid items-center gap-8 md:grid-cols-[340px,1fr]">
+            <SkillNebula :axes="nebulaAxes" />
+            <div class="space-y-4">
+              <div v-for="s in profile.skills" :key="s.name" class="group">
+                <div class="flex items-baseline justify-between gap-3 text-sm">
+                  <span class="text-text transition-colors group-hover:text-primary">{{ s.name }}</span>
+                  <span
+                    class="rounded-full border px-2 py-0.5 font-mono text-[10px]"
+                    :class="s.level === '熟练' ? 'border-primary/40 text-primary/80' : 'border-white/15 text-text-muted/60'"
+                    >{{ s.level }}</span
+                  >
+                </div>
+                <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-white/5">
+                  <div
+                    class="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-700"
+                    :class="s.level === '熟练' ? 'w-[88%]' : 'w-[52%]'"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -130,6 +152,14 @@ onUnmounted(() => {
             <p class="text-2xl font-semibold text-text">{{ stats.updatedAt }}</p>
             <p class="text-xs text-text-muted">数据更新于</p>
           </div>
+        </div>
+        <!-- 贡献星图（v1.7）：近一年 GitHub 提交化作满天星 -->
+        <div class="mt-10">
+          <ContributionStarfield />
+        </div>
+        <!-- 算法星域（v1.7.2）：洛谷 / 牛客竞赛战绩 -->
+        <div class="mt-6">
+          <OjStats />
         </div>
       </div>
     </div>

@@ -7,6 +7,8 @@ export interface BlogMeta {
   tags: string[]
   desc: string
   content: string
+  /** 一级分类（算法竞赛/生活/项目/AI…）；缺省时回退到第一个 tag */
+  category: string
 }
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
@@ -23,13 +25,15 @@ export function parseBlogPost(raw: string, slug: string): BlogMeta {
   }
   const date =
     data.date instanceof Date ? data.date.toISOString().slice(0, 10) : String(data.date)
+  const tags = Array.isArray(data.tags) ? data.tags.map(String) : []
   return {
     slug,
     title: data.title,
     date,
-    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
+    tags,
     desc: typeof data.desc === 'string' ? data.desc : '',
     content,
+    category: typeof data.category === 'string' && data.category ? data.category : tags[0] ?? '',
   }
 }
 

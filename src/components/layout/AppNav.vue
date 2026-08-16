@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher.vue'
 
 const scrolled = ref(false)
 const scrollProgress = ref(0)
@@ -13,11 +14,16 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 const links = [
   { to: '/', label: '首页' },
-  { to: '/about', label: '关于' },
+  { to: '/about', label: '关于', hideSm: true },
   { to: '/projects', label: '项目' },
   { to: '/blog', label: '博客' },
-  { to: '/now', label: '日志' },
+  { to: '/now', label: '日志', hideSm: true },
+  { to: '/friends', label: '友邻' },
+  { to: '/guestbook', label: '留言' },
 ]
+
+// 奶龙头像（v1.7.1）：右上角入口，点击前往关于页
+const nailongAvatar = `${import.meta.env.BASE_URL}images/nailong-avatar.jpg`
 </script>
 
 <template>
@@ -27,8 +33,8 @@ const links = [
   >
     <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
       <RouterLink to="/" class="glow-text font-mono text-lg font-bold">LOGO</RouterLink>
-      <ul class="flex items-center gap-6 text-sm text-text-muted">
-        <li v-for="link in links" :key="link.to">
+      <ul class="flex items-center gap-4 text-sm text-text-muted sm:gap-6">
+        <li v-for="link in links" :key="link.to" :class="link.hideSm ? 'hidden sm:block' : ''">
           <RouterLink
             :to="link.to"
             class="group relative inline-block py-1 transition-colors hover:text-text"
@@ -43,6 +49,23 @@ const links = [
           </RouterLink>
         </li>
       </ul>
+      <ThemeSwitcher />
+      <RouterLink
+        to="/about"
+        class="group relative ml-1 shrink-0"
+        aria-label="奶龙头像 · 关于站长"
+        title="奶龙 · 关于站长"
+      >
+        <img
+          :src="nailongAvatar"
+          alt=""
+          class="h-9 w-9 rounded-full border border-white/15 object-cover transition-all duration-300 group-hover:scale-110 group-hover:border-primary/60 group-hover:shadow-[0_0_16px_rgba(34,211,238,0.45)]"
+        />
+        <span
+          aria-hidden="true"
+          class="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary opacity-0 shadow-[0_0_6px_rgba(34,211,238,0.9)] transition-opacity duration-300 group-hover:opacity-100"
+        ></span>
+      </RouterLink>
     </nav>
     <div v-if="scrolled" class="absolute inset-x-0 bottom-0 h-[3px] bg-white/5">
       <div

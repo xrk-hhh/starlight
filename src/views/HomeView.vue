@@ -22,10 +22,22 @@ function onHintScroll() {
   }
 }
 
-const featuredProjects = projects.filter((p) => p.featured).slice(0, 3)
+const featuredProjects = projects.filter((p) => p.featured).slice(0, 4)
 const latestPosts = listPosts(blogModules).slice(0, 3)
 
 const { text: typed } = useTypewriter(profile.typedPhrases)
+
+// 星港问候（v1.7）：按访客本地时间切换的问候语
+const greetingByHour = () => {
+  const h = new Date().getHours()
+  if (h < 5) return '夜深了，星港仍在值守 ✦'
+  if (h < 11) return '早上好，新航次即将出发 ✦'
+  if (h < 14) return '午安，来杯恒星咖啡 ☕'
+  if (h < 18) return '下午好，航道畅通 ✦'
+  if (h < 23) return '晚上好，今晚星光很亮 ✦'
+  return '夜深了，愿代码与你同眠 ✦'
+}
+const greeting = greetingByHour()
 
 // 打字区用最长短语做不可见占位（绝对定位真实文本），打字过程不改变布局（防 CLS）
 const typedPhrasesMax = [...profile.typedPhrases].sort((a, b) => b.length - a.length)[0]
@@ -82,6 +94,9 @@ onUnmounted(() => {
       </h1>
       <p class="hero-motto mt-3 font-mono text-sm text-primary/70">
         {{ profile.motto }}
+      </p>
+      <p class="hero-subtitle mt-1.5 font-mono text-xs tracking-[0.2em] text-text-muted/60">
+        {{ greeting }}
       </p>
       <p class="hero-subtitle mt-6 max-w-xl text-base text-text-muted md:text-lg">
         {{ profile.introShort }}
@@ -173,25 +188,31 @@ onUnmounted(() => {
       </section>
 
       <section class="section-container py-16">
-        <SectionTitle title="本站怎么逛" over="Start Here" />
-        <div class="grid gap-6 md:grid-cols-3">
-          <div data-reveal class="card flex flex-col p-6">
+        <SectionTitle title="这座星港怎么逛" over="Start Here" />
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div data-reveal class="card group flex flex-col p-6 transition-transform duration-300 hover:-translate-y-1">
             <span class="font-mono text-xl text-primary">01</span>
-            <h3 class="mt-3 text-base font-semibold">看项目</h3>
-            <p class="mt-1 flex-1 text-sm leading-6 text-text-muted">从 Galaxy Defender 到 2048 Arena，都是能跑的东西。</p>
-            <RouterLink to="/projects" class="mt-4 text-sm text-primary hover:underline">前往项目 →</RouterLink>
+            <h3 class="mt-3 text-base font-semibold transition-colors group-hover:text-primary">看项目</h3>
+            <p class="mt-1 flex-1 text-sm leading-6 text-text-muted">从 Galaxy Defender 到 2048 Arena，沿星轨逐个巡航。</p>
+            <RouterLink to="/projects" class="mt-4 text-sm text-primary hover:underline">启程巡航 →</RouterLink>
           </div>
-          <div data-reveal class="card flex flex-col p-6">
+          <div data-reveal class="card group flex flex-col p-6 transition-transform duration-300 hover:-translate-y-1">
             <span class="font-mono text-xl text-primary">02</span>
-            <h3 class="mt-3 text-base font-semibold">读博客</h3>
-            <p class="mt-1 flex-1 text-sm leading-6 text-text-muted">算法复盘、项目笔记与建站实录，都在这里。</p>
-            <RouterLink to="/blog" class="mt-4 text-sm text-primary hover:underline">前往博客 →</RouterLink>
+            <h3 class="mt-3 text-base font-semibold transition-colors group-hover:text-primary">读博客</h3>
+            <p class="mt-1 flex-1 text-sm leading-6 text-text-muted">算法复盘、项目笔记与建站实录，都在航海日志里。</p>
+            <RouterLink to="/blog" class="mt-4 text-sm text-primary hover:underline">翻开日志 →</RouterLink>
           </div>
-          <div data-reveal class="card flex flex-col p-6">
+          <div data-reveal class="card group flex flex-col p-6 transition-transform duration-300 hover:-translate-y-1">
             <span class="font-mono text-xl text-primary">03</span>
-            <h3 class="mt-3 text-base font-semibold">找 GitHub</h3>
-            <p class="mt-1 flex-1 text-sm leading-6 text-text-muted">所有项目源码与历史提交，公开可见。</p>
-            <a :href="'https://github.com/' + profile.name" target="_blank" rel="noopener" class="mt-4 text-sm text-primary hover:underline">前往 GitHub →</a>
+            <h3 class="mt-3 text-base font-semibold transition-colors group-hover:text-primary">留颗星</h3>
+            <p class="mt-1 flex-1 text-sm leading-6 text-text-muted">在星语留言板写下你想对这座星港说的话。</p>
+            <RouterLink to="/guestbook" class="mt-4 text-sm text-primary hover:underline">发送星语 →</RouterLink>
+          </div>
+          <div data-reveal class="card group flex flex-col p-6 transition-transform duration-300 hover:-translate-y-1">
+            <span class="font-mono text-xl text-primary">04</span>
+            <h3 class="mt-3 text-base font-semibold transition-colors group-hover:text-primary">逛友邻</h3>
+            <p class="mt-1 flex-1 text-sm leading-6 text-text-muted">星港之外还有别的灯塔，去看看朋友们的航线。</p>
+            <RouterLink to="/friends" class="mt-4 text-sm text-primary hover:underline">前往友邻 →</RouterLink>
           </div>
         </div>
       </section>

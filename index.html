@@ -32,23 +32,46 @@
     -->
     <style>
       html { background: #0a0a12; }
+      html[data-theme='sunset'] { background: #120c0a; }
+      html[data-theme='aurora'] { background: #071016; }
+      html[data-theme='paper'] { background: #f5f2ea; }
+      html[data-theme='sakura'] { background: #fbf4f7; }
     </style>
+    <script>
+      // 主题首帧应用（v1.9）：在样式加载前把 data-theme 挂到 <html>，避免非默认主题闪色
+      (function () {
+        try {
+          var t = localStorage.getItem('starlight:theme');
+          if (t === 'sunset' || t === 'aurora' || t === 'paper' || t === 'sakura' || t === 'starport') {
+            document.documentElement.dataset.theme = t;
+          }
+        } catch (e) {
+          /* storage 不可用时用默认主题 */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app" style="min-height: 100vh"></div>
     <script>
-      // 首帧高度占位（v1.5）：仅首页设置——SPA mount 前 #app 高度对齐最终内容高度，
-      // 消除 Vue mount「空→满」的文档高度跳变（CLS 伪影）。
-      // 其他页面用 100vh 即可，避免短内容页底部留白。
-      // 占位取「内容高度 + 少量余量」：内容增长时 min-height 不限制（无跳变）；
-      // 改版后若首页高度变化明显，同步更新这两个值。
+      // 首帧高度占位（v1.7）：仅为消除 Vue mount「空→满」的文档高度跳变（CLS 伪影）。
+      // 首页优先使用上次访问记录的真实内容高度（sessionStorage，由 App.vue 挂载后写入），
+      // 无记录时退回保守估计；App.vue 挂载/切页后会把 min-height 校正为实际内容高度，
+      // 因此占位即使偏高也不会留下永久空白。其他页面 100vh，mount 后同样校正。
       (function () {
         var app = document.getElementById('app');
         if (!app) return;
         var seg = location.pathname.split('/');
         var root = seg[1] ? '/' + seg[1] + '/' : '/';
         if (location.pathname === root) {
-          app.style.minHeight = window.innerWidth < 768 ? '3600px' : '3120px';
+          var h = 0;
+          try {
+            h = parseFloat(sessionStorage.getItem('starlight:home-h')) || 0;
+          } catch (e) {
+            /* storage 不可用时静默降级 */
+          }
+          if (!h) h = window.innerWidth < 768 ? 3600 : 3120;
+          app.style.minHeight = h + 'px';
         } else {
           app.style.minHeight = '100vh';
         }
@@ -86,6 +109,13 @@
           transform: rotate(360deg);
         }
       }
+      /* 各主题的启动遮罩底色（v1.9） */
+      html[data-theme='sunset'] #boot-hint { background: #120c0a; }
+      html[data-theme='aurora'] #boot-hint { background: #071016; }
+      html[data-theme='paper'] #boot-hint { background: #f5f2ea; }
+      html[data-theme='paper'] #boot-hint p { color: #78716c; }
+      html[data-theme='sakura'] #boot-hint { background: #fbf4f7; }
+      html[data-theme='sakura'] #boot-hint p { color: #9a7f8c; }
       @media (prefers-reduced-motion: reduce) {
         .boot-spinner {
           animation: none;
@@ -102,7 +132,7 @@
         <div class="grid gap-10 md:grid-cols-[1fr_auto]">
           <div>
             <p class="glow-text font-mono text-lg font-bold">STARLIGHT</p>
-            <p class="mt-2 text-sm text-text-muted">用 Vue 3 + Three.js + GSAP 构建 · 记录代码与思考</p>
+            <p class="mt-2 text-sm text-text-muted">✦ the stars remember every commit · 记录代码与思考</p>
           </div>
           <div class="flex gap-12 text-sm">
             <ul class="space-y-2">
@@ -113,7 +143,10 @@
               <li><a data-spa href="%BASE_URL%now" class="text-text-muted hover:text-text">日志</a></li>
             </ul>
             <ul class="space-y-2">
-              <li class="font-mono text-xs uppercase tracking-[0.25em] text-text-muted/70">联系</li>
+              <li class="font-mono text-xs uppercase tracking-[0.25em] text-text-muted/70">星港</li>
+              <li><a data-spa href="%BASE_URL%about" class="text-text-muted hover:text-text">关于</a></li>
+              <li><a data-spa href="%BASE_URL%friends" class="text-text-muted hover:text-text">友邻</a></li>
+              <li><a data-spa href="%BASE_URL%guestbook" class="text-text-muted hover:text-text">留言板</a></li>
               <li><a href="https://github.com/xrk-hhh" target="_blank" rel="noopener" class="text-text-muted hover:text-text">GitHub</a></li>
               <li><a href="mailto:xxjh2487657826@outlook.com" class="text-text-muted hover:text-text">邮箱</a></li>
             </ul>
@@ -121,7 +154,7 @@
         </div>
         <div class="mt-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-text-muted">
           <p>© <span id="footer-year">2026</span> xrk-hhh · 按 ? 查看快捷键</p>
-          <a data-spa href="%BASE_URL%versions" class="font-mono text-text-muted/70 hover:text-primary">v1.4.0</a>
+          <a data-spa href="%BASE_URL%versions" class="font-mono text-text-muted/70 hover:text-primary">v1.11.0</a>
         </div>
       </div>
     </footer>

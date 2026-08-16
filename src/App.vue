@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import ParticleBackground from '@/components/particles/ParticleBackground.vue'
 import AppNav from '@/components/layout/AppNav.vue'
 import CommandPalette from '@/components/overlay/CommandPalette.vue'
 import StarCursor from '@/components/overlay/StarCursor.vue'
 import MeteorTransition from '@/components/overlay/MeteorTransition.vue'
+import NailongPet from '@/components/overlay/NailongPet.vue'
+import MusicPlayer from '@/components/ui/MusicPlayer.vue'
 import BackToTop from '@/components/layout/BackToTop.vue'
 import NavLoadingBar from '@/components/layout/NavLoadingBar.vue'
 import { useKonami } from '@/composables/useKonami'
@@ -30,10 +32,42 @@ function onFooterNav(e: MouseEvent) {
 }
 onMounted(() => document.addEventListener('click', onFooterNav))
 onUnmounted(() => document.removeEventListener('click', onFooterNav))
+
+// 首帧高度占位校正（v1.7）：index.html 为 #app 预设了 min-height（防 mount 高度跳变），
+// mount 后与每次路由切换后按实际内容校正——占位偏高时不再留下底部大片空白。
+// 首页同时把真实高度记入 sessionStorage，供下次首帧占位使用（值不准时跳变很小）。
+function settleAppHeight() {
+  const app = document.getElementById('app')
+  if (!app) return
+  if (router.currentRoute.value.path === '/') {
+    const h = app.scrollHeight
+    if (h > window.innerHeight) {
+      try {
+        sessionStorage.setItem('starlight:home-h', String(h))
+      } catch {
+        /* storage 不可用时静默降级 */
+      }
+    }
+  }
+  app.style.minHeight = ''
+}
+onMounted(() => {
+  nextTick(() => requestAnimationFrame(settleAppHeight))
+  // 图片/字体加载完成后复核一次，保证记录的高度足够准
+  window.setTimeout(() => {
+    nextTick(() => requestAnimationFrame(settleAppHeight))
+  }, 1200)
+})
+watch(
+  () => router.currentRoute.value.path,
+  () => nextTick(() => requestAnimationFrame(settleAppHeight)),
+)
 </script>
 
 <template>
-  <div class="relative min-h-screen">
+  <!-- 根节点不再 min-h-screen：footer 是 #app 之外的静态元素，撑满视口只会在短内容页
+       留下大片空白（v1.7 修复）；页面自身的 min-h 需求由各视图的 section 控制 -->
+  <div class="relative">
     <ParticleBackground />
     <AppNav />
     <main class="relative z-10">
@@ -46,6 +80,8 @@ onUnmounted(() => document.removeEventListener('click', onFooterNav))
     <CommandPalette />
     <BackToTop />
     <NavLoadingBar />
+    <NailongPet />
+    <MusicPlayer />
     <StarCursor />
     <MeteorTransition />
     <Transition name="fade">

@@ -44,6 +44,18 @@ const router = createRouter({
       meta: { title: '日志', particles: 'low' },
     },
     {
+      path: '/friends',
+      name: 'friends',
+      component: () => import('@/views/FriendsView.vue'),
+      meta: { title: '友邻', particles: 'low' },
+    },
+    {
+      path: '/guestbook',
+      name: 'guestbook',
+      component: () => import('@/views/GuestbookView.vue'),
+      meta: { title: '留言', particles: 'low' },
+    },
+    {
       path: '/versions',
       name: 'versions',
       component: () => import('@/views/VersionArchiveView.vue'),

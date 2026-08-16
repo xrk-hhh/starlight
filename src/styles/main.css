@@ -24,10 +24,11 @@
   }
   body {
     @apply text-text font-sans antialiased;
-    /* 静态环境光渐变：WebGL 不可用时的回退背景（§5.3），粒子层正常时被 canvas 覆盖 */
+    /* 静态环境光渐变：WebGL 不可用时的回退背景（§5.3），粒子层正常时被 canvas 覆盖。
+       用主题变量 mix 出光晕颜色，随 data-theme 换肤 */
     background:
-      radial-gradient(ellipse at 30% 20%, rgba(34, 211, 238, 0.08), transparent 60%),
-      radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.08), transparent 60%),
+      radial-gradient(ellipse at 30% 20%, color-mix(in oklab, var(--color-primary) 8%, transparent), transparent 60%),
+      radial-gradient(ellipse at 70% 80%, color-mix(in oklab, var(--color-accent) 8%, transparent), transparent 60%),
       var(--color-bg);
   }
   ::selection {
@@ -63,10 +64,10 @@
 
 @layer components {
   .section-container {
-    @apply mx-auto w-full max-w-5xl px-6 py-24;
+    @apply mx-auto w-full max-w-5xl px-6 py-20;
   }
   .card {
-    @apply rounded-xl border border-white/10 bg-surface/80;
+    @apply rounded-xl border border-white/10 bg-surface/70 backdrop-blur-sm;
     transition:
       border-color 0.25s ease,
       box-shadow 0.25s ease;
@@ -84,11 +85,44 @@
     background-clip: text;
     color: transparent;
   }
+  /* 星辰分隔线：标题/段落之间的装饰性分隔（v1.7） */
+  .star-divider {
+    @apply mx-auto flex w-full max-w-xs items-center gap-3;
+  }
+  .star-divider::before,
+  .star-divider::after {
+    content: '';
+    @apply h-px flex-1;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15));
+  }
+  .star-divider::after {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.15), transparent);
+  }
+  .star-divider > span {
+    @apply text-xs text-primary/60;
+  }
+  /* 星星闪烁：贡献星图/友邻轨道的高亮点缀（reduced-motion 全局关闭） */
+  .twinkle {
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .twinkle {
+      animation: none;
+    }
+  }
   .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium
+    @apply inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium text-white
       transition-all duration-200;
     background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-    color: #0a0a12;
     box-shadow: 0 4px 20px -6px color-mix(in oklab, var(--color-primary) 40%, transparent);
   }
   .btn-primary:hover {
@@ -108,7 +142,41 @@
   .blog-content p { @apply my-4 leading-relaxed text-text-muted; }
   .blog-content ul { @apply my-4 list-disc pl-6 text-text-muted; }
   .blog-content ol { @apply my-4 list-decimal pl-6 text-text-muted; }
-  .blog-content pre { @apply my-4 overflow-x-auto rounded-lg border border-white/10 p-4 text-sm; }
+  .blog-content pre { @apply my-4 overflow-x-auto rounded-lg border border-white/10 p-4 text-sm; position: relative; padding-top: 1.9rem; }
+  /* 代码块增强（v2.3）：复制按钮与语言角标由 BlogPostView 注入 */
+  .blog-content pre .copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.625rem;
+    padding: 0.125rem 0.5rem;
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    background: color-mix(in oklab, var(--color-surface) 85%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-primary) 25%, transparent);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .blog-content pre:hover .copy-btn,
+  .blog-content pre .copy-btn:focus-visible { opacity: 1; }
+  .blog-content pre .copy-btn:hover {
+    color: var(--color-primary);
+    border-color: color-mix(in oklab, var(--color-primary) 60%, transparent);
+  }
+  .blog-content pre .code-lang {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    font-family: var(--font-mono, monospace);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-primary) 55%, var(--color-text-muted));
+    pointer-events: none;
+  }
   .blog-content code { @apply font-mono; }
   .blog-content :not(pre) > code {
     @apply rounded border border-white/10 bg-surface px-1.5 py-0.5 text-[0.85em] text-primary;
@@ -119,12 +187,98 @@
   }
   .blog-content img {
     @apply my-6 rounded-lg border border-white/10;
+    /* SVG 无固有宽度时按容器收缩，防横向溢出裁切 */
+    max-width: 100%;
+    height: auto;
   }
   .blog-content hr {
     @apply my-10 border-white/10;
   }
   .blog-content a { @apply text-primary hover:underline; }
-  .blog-content table { @apply my-4 w-full border-collapse text-sm; }
-  .blog-content th, .blog-content td { @apply border border-white/10 px-3 py-2 text-left; }
-  .blog-content th { @apply bg-surface text-text; }
+  /* 表格美化（v2.2）：等宽表头 + 主色描边 + 斑马纹 + 行悬停，
+     color-mix 基于主题变量调色，5 套主题自动适配 */
+  .blog-content table {
+    @apply my-6 w-full border-collapse text-sm;
+    display: block;
+    overflow-x: auto;
+  }
+  .blog-content th, .blog-content td {
+    @apply px-3.5 py-2.5 text-left;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-primary) 12%, transparent);
+    white-space: nowrap;
+  }
+  .blog-content thead th {
+    @apply font-mono text-[11px] uppercase tracking-[0.15em];
+    color: color-mix(in oklab, var(--color-primary) 80%, var(--color-text));
+    background: color-mix(in oklab, var(--color-primary) 10%, var(--color-surface));
+  }
+  .blog-content tbody tr:nth-child(even) {
+    background: color-mix(in oklab, var(--color-primary) 4%, transparent);
+  }
+  .blog-content tbody tr:hover {
+    background: color-mix(in oklab, var(--color-primary) 9%, transparent);
+  }
+  .blog-content tr:last-child td { border-bottom: none; }
+  .blog-content tbody td:first-child { color: var(--color-text); }
+}
+
+/* ===== 多主题（v1.9）：CSS 变量级换肤，5 套配色 =====
+   深空星港（默认）为 Tailwind @theme 基线；其余主题在 html[data-theme] 上覆盖同名变量。
+   未分层规则优先级高于 Tailwind 分层输出，直接生效于所有 var() 消费方。 */
+html[data-theme='sunset'] {
+  --color-bg: #120c0a;
+  --color-surface: #1f1411;
+  --color-primary: #f59e0b;
+  --color-accent: #f43f5e;
+  --color-text: #faf5ef;
+  --color-text-muted: #b3a79b;
+}
+html[data-theme='aurora'] {
+  --color-bg: #071016;
+  --color-surface: #0e1e26;
+  --color-primary: #2dd4bf;
+  --color-accent: #60a5fa;
+  --color-text: #ecfeff;
+  --color-text-muted: #8fb3bd;
+}
+html[data-theme='paper'] {
+  --color-bg: #f5f2ea;
+  --color-surface: #ffffff;
+  --color-primary: #0f766e;
+  --color-accent: #7c3aed;
+  --color-text: #292524;
+  --color-text-muted: #78716c;
+}
+html[data-theme='sakura'] {
+  --color-bg: #fbf4f7;
+  --color-surface: #ffffff;
+  --color-primary: #be185d;
+  --color-accent: #6d28d9;
+  --color-text: #402532;
+  --color-text-muted: #9a7f8c;
+}
+
+/* 浅色主题兼容层：
+   1) 白色系边框/分隔在白底不可见 → 换成文字色 mix；
+   2) 星尘粒子在浅底过亮 → canvas 降透明度；
+   3) 白色微高亮 hover 在浅底无效 → 换成主色极淡 mix */
+html[data-theme='paper'],
+html[data-theme='sakura'] {
+  color-scheme: light;
+}
+html[data-theme='paper'] .border-white\/10,
+html[data-theme='sakura'] .border-white\/10,
+html[data-theme='paper'] .border-white\/15,
+html[data-theme='sakura'] .border-white\/15,
+html[data-theme='paper'] .border-white\/20,
+html[data-theme='sakura'] .border-white\/20 {
+  border-color: color-mix(in oklab, var(--color-text) 14%, transparent);
+}
+html[data-theme='paper'] canvas[aria-hidden='true'],
+html[data-theme='sakura'] canvas[aria-hidden='true'] {
+  opacity: 0.35;
+}
+html[data-theme='paper'] .hover\:bg-white\/\[0\.03\]:hover,
+html[data-theme='sakura'] .hover\:bg-white\/\[0\.03\]:hover {
+  background-color: color-mix(in oklab, var(--color-primary) 5%, transparent);
 }

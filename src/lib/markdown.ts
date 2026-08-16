@@ -14,8 +14,9 @@ const md = new MarkdownIt({
 // 采用 shiki/core 细粒度集成（官方 fine-grained bundle 推荐形态）：
 // 只注册文章实际用到的语言，避免 bundle-full 把全部内置语言打进产物。
 const highlighter = await createHighlighterCore({
-  themes: [import('@shikijs/themes/github-dark')],
-  langs: [import('@shikijs/langs/python')],
+  // One Dark Pro：与编辑器一致的代码高亮（v1.12）
+  themes: [import('@shikijs/themes/one-dark-pro')],
+  langs: [import('@shikijs/langs/python'), import('@shikijs/langs/cpp')],
   engine: createOnigurumaEngine(() => import('shiki/wasm')),
 })
 
@@ -26,7 +27,7 @@ md.use(
     // 属 @shikijs/markdown-it@4 边界的已知类型噪声，运行时同源。
     highlighter as unknown as Parameters<typeof fromHighlighter>[0],
     {
-      theme: 'github-dark',
+      theme: 'one-dark-pro',
       // 'text' 是 shiki 运行时的特殊纯文本语言（isPlainLang 白名单），
       // 但未收录进 BundledLanguage 类型联合，此处显式断言。
       // 未注册的语言由此优雅降级为纯文本，不抛错。
@@ -34,6 +35,36 @@ md.use(
     },
   ),
 )
+
+// v2.1：h2/h3 生成锚点 id（中文保留、空白转连字符），供文章目录与锚链跳转
+const slugify = (s: string) =>
+  s
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\u4e00-\u9fff-]/g, '')
+
+const defaultHeadingOpen = md.renderer.rules.heading_open
+md.renderer.rules.heading_open = (tokens, idx, options, env, self) => {
+  const tag = tokens[idx].tag
+  if (tag === 'h2' || tag === 'h3') {
+    const text = tokens[idx + 1]?.content ?? ''
+    return `<${tag} id="${slugify(text)}">`
+  }
+  return defaultHeadingOpen
+    ? defaultHeadingOpen(tokens, idx, options, env, self)
+    : `<${tag}>`
+}
+
+// v2.1：正文图片懒加载——文章多图且多在首屏之下，滚动到再拉取
+const defaultImage = md.renderer.rules.image
+md.renderer.rules.image = (tokens, idx, options, env, self) => {
+  tokens[idx].attrSet('loading', 'lazy')
+  tokens[idx].attrSet('decoding', 'async')
+  return defaultImage
+    ? defaultImage(tokens, idx, options, env, self)
+    : self.renderToken(tokens, idx, options)
+}
 
 export function renderMarkdown(src: string): string {
   return md.render(src)
