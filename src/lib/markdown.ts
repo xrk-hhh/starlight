@@ -19,7 +19,8 @@ const highlighter = await createHighlighterCore({
   langs: [import('@shikijs/langs/python'), import('@shikijs/langs/cpp')],
   // JS 正则引擎（v2.4）：替代 oniguruma+wasm——博客路由少加载一个 622KB
   // （gzip 232KB）的 chunk，语法着色结果一致；shiki 官方推荐的轻量路径。
-  engine: createJavaScriptRegexEngine(),
+  // forgiving：个别文法的正则在不支持最新 V8 特性的运行时上降级而非抛错。
+  engine: createJavaScriptRegexEngine({ forgiving: true }),
 })
 
 md.use(
