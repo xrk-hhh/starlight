@@ -32,7 +32,7 @@
   <g font-family="monospace" font-size="11">
     <text x="94" y="98" fill="#98c379" text-anchor="end">(x1,y1) +v</text>
     <text x="210" y="96" fill="#e06c75">(x2+1,y1) −v</text>
-    <text x="94" y="224" fill="#e06c75" text-anchor="end">(x1,y2+1) −v</text>
+    <text x="104" y="224" fill="#e06c75" text-anchor="start">(x1,y2+1) −v</text>
     <text x="210" y="226" fill="#98c379">(x2+1,y2+1) +v</text>
   </g>
 
@@ -43,8 +43,8 @@
     <text x="330" y="142" fill="#61afef">+ S(x,y−1) − S(x−1,y−1)</text>
     <text x="330" y="164" fill="#61afef">+ d(x,y)</text>
     <text x="310" y="204" fill="#abb2bf">询问窗口 [a..b]×[c..d]：</text>
-    <text x="310" y="228" fill="#98c379">= S(b,d) − S(a−1,d)</text>
-    <text x="330" y="250" fill="#98c379">− S(b,c−1) + S(a−1,c−1)</text>
+    <text x="310" y="252" fill="#98c379">= S(b,d) − S(a−1,d)</text>
+    <text x="330" y="272" fill="#98c379">− S(b,c−1) + S(a−1,c−1)</text>
   </g>
 
   <text x="24" y="286" font-family="monospace" font-size="13" fill="#e5c07b">修改 O(1) 记账，O(nm) 一次还原——修改多、最后才看结果的场景</text>

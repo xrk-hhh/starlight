@@ -35,7 +35,7 @@ onUnmounted(() => {
       .      .    ✦    .      .    .</pre>
     <p class="text-text-muted">$ cd /{{ currentPath }}</p>
     <h1 class="mt-2 text-xl text-text">404: command not found: {{ currentPath }}</h1>
-    <p class="mt-4 text-sm text-text-muted">这个页面不存在，或者已经被移动到别处。</p>
+    <p class="mt-4 text-sm text-text-muted">这个坐标上没有天体——页面不存在，或已被移动。</p>
     <p class="mt-2 text-sm text-text-muted">
       信号丢失，<span class="text-primary">{{ countdown }}</span> 秒后自动返航
       <RouterLink to="/" class="text-primary hover:underline">（或点击这里立即返回）</RouterLink>

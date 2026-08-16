@@ -3,6 +3,7 @@ title: 贪心与背包：交换一下，倒着走走
 date: 2026-08-16
 tags: [算法竞赛, 贪心, 动态规划]
 category: 算法竞赛
+difficulty: 2
 desc: 洛谷 P1090/P1048/P1616——合并果子的交换论证，与 01/完全背包仅一字之差的循环顺序
 ---
 
@@ -68,6 +69,8 @@ int main()
 ## 二、背包：正序与倒序的一字之差
 
 两道题对照着刷，01 背包和完全背包的区别一辈子忘不掉。
+
+![01 背包倒序与完全背包正序](/starlight/images/blog/knapsack-order.svg)
 
 [P1048 采药](https://www.luogu.com.cn/problem/P1048)（NOIP 2005 普及组），01 背包，**倒序**枚举容量：
 

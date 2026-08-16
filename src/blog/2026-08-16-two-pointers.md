@@ -3,6 +3,7 @@ title: 双指针：排序之后，两头往中间夹
 date: 2026-08-16
 tags: [算法竞赛, 双指针]
 category: 算法竞赛
+difficulty: 3
 desc: 一道 Codeforces 补题——不等式变形后排序，相向双指针 O(n) 统计合法对数
 ---
 

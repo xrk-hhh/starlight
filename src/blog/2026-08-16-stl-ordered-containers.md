@@ -3,6 +3,7 @@ title: STL 有序容器避坑指南：multiset、判环与堆贪心
 date: 2026-08-16
 tags: [算法竞赛, STL, 数据结构]
 category: 算法竞赛
+difficulty: 2
 desc: erase(x) 删光的经典坑、快乐数的三种判环、每次给最小值加 b 的堆贪心——牛客130题单集合与优先队列文件夹的实战笔记
 ---
 

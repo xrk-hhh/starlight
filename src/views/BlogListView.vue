@@ -1,13 +1,36 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { listPosts, blogModules, type BlogMeta } from '@/lib/blog'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useInertiaTilt } from '@/composables/useInertiaTilt'
 
+const router = useRouter()
 const posts = listPosts(blogModules)
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
+
+// 随机漫游（v2.5）：从当前筛选结果里随机跳一篇——33 篇知识库的「手气不错」
+function wander() {
+  const pool = filteredPosts.value.length ? filteredPosts.value : posts
+  void router.push(`/blog/${pool[Math.floor(Math.random() * pool.length)].slug}`)
+}
+
+// 文章页语法包 idle 预载（v2.5）：列表页空闲时把 BlogPostView（连带 shiki cpp/主题）
+// 拉进缓存，首次点开文章代码高亮零等待。失败静默（真导航时再拉）。
+let preloaded = false
+function idlePreloadPostView() {
+  if (preloaded) return
+  preloaded = true
+  const idle =
+    'requestIdleCallback' in window
+      ? window.requestIdleCallback
+      : (cb: () => void) => setTimeout(cb, 1200)
+  idle(() => {
+    void import('@/views/BlogPostView.vue').catch(() => {})
+  })
+}
 
 // v1.6：标签筛选 + 标题/摘要搜索（纯前端，无依赖）
 // v2.0：两级标签——一级分类（算法竞赛/生活/项目/AI…）+ 二级知识点标签。
@@ -39,6 +62,18 @@ const tags = computed(() => [
 ].sort())
 const countOf = (c: string) => posts.filter((p) => p.category === c).length
 
+// 归档时间线视图（v2.6）：按月分组；尊重当前分类/标签筛选
+const archiveView = ref(false)
+const archiveGroups = computed(() => {
+  const map = new Map<string, BlogMeta[]>()
+  for (const post of filteredPosts.value) {
+    const month = post.date.slice(0, 7)
+    if (!map.has(month)) map.set(month, [])
+    map.get(month)!.push(post)
+  }
+  return [...map.entries()]
+})
+
 function selectCategory(c: string | null) {
   activeCategory.value = c
   activeTag.value = null // 换分类时重置知识点，防止筛出空集
@@ -63,7 +98,10 @@ posts.forEach((p) => {
   const { attach } = useInertiaTilt(el, 3)
   tiltMap.set(p.slug, { el, attach })
 })
-onMounted(() => tiltMap.forEach((t) => t.attach()))
+onMounted(() => {
+  tiltMap.forEach((t) => t.attach())
+  idlePreloadPostView()
+})
 
 function setRowRef(post: BlogMeta, node: unknown) {
   const inst = node as { $el?: unknown } | null
@@ -89,9 +127,18 @@ function setRowRef(post: BlogMeta, node: unknown) {
             type="search"
             placeholder="搜索标题或摘要…"
             aria-label="搜索文章"
-            class="w-full rounded-lg border border-white/10 bg-surface/60 px-4 py-2.5 pl-10 text-sm text-text placeholder:text-text-muted/50 focus:border-primary/50 focus:outline-none"
+            class="w-full rounded-lg border border-white/10 bg-surface/60 px-4 py-2.5 pl-10 pr-28 text-sm text-text placeholder:text-text-muted/50 focus:border-primary/50 focus:outline-none"
           />
           <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm text-text-muted/50" aria-hidden="true">⌕</span>
+          <button
+            type="button"
+            class="group absolute right-2 top-1/2 -translate-y-1/2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 font-mono text-xs text-accent transition-all hover:border-accent hover:bg-accent/20"
+            title="从当前筛选结果中随机打开一篇"
+            @click="wander"
+          >
+            <span class="inline-block transition-transform duration-300 group-hover:rotate-180" aria-hidden="true">✦</span>
+            随机漫游
+          </button>
         </div>
         <!-- 一级：分类 -->
         <div class="flex flex-wrap items-center gap-2" role="group" aria-label="文章分类">
@@ -125,6 +172,16 @@ function setRowRef(post: BlogMeta, node: unknown) {
             <span class="ml-1 font-mono text-[10px] opacity-60">{{ countOf(cat) }}</span>
           </button>
         </div>
+        <!-- 视图切换：列表 / 归档（v2.6） -->
+        <button
+          type="button"
+          class="ml-auto shrink-0 rounded-full border border-white/10 px-3 py-1 font-mono text-xs text-text-muted transition-all hover:border-primary/40 hover:text-primary"
+          :class="{ 'border-primary/50 text-primary': archiveView }"
+          :aria-pressed="archiveView"
+          @click="archiveView = !archiveView"
+        >
+          {{ archiveView ? '☰ 列表视图' : '◷ 归档视图' }}
+        </button>
         <!-- 二级：知识点（选中分类后出现） -->
         <div
           v-if="activeCategory && tags.length"
@@ -165,16 +222,39 @@ function setRowRef(post: BlogMeta, node: unknown) {
       <p v-if="filteredPosts.length === 0" class="py-16 text-center font-mono text-sm text-text-muted">
         🛰️ 没有匹配的信号，换个关键词试试。
       </p>
+      <!-- 归档时间线（v2.6）：月分组 + 竖线 -->
+      <div v-else-if="archiveView" class="border-l border-white/10 pl-6">
+        <section v-for="[month, group] in archiveGroups" :key="month" class="relative mb-8">
+          <span aria-hidden="true" class="absolute -left-[27px] top-1 h-2.5 w-2.5 rounded-full border border-primary/50 bg-bg"></span>
+          <p class="flex items-baseline gap-3">
+            <span class="font-mono text-sm font-semibold text-primary">{{ month }}</span>
+            <span class="font-mono text-[10px] text-text-muted/50">{{ group.length }} 篇</span>
+          </p>
+          <ul class="mt-3 space-y-2.5">
+            <li v-for="post in group" :key="post.slug">
+              <RouterLink :to="`/blog/${post.slug}`" class="group flex items-baseline gap-3 text-sm">
+                <span class="w-16 shrink-0 font-mono text-xs text-text-muted/50">{{ post.date.slice(8) }} 日</span>
+                <span v-if="post.difficulty" class="shrink-0 text-[10px] leading-none">
+                  <span class="text-accent/90">{{ '★'.repeat(post.difficulty) }}</span>
+                </span>
+                <span class="text-text-muted transition-colors group-hover:text-primary">{{ post.title }}</span>
+              </RouterLink>
+            </li>
+          </ul>
+        </section>
+      </div>
       <template v-else>
         <RouterLink
           v-for="post in filteredPosts"
           :key="post.slug"
           :ref="(node) => setRowRef(post, node)"
           :to="`/blog/${post.slug}`"
-          data-reveal
-          class="group -mx-3 flex items-baseline gap-6 rounded-lg border-b border-white/10 px-3 py-4 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.03]"
+          class="group -mx-3 flex items-baseline gap-6 rounded-lg border-b border-white/10 px-3 py-4 transition-colors duration-200 hover:border-white/20 hover:bg-white/[0.03]"
         >
           <span class="w-28 shrink-0 font-mono text-xs text-text-muted transition-colors group-hover:text-primary/80">{{ post.date }}</span>
+          <span v-if="post.difficulty" class="shrink-0 text-[11px] leading-none tracking-tight" :aria-label="`难度 ${post.difficulty} 星`" :title="`难度 ${post.difficulty}/5`">
+            <span class="text-accent/90">{{ '★'.repeat(post.difficulty) }}</span><span class="text-white/15">{{ '★'.repeat(5 - post.difficulty) }}</span>
+          </span>
           <span class="flex-1 text-base font-semibold text-text transition-all group-hover:translate-x-1 group-hover:text-primary md:text-lg">{{ post.title }}</span>
           <span v-if="post.tags.filter((t) => t !== post.category).length" class="hidden shrink-0 font-mono text-[10px] text-text-muted/60 sm:inline">{{ post.tags.filter((t) => t !== post.category).map((t) => `#${t}`).join(' ') }}</span>
           <span class="shrink-0 text-text-muted transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary">↗</span>

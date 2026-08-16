@@ -195,27 +195,38 @@
     @apply my-10 border-white/10;
   }
   .blog-content a { @apply text-primary hover:underline; }
-  /* 表格美化（v2.2）：等宽表头 + 主色描边 + 斑马纹 + 行悬停，
-     color-mix 基于主题变量调色，5 套主题自动适配 */
+  /* 表格美化（v2.9 重设计）：fit-content 水平居中 + 主题自适应边框（mix 文字色，
+     五套主题免逐个适配）+ 圆角外框 + 表头主色晕染 + 斑马纹与行悬停 */
   .blog-content table {
-    @apply my-6 w-full border-collapse text-sm;
-    display: block;
-    overflow-x: auto;
+    margin: 1.75rem auto;
+    width: fit-content;
+    min-width: 58%;
+    max-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    border: 1px solid color-mix(in oklab, var(--color-text) 13%, transparent);
+    border-radius: 0.65rem;
+    overflow: hidden;
   }
   .blog-content th, .blog-content td {
-    @apply px-3.5 py-2.5 text-left;
-    border-bottom: 1px solid color-mix(in oklab, var(--color-primary) 12%, transparent);
-    white-space: nowrap;
+    @apply px-4 py-2.5 text-left;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-text) 9%, transparent);
+  }
+  .blog-content th:not(:last-child), .blog-content td:not(:last-child) {
+    border-right: 1px solid color-mix(in oklab, var(--color-text) 8%, transparent);
   }
   .blog-content thead th {
     @apply font-mono text-[11px] uppercase tracking-[0.15em];
     color: color-mix(in oklab, var(--color-primary) 80%, var(--color-text));
     background: color-mix(in oklab, var(--color-primary) 10%, var(--color-surface));
+    white-space: nowrap;
   }
-  .blog-content tbody tr:nth-child(even) {
+  .blog-content tbody tr:nth-child(even) td {
     background: color-mix(in oklab, var(--color-primary) 4%, transparent);
   }
-  .blog-content tbody tr:hover {
+  .blog-content tbody tr:hover td {
     background: color-mix(in oklab, var(--color-primary) 9%, transparent);
   }
   .blog-content tr:last-child td { border-bottom: none; }
@@ -281,4 +292,38 @@ html[data-theme='sakura'] canvas[aria-hidden='true'] {
 html[data-theme='paper'] .hover\:bg-white\/\[0\.03\]:hover,
 html[data-theme='sakura'] .hover\:bg-white\/\[0\.03\]:hover {
   background-color: color-mix(in oklab, var(--color-primary) 5%, transparent);
+}
+/* v2.9 浅色主题批量适配（按全站 white 系工具类统计）：
+   细边框 / 分隔线 / 微底色 / 空星灰字 / hover 边框 */
+html[data-theme='paper'] .border-white\/5,
+html[data-theme='sakura'] .border-white\/5,
+html[data-theme='paper'] .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
+html[data-theme='sakura'] .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+  border-color: color-mix(in oklab, var(--color-text) 10%, transparent);
+}
+html[data-theme='paper'] .bg-white\/5,
+html[data-theme='sakura'] .bg-white\/5,
+html[data-theme='paper'] .bg-white\/\[0\.02\],
+html[data-theme='sakura'] .bg-white\/\[0\.02\] {
+  background-color: color-mix(in oklab, var(--color-text) 4%, transparent);
+}
+html[data-theme='paper'] .bg-white\/\[0\.03\],
+html[data-theme='sakura'] .bg-white\/\[0\.03\] {
+  background-color: color-mix(in oklab, var(--color-text) 5%, transparent);
+}
+html[data-theme='paper'] .text-white\/15,
+html[data-theme='sakura'] .text-white\/15,
+html[data-theme='paper'] .text-white\/20,
+html[data-theme='sakura'] .text-white\/20 {
+  color: color-mix(in oklab, var(--color-text) 22%, transparent);
+}
+html[data-theme='paper'] .hover\:border-white\/20:hover,
+html[data-theme='sakura'] .hover\:border-white\/20:hover,
+html[data-theme='paper'] .hover\:border-white\/30:hover,
+html[data-theme='sakura'] .hover\:border-white\/30:hover {
+  border-color: color-mix(in oklab, var(--color-text) 30%, transparent);
+}
+html[data-theme='paper'] .hover\:bg-white\/5:hover,
+html[data-theme='sakura'] .hover\:bg-white\/5:hover {
+  background-color: color-mix(in oklab, var(--color-text) 6%, transparent);
 }

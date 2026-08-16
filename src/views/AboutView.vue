@@ -105,7 +105,7 @@ onUnmounted(() => {
         </div>
         <div data-reveal class="mt-14">
           <SectionTitle over="Skills" title="技能星云" />
-          <div class="grid items-center gap-8 md:grid-cols-[340px,1fr]">
+          <div class="grid items-center gap-8 md:grid-cols-[minmax(300px,360px),1fr]">
             <SkillNebula :axes="nebulaAxes" />
             <div class="space-y-4">
               <div v-for="s in profile.skills" :key="s.name" class="group">

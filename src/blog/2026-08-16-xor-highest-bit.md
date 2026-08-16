@@ -3,6 +3,7 @@ title: 位运算构造：在最高的分叉位上翻盘
 date: 2026-08-16
 tags: [算法竞赛, 位运算, 构造]
 category: 算法竞赛
+difficulty: 3
 desc: 牛客周赛 Round 141 B「未知 (version 1)」——构造 n 使 x⊕n > y⊕n，答案就藏在 x 与 y 最高的不同位里
 ---
 

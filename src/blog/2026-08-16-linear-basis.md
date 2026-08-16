@@ -3,6 +3,7 @@ title: 线性基：XOR 世界的高斯消元
 date: 2026-08-16
 tags: [算法竞赛, 线性基, 位运算]
 category: 算法竞赛
+difficulty: 5
 desc: 用一组"主元向量"表示所有子集 XOR——插入 O(log)，判断可拼出 O(log)
 ---
 

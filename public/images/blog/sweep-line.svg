@@ -38,7 +38,7 @@
         fill="none" stroke="#56b6c2" stroke-width="2" stroke-dasharray="5 3"/>
   <!-- 峰值标注 -->
   <circle cx="260" cy="128" r="5" fill="none" stroke="#98c379" stroke-width="2"/>
-  <text x="260" y="106" font-family="monospace" font-size="14" fill="#98c379" text-anchor="middle">max = 3</text>
+  <text x="260" y="98" font-family="monospace" font-size="14" fill="#98c379" text-anchor="middle">max = 3</text>
   <text x="24" y="36" font-family="monospace" font-size="15" fill="#abb2bf">扫描线：区间 → ±1 事件 → 前缀和取最大</text>
   <text x="24" y="288" font-family="monospace" font-size="11" fill="#5c6370">统一左移 k 后重叠层数不变——先化简，再套模板</text>
 </svg>

@@ -7,6 +7,7 @@ import SectionTitle from '@/components/ui/SectionTitle.vue'
 import ElasticHeading from '@/components/ui/ElasticHeading.vue'
 import OrbitText from '@/components/ui/OrbitText.vue'
 import StarStats from '@/components/ui/StarStats.vue'
+import DailyProblem from '@/components/ui/DailyProblem.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useTypewriter } from '@/composables/useTypewriter'
 
@@ -45,8 +46,31 @@ const typedPhrasesMax = [...profile.typedPhrases].sort((a, b) => b.length - a.le
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
+// hero 视差（v2.7）：光标位移写入 CSS 变量，标题/轨道装饰反向微移；
+// rAF 节流 + 指针离开回中。reduced-motion 与触屏不启用。
+let heroRaf = 0
+function onHeroMouseMove(e: MouseEvent) {
+  if (!heroRef.value) return
+  if (heroRaf) return
+  heroRaf = requestAnimationFrame(() => {
+    heroRaf = 0
+    const el = heroRef.value
+    if (!el) return
+    el.style.setProperty('--hx', ((e.clientX / window.innerWidth) * 2 - 1).toFixed(3))
+    el.style.setProperty('--hy', ((e.clientY / window.innerHeight) * 2 - 1).toFixed(3))
+  })
+}
+function onHeroPointerLeave() {
+  heroRef.value?.style.setProperty('--hx', '0')
+  heroRef.value?.style.setProperty('--hy', '0')
+}
+
 onMounted(() => {
   window.addEventListener('scroll', onHintScroll, { passive: true })
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    window.addEventListener('mousemove', onHeroMouseMove, { passive: true })
+    document.addEventListener('pointerleave', onHeroPointerLeave)
+  }
   if (!heroRef.value) return
   // reduced-motion：跳过入场动画，hero 保持可见终态（ctx 为 null，onUnmounted 的 ctx?.revert() 安全）
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -65,15 +89,18 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onHintScroll)
+  window.removeEventListener('mousemove', onHeroMouseMove)
+  document.removeEventListener('pointerleave', onHeroPointerLeave)
+  if (heroRaf) cancelAnimationFrame(heroRaf)
   ctx?.revert()
 })
 </script>
 
 <template>
   <div>
-    <section ref="heroRef" class="section-container relative flex min-h-screen flex-col justify-center">
+    <section ref="heroRef" class="hero-parallax section-container relative flex min-h-screen flex-col justify-center">
       <!-- 旋转轨道文字：hero 右下装饰（仅 md 以上） -->
-      <div class="absolute bottom-24 right-10 hidden md:block">
+      <div class="hero-orbit absolute bottom-24 right-10 hidden md:block">
         <OrbitText text="STARLIGHT ✦ PORTFOLIO ✦ CODING AMONG THE STARS ✦ " />
       </div>
       <p class="hero-subtitle font-mono text-sm text-primary">
@@ -145,7 +172,7 @@ onUnmounted(() => {
 
     <div ref="scopeRef">
       <section class="section-container py-14">
-        <SectionTitle over="Featured Work" title="精选项目" />
+        <SectionTitle over="Featured Work" title="精选项目" subtitle="从星港船坞驶出的三艘舰船" />
         <ul class="flex flex-col divide-y divide-white/5">
           <li v-for="p in featuredProjects" :key="p.slug" data-reveal>
             <a
@@ -168,8 +195,13 @@ onUnmounted(() => {
         </RouterLink>
       </section>
 
+      <!-- 今日一题（v2.6）：按日期确定性轮换 -->
+      <section class="section-container py-8">
+        <DailyProblem />
+      </section>
+
       <section class="section-container py-14">
-        <SectionTitle over="From The Blog" title="最新文章" />
+        <SectionTitle over="From The Blog" title="最新文章" subtitle="算法复盘与建站实录，持续广播中" />
         <ul class="flex flex-col divide-y divide-white/5">
           <li v-for="post in latestPosts" :key="post.slug" data-reveal>
             <RouterLink
@@ -226,6 +258,32 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* 视差（v2.7）：--hx/--hy 由 JS 写入（-1..1）。GSAP 入场动画会给子元素设行内
+   transform，CSS 会被覆盖——因此视差只作用在 GSAP 不触碰的层级：hero 区整体
+   微移 + 轨道装饰/滚动指示反向移动，制造纵深。 */
+.hero-parallax {
+  --hx: 0;
+  --hy: 0;
+  transform: translate(calc(var(--hx) * 4px), calc(var(--hy) * 3px));
+  transition: transform 0.4s cubic-bezier(0.2, 0.6, 0.3, 1);
+}
+.hero-parallax :deep(.hero-orbit) {
+  transform: translate(calc(var(--hx) * -14px), calc(var(--hy) * -10px)) rotate(-6deg);
+  transition: transform 0.45s cubic-bezier(0.2, 0.6, 0.3, 1);
+}
+.hero-parallax :deep(.scroll-hint) {
+  transform: translate(calc(var(--hx) * -8px), calc(var(--hy) * -6px));
+  transition: transform 0.4s cubic-bezier(0.2, 0.6, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-parallax,
+  .hero-parallax :deep(.hero-orbit),
+  .hero-parallax :deep(.scroll-hint) {
+    transform: none;
+    transition: none;
+  }
+}
+
 .hero-caret {
   animation: caret-blink 1s steps(1) infinite;
 }

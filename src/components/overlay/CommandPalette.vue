@@ -17,6 +17,7 @@ const shortcuts: { keys: string[]; desc: string; feedback?: boolean }[] = [
   { keys: ['g', 'n'], desc: '日志' },
   { keys: ['g', 'f'], desc: '友邻' },
   { keys: ['g', 'm'], desc: '留言板' },
+  { keys: ['r'], desc: '随机漫游一篇' },
   { keys: ['c'], desc: '复制邮箱', feedback: true },
   { keys: ['esc'], desc: '关闭' },
 ]
@@ -33,6 +34,14 @@ function showFeedback(msg: string) {
     feedback.value = ''
     feedbackTimer = null
   }, 1500)
+}
+
+async function wanderRandom() {
+  const { listPosts, blogModules } = await import('@/lib/blog')
+  const posts = listPosts(blogModules)
+  if (!posts.length) return
+  void router.push(`/blog/${posts[Math.floor(Math.random() * posts.length)].slug}`)
+  close()
 }
 
 async function copyEmail() {
@@ -81,6 +90,9 @@ function onKeydown(e: KeyboardEvent) {
   }
   if (e.key === 'c') {
     void copyEmail()
+  }
+  if (e.key === 'r') {
+    void wanderRandom()
   }
 }
 

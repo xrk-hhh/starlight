@@ -33,21 +33,34 @@ const capturedSignals = [
       over="Guestbook"
       title="星语留言板"
       as="h1"
-      subtitle="把想说的话写成光，发往这座星港——它会被永久记录在星图上"
+      subtitle="把想说的话写成光发过来——登录 GitHub 即可发射，讯息会留在星图上"
     />
 
-    <!-- 已捕获的深空讯号：终端风格装饰卡 -->
+    <!-- 已捕获的深空讯号（v2.9 重设计）：信号强度条 + 呼吸圆点 + 时间戳角标 -->
     <div data-reveal class="grid gap-4 md:grid-cols-3">
       <div
-        v-for="s in capturedSignals"
+        v-for="(s, i) in capturedSignals"
         :key="s.from"
-        class="card p-5 font-mono transition-all duration-300 hover:-translate-y-1"
+        class="card group relative overflow-hidden p-5 font-mono transition-[transform,border-color] duration-300 hover:-translate-y-1"
       >
-        <p class="flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-text-muted/50">
-          <span class="text-primary/80">◉ {{ s.from }}</span>
-          <span>{{ s.time }}</span>
+        <!-- 顶部信号强度装饰 -->
+        <span aria-hidden="true" class="absolute right-4 top-4 flex items-end gap-[3px]">
+          <span
+v-for="b in 4" :key="b" class="w-[3px] rounded-sm transition-all duration-300"
+            :class="b <= (3 - i) ? 'bg-primary/80' : 'bg-text-muted/20 group-hover:bg-primary/40'"
+            :style="{ height: 4 + b * 3 + 'px' }"></span>
+        </span>
+        <p class="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-text-muted/50">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 [animation-duration:2.2s]"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-primary/80"></span>
+          </span>
+          {{ s.from }}
         </p>
         <p class="mt-3 text-sm leading-6 text-text-muted">{{ s.text }}</p>
+        <p class="mt-3 border-t border-white/5 pt-2 text-[10px] tracking-widest text-text-muted/40">
+          T+{{ s.time }} · SIGNAL LOCKED
+        </p>
       </div>
     </div>
 

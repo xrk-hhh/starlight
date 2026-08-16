@@ -3,12 +3,15 @@ title: 入门经典五题：约瑟夫环、校门外的树、扫雷、杨辉三�
 date: 2026-08-16
 tags: [算法竞赛, 模拟, 递推, 入门]
 category: 算法竞赛
+difficulty: 2
 desc: 新手130题单里最经典的五道——每道都有"朴素做法 + 一个升级方向"，从标记模拟到递推公式、方向数组、按位分块
 ---
 
 牛客[新手入门 130 题](https://www.nowcoder.com/problem/tracker#/problems)大多是一行语法题，但藏着几道**名字就值得记住**的经典。这篇选五道，每道都给"朴素做法"和"升级方向"——经典题的价值就在升级的那一步。
 
 ## 一、约瑟夫环：从模拟到递推
+
+![约瑟夫环递推示意](/starlight/images/blog/josephus.svg)
 
 > **题意**（[约瑟夫环](https://www.nowcoder.com/practice/e417cfe32c74416ca38247f619ddb322)）：n 人围圈从第 k 人报数，报到 m 者出列，从下一位重新报数。求最后的幸存者。
 

@@ -26,7 +26,7 @@
   <g font-family="monospace" font-size="13" text-anchor="middle">
     <rect x="210" y="192" width="64" height="34" rx="5" fill="#98c379" opacity="0.85"/><text x="242" y="214" fill="#282c34">3 · dp=1</text>
     <rect x="280" y="192" width="64" height="34" rx="5" fill="#61afef" opacity="0.85"/><text x="312" y="214" fill="#282c34">6 · dp=2</text>
-    <text x="356" y="214" fill="#5c6370">← 队尾</text>
+    <text x="382" y="214" fill="#5c6370">← 队尾</text>
     <text x="188" y="214" fill="#98c379">队头 →</text>
   </g>
   <text x="24" y="252" font-family="monospace" font-size="12" fill="#56b6c2">新 j 进队尾：把 dp 更大的老队尾全弹掉（它们永无出头之日）</text>

@@ -9,6 +9,8 @@ export interface BlogMeta {
   content: string
   /** 一级分类（算法竞赛/生活/项目/AI…）；缺省时回退到第一个 tag */
   category: string
+  /** 难度 1~5 星（v2.6）；非算法文缺省为 0（不显示） */
+  difficulty: number
 }
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
@@ -34,6 +36,7 @@ export function parseBlogPost(raw: string, slug: string): BlogMeta {
     desc: typeof data.desc === 'string' ? data.desc : '',
     content,
     category: typeof data.category === 'string' && data.category ? data.category : tags[0] ?? '',
+    difficulty: typeof data.difficulty === 'number' ? Math.min(5, Math.max(1, data.difficulty)) : 0,
   }
 }
 

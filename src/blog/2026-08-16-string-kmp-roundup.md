@@ -3,6 +3,7 @@ title: 字符串六题：next 数组的花式玩法
 date: 2026-08-16
 tags: [算法竞赛, KMP, 字符串]
 category: 算法竞赛
+difficulty: 3
 desc: 最短循环节、最小 border、不重叠前后缀、栈式删除、01-Trie 最大异或——next 数组一旦理解，一半的字符串题变成填表
 ---
 

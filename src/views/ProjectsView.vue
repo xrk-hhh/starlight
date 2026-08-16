@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { projects } from '@/data/projects'
 import ProjectCard from '@/components/ui/ProjectCard.vue'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
@@ -33,19 +33,8 @@ function onRailScroll() {
   progress.value = max > 0 ? el.scrollLeft / max : 0
 }
 
-// 滚轮竖转横：轨道还能往该方向滚时吃掉竖直滚轮，滚到尽头放行页面（不困住用户）
-function onRailWheel(e: WheelEvent) {
-  const el = scrollerRef.value
-  if (!el || e.deltaY === 0 || e.deltaX !== 0) return // 触控板原生横向滚动不接管
-  const max = el.scrollWidth - el.clientWidth
-  const canLeft = el.scrollLeft > 0 && e.deltaY < 0
-  const canRight = el.scrollLeft < max - 1 && e.deltaY > 0
-  if (canLeft || canRight) {
-    e.preventDefault()
-    engageFreeScroll()
-    el.scrollLeft += e.deltaY
-  }
-}
+// v2.10：移除滚轮竖转横——轨道横贯页面中部，劫持会让「页面向下滚」变成
+// 「轨道向右滚」，用户感知为下滑卡死。横向浏览交给按钮/拖拽/方向键/触摸板原生横滚。
 
 // 鼠标拖拽巡航（触摸设备走原生滚动）。
 // 事件体系：mousedown 后挂 window 级 mousemove/mouseup——不依赖 pointer capture（其会劫持
@@ -126,11 +115,7 @@ function onRailKeydown(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => {
-  scrollerRef.value?.addEventListener('wheel', onRailWheel, { passive: false })
-})
 onUnmounted(() => {
-  scrollerRef.value?.removeEventListener('wheel', onRailWheel)
   window.clearTimeout(freeTimer)
 })
 </script>
@@ -138,9 +123,9 @@ onUnmounted(() => {
 <template>
   <section ref="scopeRef" class="relative min-h-[60vh] overflow-hidden py-20">
     <div class="section-container !py-0">
-      <SectionTitle over="Projects" title="项目星轨" as="h1" subtitle="每一颗星，都是一个能跑的东西" />
+      <SectionTitle over="Projects" title="项目星轨" as="h1" subtitle="每一颗星都是一个能跑的作品——拖拽巡航，或用方向键逐舰检阅" />
     </div>
-    <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-20 z-0 overflow-hidden">
+    <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-20 z-0 overflow-hidden [contain:strict]">
       <div class="marquee-track flex whitespace-nowrap">
         <span class="marquee-item font-mono text-8xl font-bold leading-none text-transparent" style="-webkit-text-stroke: 1px color-mix(in oklab, var(--color-accent) 16%, transparent)">PROJECTS // 星轨巡航&nbsp;&nbsp;</span>
         <span class="marquee-item font-mono text-8xl font-bold leading-none text-transparent" style="-webkit-text-stroke: 1px color-mix(in oklab, var(--color-accent) 16%, transparent)">PROJECTS // 星轨巡航&nbsp;&nbsp;</span>
@@ -228,9 +213,14 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* 性能（v2.9）：巨型描边字横移在滚动时常驻重绘——提升为合成层并锁定 paint，
+   页面纵向滚动不再随帧重绘 marquee；40s 匀速循环视觉不变 */
 .marquee-track {
   animation: marquee 40s linear infinite;
   width: max-content;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 @keyframes marquee {

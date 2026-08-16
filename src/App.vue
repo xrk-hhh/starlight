@@ -33,6 +33,42 @@ function onFooterNav(e: MouseEvent) {
 onMounted(() => document.addEventListener('click', onFooterNav))
 onUnmounted(() => document.removeEventListener('click', onFooterNav))
 
+// 标签页失焦标题彩蛋（v2.7）：切走标签页时换一句问候，回来即恢复路由标题
+let titleAway = false
+function onVisibility() {
+  if (document.hidden) {
+    titleAway = true
+    document.title = '✦ 星港仍在巡航…'
+  } else if (titleAway) {
+    titleAway = false
+    const t = router.currentRoute.value.meta.title
+    document.title = t ? `${t} | 个人网站` : '个人网站'
+  }
+}
+onMounted(() => document.addEventListener('visibilitychange', onVisibility))
+onUnmounted(() => document.removeEventListener('visibilitychange', onVisibility))
+
+// 星港边缘彩蛋（v2.7）：每次会话首次滚到页面最底，弹一句致谢（toast 2.6s 自散）
+const edgeToast = ref(false)
+let edgeShown = false
+let edgeTimer: number | undefined
+function onEdgeScroll() {
+  if (edgeShown) return
+  const de = document.documentElement
+  if (de.scrollTop + window.innerHeight >= de.scrollHeight - 4) {
+    edgeShown = true
+    edgeToast.value = true
+    window.clearTimeout(edgeTimer)
+    edgeTimer = window.setTimeout(() => (edgeToast.value = false), 2600)
+    window.removeEventListener('scroll', onEdgeScroll)
+  }
+}
+onMounted(() => window.addEventListener('scroll', onEdgeScroll, { passive: true }))
+onUnmounted(() => {
+  window.removeEventListener('scroll', onEdgeScroll)
+  window.clearTimeout(edgeTimer)
+})
+
 // 首帧高度占位校正（v1.7）：index.html 为 #app 预设了 min-height（防 mount 高度跳变），
 // mount 后与每次路由切换后按实际内容校正——占位偏高时不再留下底部大片空白。
 // 首页同时把真实高度记入 sessionStorage，供下次首帧占位使用（值不准时跳变很小）。
@@ -91,6 +127,16 @@ watch(
     <MusicPlayer />
     <StarCursor />
     <MeteorTransition />
+    <Transition name="fade">
+      <div
+        v-if="edgeToast"
+        class="pointer-events-none fixed bottom-8 left-1/2 z-[75] -translate-x-1/2"
+      >
+        <p class="rounded-full border border-accent/40 bg-bg/90 px-5 py-2 text-sm text-accent shadow-[0_0_20px_rgba(139,92,246,0.3)] backdrop-blur">
+          ✦ 你已抵达星港边缘——感谢完整巡航，返航时见
+        </p>
+      </div>
+    </Transition>
     <Transition name="fade">
       <div v-if="konami" class="pointer-events-none fixed bottom-8 left-1/2 z-[70] -translate-x-1/2">
         <p class="glow-text rounded-full border border-primary/40 bg-bg/90 px-5 py-2 text-sm">

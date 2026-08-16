@@ -3,6 +3,7 @@ title: 图上的 BFS：染色与"走到底"
 date: 2026-08-16
 tags: [算法竞赛, 图论, BFS]
 category: 算法竞赛
+difficulty: 3
 desc: 两道 AtCoder 题——树边权取模后的奇偶染色，和牌堆链的"沿链走到底"统计
 ---
 

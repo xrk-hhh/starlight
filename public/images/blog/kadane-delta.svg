@@ -15,7 +15,6 @@
     <rect x="218" y="56" width="56" height="30" rx="5" fill="#61afef" opacity="0.8"/><text x="246" y="76" fill="#282c34">3</text>
     <rect x="282" y="56" width="56" height="30" rx="5" fill="#61afef" opacity="0.8"/><text x="310" y="76" fill="#282c34">9</text>
     <rect x="346" y="56" width="56" height="30" rx="5" fill="#61afef" opacity="0.8"/><text x="374" y="76" fill="#282c34">5</text>
-    <text x="410" y="76" fill="#e5c07b" text-anchor="start">（k = 6）</text>
   </g>
   <!-- 变化量数组：正负相间 -->
   <g font-family="monospace" font-size="13" text-anchor="middle">

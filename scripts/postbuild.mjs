@@ -23,8 +23,10 @@ const SITE = 'https://xrk-hhh.github.io/starlight'
 
 function parseFrontmatter(name) {
   const raw = readFileSync(`src/blog/${name}`, 'utf8')
-  const fm = raw.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ''
-  const pick = (key) => fm.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'))?.[1]?.trim() ?? ''
+  // \r 兼容：Windows 工作流写入的 md 为 CRLF，朴素 \n 正则会把全部文章过滤掉
+  const fm = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? ''
+  const pick = (key) =>
+    fm.match(new RegExp(`^${key}:[ \t]*(.+?)[ \t]*\r?$`, 'm'))?.[1]?.trim() ?? ''
   return {
     slug: name.replace(/\.md$/, ''),
     title: pick('title').replace(/^["']|["']$/g, ''),

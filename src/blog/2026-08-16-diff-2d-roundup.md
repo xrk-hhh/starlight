@@ -3,6 +3,7 @@ title: 差分与二维前缀和：记账与还原
 date: 2026-08-16
 tags: [算法竞赛, 差分, 前缀和]
 category: 算法竞赛
+difficulty: 3
 desc: 地毯、IncDec Sequence、激光炸弹、二维区间和——差分是前缀和的逆运算，矩形修改四个角记账、一次前缀和全部还原
 ---
 

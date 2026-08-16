@@ -22,7 +22,7 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
       over="Friends"
       title="友邻星轨"
       as="h1"
-      subtitle="星港之外，还有别的灯塔在闪烁——这是我常去的航线"
+      subtitle="星港之外的灯塔——内圈是我的常用航线，外圈是朋友们的站点"
     />
 
     <!-- 轨道视图：中央恒星 + 双圈公转的友邻站点（外圈头像超出轨道盒 28px，上下留白防压字） -->
@@ -96,7 +96,7 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
         :href="f.url"
         target="_blank"
         rel="noopener"
-        class="card group flex min-w-0 items-center gap-4 p-5 transition-all duration-300 hover:-translate-y-1"
+        class="card group flex min-w-0 items-center gap-4 p-5 transition-[transform,border-color] duration-300 hover:-translate-y-1"
       >
         <span
           class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/15 text-lg transition-all group-hover:border-primary/50 group-hover:text-primary"
