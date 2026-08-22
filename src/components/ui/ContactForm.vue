@@ -67,10 +67,12 @@ function resetForm() {
 }
 
 // ===== v2.14 发送成功彩蛋：电波传输仪式 =====
-// 三段式状态（电波发射 → 深空中继 → 星港签收），签收瞬间划流星护航；
-// reduced-motion 下跳过动画直接给终态。stage 与文案同时驱动模板里的步骤指示器。
+// 三段式状态（电波发射 → 深空中继 → 星港签收）+ 可视化动画：
+// 涟漪扩散（表单中心三圈）+ 信号光点飞向讯号区 + 回执卡弹入（GuestbookView）；
+// 签收瞬间划流星护航；reduced-motion 下跳过全部动画直接给终态。
 const STAGES = ['电波已发射，正奔向深空…', '深空中继站转发中…', '星港签收 ✓'] as const
 const stage = ref(0)
+const fxActive = ref(false)
 const reducedMotion =
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 let stageTimer: ReturnType<typeof setTimeout> | null = null
@@ -82,6 +84,7 @@ function runTransmitSequence() {
     return
   }
   stage.value = 1
+  fxActive.value = true // 涟漪 + 信号光点起飞（CSS 一次性动画）
   stageTimer = setTimeout(() => {
     stage.value = 2
     stageTimer = setTimeout(finishTransmit, 700)
@@ -90,6 +93,7 @@ function runTransmitSequence() {
 
 function finishTransmit() {
   stage.value = 3
+  fxActive.value = false
   statusMsg.value = '电报已发出，站长会尽快回信 ✦ 一颗流星已划过星海为你护航，你的回执挂在上方讯号区'
   // 签收瞬间流星护航（ParticleBackground 监听此事件；发送者可感知的彩蛋提示）
   window.dispatchEvent(new CustomEvent('starlight:meteor'))
@@ -160,7 +164,14 @@ async function submit() {
 </script>
 
 <template>
-  <form class="grid gap-5 md:grid-cols-2" novalidate @submit.prevent="submit">
+  <form class="relative grid gap-5 md:grid-cols-2" novalidate @submit.prevent="submit">
+    <!-- v2.14.1 传输动画层：涟漪扩散 + 信号光点飞向讯号区（一次性，签收后移除） -->
+    <div v-if="fxActive" class="transmit-fx" aria-hidden="true">
+      <span class="ripple r1"></span>
+      <span class="ripple r2"></span>
+      <span class="ripple r3"></span>
+      <span class="signal-dot"></span>
+    </div>
     <!-- honeypot：position 移出视口，机器人会填、用户看不见 -->
     <input
       v-model="form.botcheck"
@@ -233,8 +244,14 @@ async function submit() {
     </label>
 
     <div class="flex flex-wrap items-center gap-4 md:col-span-2">
-      <button type="submit" class="btn-primary !px-5 !py-2.5 text-sm" :disabled="status === 'sending'">
+      <button
+        type="submit"
+        class="btn-primary !px-5 !py-2.5 text-sm"
+        :class="status === 'sent' ? 'btn-pop' : ''"
+        :disabled="status === 'sending'"
+      >
         <span v-if="status === 'sending'">发射中…</span>
+        <span v-else-if="status === 'sent'">已签收 ✓</span>
         <span v-else>发送电报 ✦</span>
       </button>
 
@@ -265,6 +282,97 @@ async function submit() {
 </template>
 
 <style scoped>
+/* ===== v2.14.1 传输动画（GPU 友好：transform/opacity） ===== */
+.transmit-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+/* 电波涟漪：表单中下部三圈扩散 */
+.ripple {
+  position: absolute;
+  left: 50%;
+  top: 65%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  opacity: 0;
+  animation: ripple-out 1.15s cubic-bezier(0.2, 0.6, 0.35, 1) forwards;
+}
+.r2 {
+  animation-delay: 0.22s;
+}
+.r3 {
+  animation-delay: 0.44s;
+}
+@keyframes ripple-out {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(30);
+    opacity: 0;
+  }
+}
+/* 信号光点：从表单起飞，弧线飞向左上方讯号区，尾焰渐隐 */
+.signal-dot {
+  position: absolute;
+  left: 50%;
+  top: 65%;
+  width: 11px;
+  height: 11px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow:
+    0 0 14px 4px color-mix(in oklab, var(--color-primary) 65%, transparent),
+    0 0 34px 10px color-mix(in oklab, var(--color-accent) 35%, transparent);
+  animation: signal-fly 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+}
+@keyframes signal-fly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate(-9vw, -46vh) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-16vw, -88vh) scale(0.4);
+    opacity: 0;
+  }
+}
+/* 签收后按钮弹跳一次 */
+.btn-pop {
+  animation: btn-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes btn-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ripple,
+  .signal-dot,
+  .btn-pop {
+    animation: none;
+  }
+}
+
 .contact-input {
   width: 100%;
   border-radius: 0.5rem;
