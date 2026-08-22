@@ -426,7 +426,7 @@ html[data-theme='sakura'] .theme-petals {
 
 /* 浅色主题兼容层：
    1) 白色系边框/分隔在白底不可见 → 换成文字色 mix；
-   2) 星尘粒子在浅底过亮 → canvas 降透明度；
+   2) 星空以 NormalBlending 渲染（v2.13），canvas 保留 0.9 透明度柔化；
    3) 白色微高亮 hover 在浅底无效 → 换成主色极淡 mix */
 html[data-theme='paper'],
 html[data-theme='sakura'] {
@@ -440,9 +440,11 @@ html[data-theme='paper'] .border-white\/20,
 html[data-theme='sakura'] .border-white\/20 {
   border-color: color-mix(in oklab, var(--color-text) 14%, transparent);
 }
+/* v2.13：浅色主题星空可见化——加色混合改 NormalBlending（ParticleScene.setTheme）后，
+   canvas 不再需要压暗到 0.35（那是加色混合时代的补偿 hack），提到 0.9 保留一点柔化 */
 html[data-theme='paper'] canvas[aria-hidden='true'],
 html[data-theme='sakura'] canvas[aria-hidden='true'] {
-  opacity: 0.35;
+  opacity: 0.9;
 }
 html[data-theme='paper'] .hover\:bg-white\/\[0\.03\]:hover,
 html[data-theme='sakura'] .hover\:bg-white\/\[0\.03\]:hover {

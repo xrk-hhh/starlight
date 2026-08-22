@@ -171,8 +171,14 @@ onMounted(() => {
           colorB: scenePalette.colorB,
           navStars: navRoutes.value.length,
         })
-        // 暖星/流星色不在 init 参数里，初始化后补一次全量场景色
-        scene.setTheme(scenePalette.colorA, scenePalette.colorB, scenePalette.warm, scenePalette.meteor)
+        // 暖星/流星色与混合模式不在 init 参数里，初始化后补一次全量场景应用
+        scene.setTheme(
+          scenePalette.colorA,
+          scenePalette.colorB,
+          scenePalette.warm,
+          scenePalette.meteor,
+          themeDef(current.value).light,
+        )
       } catch (err) {
         // WebGL 不可用（§5.3）：隐藏 canvas，回退 main.css 里的 CSS 渐变背景
         console.warn('[particles] WebGL 初始化失败，回退静态背景', err)
@@ -207,11 +213,11 @@ watch(
   },
 )
 
-// v2.11 主题场景化：切主题时星空实时换色（粒子仍在运行，无需重建场景）
+// v2.11 主题场景化：切主题时星空实时换色 + 深浅混合模式切换（无需重建场景）
 const { current } = useTheme()
 watch(current, (key) => {
-  const p = themeDef(key).scene
-  scene?.setTheme(p.colorA, p.colorB, p.warm, p.meteor)
+  const def = themeDef(key)
+  scene?.setTheme(def.scene.colorA, def.scene.colorB, def.scene.warm, def.scene.meteor, def.light)
 })
 
 onUnmounted(() => {
