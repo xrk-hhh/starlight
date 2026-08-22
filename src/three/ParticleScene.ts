@@ -3,7 +3,7 @@ import vertexShader from './shaders/particles.vert?raw'
 import fragmentShader from './shaders/particles.frag?raw'
 import meteorVertexShader from './shaders/meteor.vert?raw'
 import meteorFragmentShader from './shaders/meteor.frag?raw'
-import { resolveParticleCount, audioLevel, type ParticleDensity } from '@/stores/particles'
+import { resolveParticleCount, type ParticleDensity } from '@/stores/particles'
 
 export interface ParticleSceneOptions {
   count: number
@@ -118,9 +118,9 @@ export class ParticleScene {
     this.applyDensity()
   }
 
-  /** v2.11 主题场景化：运行时把星空整体换色（粒子双色 + 暖星 + 星云 tint + 流星）。颜色写入已有材质 uniforms，不重建几何，零 GC 压力，切换即时生效。 */
-  setTheme(colorA: string, colorB: string, warm: string, meteor: string, light = false): void {
-    void light // 兼容旧调用签名；全部主题统一加色渲染（v2.11 认证行为）
+  /** v2.11 主题场景化：运行时把星空整体换色（粒子双色 + 暖星 + 星云 tint + 流星）。
+   *  颜色写入已有材质 uniforms，不重建几何，零 GC 压力，切换即时生效。 */
+  setTheme(colorA: string, colorB: string, warm: string, meteor: string): void {
     this.colorA = colorA
     this.colorB = colorB
     const a = new THREE.Color(colorA)
@@ -472,7 +472,6 @@ export class ParticleScene {
         uColorA: { value: new THREE.Color(this.colorA) },
         uColorB: { value: new THREE.Color(this.colorB) },
         uColorC: { value: new THREE.Color('#fbbf24') },
-        uAudio: { value: 0 },
         uMouse: { value: new THREE.Vector3() },
         uRepelRadius: { value: 6 },
         uRepelStrength: { value: 0 },
@@ -586,10 +585,6 @@ export class ParticleScene {
       }
       // 主星与主粒子共享 uTime 语义（漂移动画），需每帧同步
       if (this.navMaterial) this.navMaterial.uniforms.uTime.value = this.elapsed
-      // 音乐电平 → uAudio（v2.12 星海呼吸；静默时为 0 无额外开销）
-      const level = audioLevel.value
-      for (const layer of this.layers) layer.material.uniforms.uAudio.value = level
-      if (this.navMaterial) this.navMaterial.uniforms.uAudio.value = level
       // 星云慢速正弦漂移
       if (this.nebulaGroup?.visible) {
         for (const child of this.nebulaGroup.children) {

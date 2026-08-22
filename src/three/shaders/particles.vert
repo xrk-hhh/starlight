@@ -5,7 +5,6 @@ uniform vec3 uColorB;
 uniform vec3 uMouse;
 uniform float uRepelRadius;
 uniform float uRepelStrength;
-uniform float uAudio;
 
 attribute float aSize;
 attribute float aRadius;
@@ -44,8 +43,7 @@ void main() {
 
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   vHover = aHover;
-  // 音频律动（v2.12）：电台播放时粒子随节拍微放大（幅度克制，静默时 uAudio=0 无感）
-  gl_PointSize = aSize * uPixelRatio * (240.0 / -mvPosition.z) * (1.0 + vHover * 0.7) * (1.0 + uAudio * 0.35);
+  gl_PointSize = aSize * uPixelRatio * (240.0 / -mvPosition.z) * (1.0 + vHover * 0.7);
   gl_Position = projectionMatrix * mvPosition;
   vColorMix = aColorMix;
   vWarm = aWarm;

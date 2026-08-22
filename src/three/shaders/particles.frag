@@ -4,7 +4,6 @@ uniform vec3 uColorA;
 uniform vec3 uColorB;
 uniform vec3 uColorC;
 uniform float uTime;
-uniform float uAudio;
 varying float vColorMix;
 varying float vHover;
 varying float vWarm;
@@ -18,8 +17,8 @@ void main() {
   // 暖星混合：5% 粒子混入琥珀色 uColorC
   vec3 color = mix(mix(uColorA, uColorB, vColorMix), uColorC, vWarm);
 
-  // 闪烁叠加在基础透明度上；uAudio 让星海随音乐呼吸（v2.12）
-  float alpha = smoothstep(0.5, 0.05, d) * (0.8 + vHover * 0.5) * vTwinkle * (1.0 + uAudio * 0.45);
+  // 闪烁叠加在基础透明度上
+  float alpha = smoothstep(0.5, 0.05, d) * (0.8 + vHover * 0.5) * vTwinkle;
 
   // 主星十字星芒（仅 vNav > 0.5，即导航主星）
   if (vNav > 0.5) {

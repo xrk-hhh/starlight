@@ -426,7 +426,7 @@ html[data-theme='sakura'] .theme-petals {
 
 /* 浅色主题兼容层：
    1) 白色系边框/分隔在白底不可见 → 换成文字色 mix；
-   2) 星空以 NormalBlending 渲染（v2.13），canvas 保留 0.9 透明度柔化；
+   2) 星尘粒子在浅底压暗 → canvas 降透明度 0.35；
    3) 白色微高亮 hover 在浅底无效 → 换成主色极淡 mix */
 html[data-theme='paper'],
 html[data-theme='sakura'] {
@@ -440,8 +440,7 @@ html[data-theme='paper'] .border-white\/20,
 html[data-theme='sakura'] .border-white\/20 {
   border-color: color-mix(in oklab, var(--color-text) 14%, transparent);
 }
-/* v2.13.1：浅色主题星空改由 FlatStarfield（2D Canvas）渲染，WebGL canvas 在浅色下
-   由 ParticleBackground 直接 display:none；此规则保留给历史降级路径 */
+/* v2.11 认证行为：星尘粒子在浅底压暗至 0.35（预乘合成下加色粒子呈柔和彩点） */
 html[data-theme='paper'] canvas[aria-hidden='true'],
 html[data-theme='sakura'] canvas[aria-hidden='true'] {
   opacity: 0.35;
