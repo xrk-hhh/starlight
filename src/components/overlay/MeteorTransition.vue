@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import router from '@/router'
+import { useTheme, themeDef } from '@/composables/useTheme'
 
 const overlayRef = ref<HTMLDivElement | null>(null)
 const glowRef = ref<HTMLDivElement | null>(null)
 const pathRef = ref<SVGPathElement | null>(null)
 
-// 默认星蓝→星紫渐变；每次播放从三色轨道中随机取头/尾色
-const TRACKS = ['#22d3ee', '#8b5cf6', '#fbbf24']
+// v2.11 主题场景化：转场流星从「当前主题」的场景色板取头/尾色（粒子 A/B + 暖星三选二），
+// 深空星港是青→紫，落日是琥珀→玫瑰，极光是青绿→冰蓝……切主题后下一次导航即生效
+const { current } = useTheme()
 const headColor = ref('#22d3ee')
 const tailColor = ref('#8b5cf6')
 
@@ -21,8 +23,10 @@ function play() {
   const glow = glowRef.value
   if (!path || !glow || !gsap) return
 
-  headColor.value = TRACKS[Math.floor(Math.random() * TRACKS.length)]
-  tailColor.value = TRACKS[Math.floor(Math.random() * TRACKS.length)]
+  const palette = themeDef(current.value).scene
+  const tracks = [palette.colorA, palette.colorB, palette.warm]
+  headColor.value = tracks[Math.floor(Math.random() * tracks.length)]
+  tailColor.value = tracks[Math.floor(Math.random() * tracks.length)]
 
   // vector-effect="non-scaling-stroke" 下 dash 按宿主（屏幕像素）空间铺设，
   // 不能用 getTotalLength()（viewBox 单位，只占路径零头，会变成虚线淡入）；
@@ -92,7 +96,7 @@ onUnmounted(() => {
 <style scoped>
 .meteor-glow {
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(34, 211, 238, 0.35), transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.35), transparent 60%);
+    radial-gradient(ellipse at 30% 20%, color-mix(in oklab, var(--color-primary) 35%, transparent), transparent 60%),
+    radial-gradient(ellipse at 70% 80%, color-mix(in oklab, var(--color-accent) 35%, transparent), transparent 60%);
 }
 </style>

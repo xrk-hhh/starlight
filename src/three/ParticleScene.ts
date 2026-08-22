@@ -118,6 +118,34 @@ export class ParticleScene {
     this.applyDensity()
   }
 
+  /** v2.11 主题场景化：运行时把星空整体换色（粒子双色 + 暖星 + 星云 tint + 流星）。
+   *  颜色写入已有材质 uniforms，不重建几何，零 GC 压力，切换即时生效。 */
+  setTheme(colorA: string, colorB: string, warm: string, meteor: string): void {
+    this.colorA = colorA
+    this.colorB = colorB
+    const a = new THREE.Color(colorA)
+    const b = new THREE.Color(colorB)
+    const w = new THREE.Color(warm)
+    for (const layer of this.layers) {
+      const u = layer.material.uniforms
+      ;(u.uColorA.value as THREE.Color).copy(a)
+      ;(u.uColorB.value as THREE.Color).copy(b)
+      ;(u.uColorC.value as THREE.Color).copy(w)
+    }
+    if (this.navMaterial) {
+      const u = this.navMaterial.uniforms
+      ;(u.uColorA.value as THREE.Color).copy(a)
+      ;(u.uColorB.value as THREE.Color).copy(b)
+      ;(u.uColorC.value as THREE.Color).copy(w)
+    }
+    // 星云 tint 交替 A/B 色（buildNebula 同规则）
+    this.nebulaGroup?.children.forEach((child, i) => {
+      const mat = (child as THREE.Sprite).material as THREE.SpriteMaterial
+      mat.color.copy(i % 2 === 0 ? a : b)
+    })
+    if (this.meteorMaterial) (this.meteorMaterial.uniforms.uColor.value as THREE.Color).set(meteor)
+  }
+
   setMobile(isMobile: boolean): void {
     this.isMobile = isMobile
     this.applyDensity()
@@ -365,7 +393,7 @@ export class ParticleScene {
     ctx.fillRect(0, 0, size, size)
     this.nebulaTexture = new THREE.CanvasTexture(canvas)
 
-    const tintColors = [new THREE.Color('#22d3ee'), new THREE.Color('#8b5cf6')]
+    const tintColors = [new THREE.Color(this.colorA), new THREE.Color(this.colorB)]
     const spriteCount = 14 + Math.floor(Math.random() * 7) // 14~20
     this.nebulaGroup = new THREE.Group()
     for (let i = 0; i < spriteCount; i++) {
@@ -422,6 +450,7 @@ export class ParticleScene {
         uProgress: { value: METEOR_PHASE },
         uDir: { value: dir.clone() },
         uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+        uColor: { value: new THREE.Color('#8c9bff') },
       },
       transparent: true,
       depthWrite: false,

@@ -64,12 +64,12 @@ const hovered = ref<number | null>(null)
     <svg viewBox="0 0 460 344" class="relative mx-auto w-full max-w-[420px]" role="img" aria-label="技能星云雷达图">
       <defs>
         <linearGradient id="nebulaFill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#22d3ee" stop-opacity="0.30" />
-          <stop offset="1" stop-color="#8b5cf6" stop-opacity="0.30" />
+          <stop offset="0" style="stop-color: var(--color-primary)" stop-opacity="0.30" />
+          <stop offset="1" style="stop-color: var(--color-accent)" stop-opacity="0.30" />
         </linearGradient>
         <linearGradient id="nebulaStroke" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#22d3ee" />
-          <stop offset="1" stop-color="#8b5cf6" />
+          <stop offset="0" style="stop-color: var(--color-primary)" />
+          <stop offset="1" style="stop-color: var(--color-accent)" />
         </linearGradient>
         <filter id="vertexGlow" x="-80%" y="-80%" width="260%" height="260%">
           <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#8b5cf6" flood-opacity="0.9" />

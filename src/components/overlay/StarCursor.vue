@@ -96,8 +96,8 @@ onUnmounted(() => {
     <svg class="absolute h-0 w-0" aria-hidden="true">
       <defs>
         <linearGradient id="starcursor-grad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#22d3ee" />
-          <stop offset="100%" stop-color="#8b5cf6" />
+          <stop offset="0%" style="stop-color: var(--color-primary)" />
+          <stop offset="100%" style="stop-color: var(--color-accent)" />
         </linearGradient>
       </defs>
     </svg>
@@ -125,7 +125,7 @@ onUnmounted(() => {
       :class="{ 'star-follow--hover': hovering }"
       :style="{ left: `${pos.x}px`, top: `${pos.y}px`, opacity: visible ? 1 : 0 }"
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" class="star-glow">
+      <svg width="18" height="18" viewBox="0 0 24 24" class="star-glow glow-cursor">
         <path :d="STAR_PATH" fill="url(#starcursor-grad)" />
       </svg>
     </div>
@@ -154,6 +154,5 @@ onUnmounted(() => {
 }
 .star-glow {
   display: block;
-  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.55));
 }
 </style>

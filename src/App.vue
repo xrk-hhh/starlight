@@ -112,6 +112,8 @@ watch(
        留下大片空白（v1.7 修复）；页面自身的 min-h 需求由各视图的 section 控制 -->
   <div class="relative">
     <ParticleBackground />
+    <!-- 樱庭薄暮主题的花瓣层（其余主题 display:none，见 main.css .theme-petals） -->
+    <div class="theme-petals" aria-hidden="true"><span v-for="i in 10" :key="i"></span></div>
     <AppNav />
     <main class="relative z-10">
       <RouterView v-slot="{ Component, route }">
@@ -132,7 +134,7 @@ watch(
         v-if="edgeToast"
         class="pointer-events-none fixed bottom-8 left-1/2 z-[75] -translate-x-1/2"
       >
-        <p class="rounded-full border border-accent/40 bg-bg/90 px-5 py-2 text-sm text-accent shadow-[0_0_20px_rgba(139,92,246,0.3)] backdrop-blur">
+        <p class="rounded-full border border-accent/40 bg-bg/90 px-5 py-2 text-sm text-accent glow-toast-accent backdrop-blur">
           ✦ 你已抵达星港边缘——感谢完整巡航，返航时见
         </p>
       </div>

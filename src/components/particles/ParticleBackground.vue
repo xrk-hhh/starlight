@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { particlesState } from '@/stores/particles'
 import { profile } from '@/data/profile'
+import { useTheme, themeDef } from '@/composables/useTheme'
 
 // three.js 不进首屏主包：动态导入 + requestIdleCallback 延迟初始化，
 // 让首屏渲染与 Vue 挂载优先完成（粒子是装饰层，晚 1s 出现无感知）。
@@ -157,12 +158,15 @@ onMounted(() => {
         const mod = await import('@/three/ParticleScene')
         if (!canvasRef.value) return // await 期间组件卸载
         scene = new mod.ParticleScene(canvasRef.value)
+        const scenePalette = themeDef(current.value).scene
         scene.init({
           count: 1000,
-          colorA: '#22d3ee',
-          colorB: '#8b5cf6',
+          colorA: scenePalette.colorA,
+          colorB: scenePalette.colorB,
           navStars: navRoutes.value.length,
         })
+        // 暖星/流星色不在 init 参数里，初始化后补一次全量场景色
+        scene.setTheme(scenePalette.colorA, scenePalette.colorB, scenePalette.warm, scenePalette.meteor)
       } catch (err) {
         // WebGL 不可用（§5.3）：隐藏 canvas，回退 main.css 里的 CSS 渐变背景
         console.warn('[particles] WebGL 初始化失败，回退静态背景', err)
@@ -195,6 +199,13 @@ watch(
     if (d === 'off') clearHover()
   },
 )
+
+// v2.11 主题场景化：切主题时星空实时换色（粒子仍在运行，无需重建场景）
+const { current } = useTheme()
+watch(current, (key) => {
+  const p = themeDef(key).scene
+  scene?.setTheme(p.colorA, p.colorB, p.warm, p.meteor)
+})
 
 onUnmounted(() => {
   stopLabelTrack()

@@ -14,6 +14,9 @@ export const friends: Friend[] = [
   { name: '余诺', url: 'https://continueyn.site', desc: '全栈开发者 · 个人作品集', mark: '✧' },
   { name: 'QQ Hamburger', url: 'https://qqhamburger.top', desc: 'CS Portfolio · 计算机科学作品集', mark: '▲' },
   { name: '李伟豪', url: 'https://mypresentboxes.com', desc: '自我 · 求索 · 亲友 · 世界，四格记录站', mark: '△' },
+  { name: 'Jizen', url: 'https://jizen.top/', desc: 'Jizen 的个人站点', mark: '◈' },
+  { name: 'dmw', url: 'https://chijysmile.github.io/duanmw01/', desc: 'dmw 的个人小站', mark: '✜' },
+  { name: '杨禹然', url: 'https://d2e27556a0604eea89cda8bffaefb020.sh2.agentos-app.net/', desc: '杨禹然的 AgentOS 站点', mark: '❖' },
 ]
 
 // 交换友链：把你的站点按上面的格式加进来，然后发邮件给站长

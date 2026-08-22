@@ -51,8 +51,8 @@ onUnmounted(() => {
       <svg viewBox="0 0 48 48" class="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
         <defs>
           <linearGradient id="topRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#22d3ee" />
-            <stop offset="1" stop-color="#8b5cf6" />
+            <stop offset="0" style="stop-color: var(--color-primary)" />
+            <stop offset="1" style="stop-color: var(--color-accent)" />
           </linearGradient>
         </defs>
         <circle cx="24" cy="24" :r="R" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2.5" />

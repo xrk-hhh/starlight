@@ -59,17 +59,17 @@ const nailongAvatar = `${import.meta.env.BASE_URL}images/nailong-avatar.jpg`
         <img
           :src="nailongAvatar"
           alt=""
-          class="h-9 w-9 rounded-full border border-white/15 object-cover transition-all duration-300 group-hover:scale-110 group-hover:border-primary/60 group-hover:shadow-[0_0_16px_rgba(34,211,238,0.45)]"
+          class="h-9 w-9 rounded-full border border-white/15 object-cover transition-all duration-300 group-hover:scale-110 group-hover:border-primary/60 group-hover:glow-orbit-primary"
         />
         <span
           aria-hidden="true"
-          class="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary opacity-0 shadow-[0_0_6px_rgba(34,211,238,0.9)] transition-opacity duration-300 group-hover:opacity-100"
+          class="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary opacity-0 glow-dot-primary transition-opacity duration-300 group-hover:opacity-100"
         ></span>
       </RouterLink>
     </nav>
     <div v-if="scrolled" class="absolute inset-x-0 bottom-0 h-[3px] bg-white/5">
       <div
-        class="h-full bg-gradient-to-r from-primary to-accent shadow-[0_0_8px_rgba(139,92,246,0.6)] transition-[width] duration-100 ease-out"
+        class="h-full bg-gradient-to-r from-primary to-accent glow-bar-accent transition-[width] duration-100 ease-out"
         :style="{ width: scrollProgress + '%' }"
       ></div>
     </div>

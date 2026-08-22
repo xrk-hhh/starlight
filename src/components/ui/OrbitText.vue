@@ -22,8 +22,8 @@ const id = `orbit-${Math.random().toString(36).slice(2, 8)}`
       <circle cx="100" cy="100" r="6" fill="none" stroke="url(#orbitGrad)" stroke-width="1" opacity="0.5" />
       <defs>
         <linearGradient id="orbitGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#22d3ee" />
-          <stop offset="1" stop-color="#8b5cf6" />
+          <stop offset="0" style="stop-color: var(--color-primary)" />
+          <stop offset="1" style="stop-color: var(--color-accent)" />
         </linearGradient>
       </defs>
     </svg>

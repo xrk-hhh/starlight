@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import GiscusComments from '@/components/blog/GiscusComments.vue'
+import ContactForm from '@/components/ui/ContactForm.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 
 const scopeRef = ref<HTMLElement | null>(null)
@@ -33,7 +34,7 @@ const capturedSignals = [
       over="Guestbook"
       title="星语留言板"
       as="h1"
-      subtitle="把想说的话写成光发过来——登录 GitHub 即可发射，讯息会留在星图上"
+      subtitle="把想说的话写成光发过来——私密信件走上面的联络信使，公开留言在下方登录 GitHub 发射"
     />
 
     <!-- 已捕获的深空讯号（v2.9 重设计）：信号强度条 + 呼吸圆点 + 时间戳角标 -->
@@ -66,10 +67,26 @@ v-for="b in 4" :key="b" class="w-[3px] rounded-sm transition-all duration-300"
 
     <div class="star-divider my-12" aria-hidden="true"><span>✦</span></div>
 
+    <!-- 联络信使（v2.11）：四字段电报，Web3Forms 直投 / mailto 降级双通道 -->
+    <div data-reveal class="card mx-auto max-w-2xl p-6 md:p-8">
+      <div class="mb-6 flex items-baseline justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-semibold">联络信使 ✉</h2>
+          <p class="mt-1 text-sm text-text-muted">像发邮件一样给站长发一封电报——不用登录，写下即发。</p>
+        </div>
+        <span class="hidden font-mono text-[10px] uppercase tracking-[0.3em] text-text-muted/40 sm:block"
+          >Contact Beacon</span
+        >
+      </div>
+      <ContactForm />
+    </div>
+
+    <div class="star-divider my-12" aria-hidden="true"><span>✦</span></div>
+
     <!-- 正片：Giscus 留言区（GitHub 登录后可发星际弹幕） -->
     <div data-reveal class="mx-auto max-w-2xl text-center">
       <p class="text-sm leading-7 text-text-muted">
-        在这里留下你的足迹——一句问候、一个建议、或者一个 bug 🐞。<br />
+        想留下公开的足迹？在下面和路过星港的旅行者们打个招呼——<br />
         留言通过 GitHub Discussions 存储，登录 GitHub 即可发射。
       </p>
     </div>

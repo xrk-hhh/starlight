@@ -50,7 +50,7 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
               <span class="orbit-counter block" style="animation-duration: 64s">
                 <span class="block" :style="{ transform: `rotate(${(-360 / innerRing.length) * i}deg)` }">
                   <span
-                    class="flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-primary/40 bg-bg/80 text-xl text-primary shadow-[0_0_16px_rgba(34,211,238,0.25)] backdrop-blur transition-all hover:scale-110 hover:border-primary hover:text-accent"
+                    class="flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-primary/40 bg-bg/80 text-xl text-primary glow-orbit-primary backdrop-blur transition-all hover:scale-110 hover:border-primary hover:text-accent"
                   >
                     {{ f.mark }}
                   </span>
@@ -75,7 +75,7 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
               <span class="orbit-counter-rev block" style="animation-duration: 96s">
                 <span class="block" :style="{ transform: `rotate(${(-360 / outerRing.length) * i - 60}deg)` }">
                   <span
-                    class="flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/40 bg-bg/80 text-xl text-accent shadow-[0_0_16px_rgba(139,92,246,0.25)] backdrop-blur transition-all hover:scale-110 hover:border-accent hover:text-primary"
+                    class="flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/40 bg-bg/80 text-xl text-accent glow-orbit-accent backdrop-blur transition-all hover:scale-110 hover:border-accent hover:text-primary"
                   >
                     {{ f.mark }}
                   </span>

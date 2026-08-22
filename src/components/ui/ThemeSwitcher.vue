@@ -20,7 +20,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
       type="button"
       aria-label="切换主题"
       title="切换主题"
-      class="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-text-muted transition-all duration-300 hover:border-primary/60 hover:text-primary hover:shadow-[0_0_12px_rgba(34,211,238,0.35)]"
+      class="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-text-muted transition-all duration-300 hover:border-primary/60 hover:text-primary hover-glow-primary"
       @click="open = !open"
     >
       <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" :class="open ? 'animate-none' : ''" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

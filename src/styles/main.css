@@ -269,6 +269,161 @@ html[data-theme='sakura'] {
   --color-text-muted: #9a7f8c;
 }
 
+/* ===== 主题场景化（v2.11）：每主题独立氛围层，不止换色 =====
+   1) body 多层渐变各自成「世界」（星海 / 晚霞 / 冰原 / 纸面 / 樱暮）
+   2) 动效层用 body::before（fixed、pointer-events:none、置于内容之下星空之上）
+   3) 粒子/星云/流星颜色由 useTheme.scene 驱动（ParticleScene.setTheme）
+   动画均在 prefers-reduced-motion 下关闭。 */
+
+/* —— 落日熔金：地平线日轮 + 上下暖霞 —— */
+html[data-theme='sunset'] body {
+  background:
+    radial-gradient(ellipse 90% 42% at 50% 112%, rgba(251, 191, 36, 0.24), transparent 62%),
+    radial-gradient(ellipse 120% 46% at 50% 118%, rgba(244, 63, 94, 0.16), transparent 60%),
+    radial-gradient(ellipse 60% 30% at 18% -8%, rgba(124, 45, 18, 0.32), transparent 70%),
+    linear-gradient(180deg, #171017 0%, #120c0a 48%, #170d0b 100%),
+    var(--color-bg);
+}
+html[data-theme='sunset'] body::before {
+  content: '';
+  position: fixed;
+  left: 50%;
+  bottom: -20vh;
+  width: 62vmin;
+  height: 62vmin;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(253, 230, 138, 0.30), rgba(245, 158, 11, 0.12) 45%, transparent 70%);
+  filter: blur(10px);
+  animation: sunset-breathe 10s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sunset-breathe {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
+}
+
+/* —— 极光冰川：顶部极光帘幕（双向缓漂 + 呼吸缩放）+ 底部冰面反光 —— */
+html[data-theme='aurora'] body {
+  background:
+    radial-gradient(ellipse 80% 26% at 50% 118%, rgba(125, 211, 252, 0.10), transparent 65%),
+    linear-gradient(180deg, #050d14 0%, #071016 55%, #08131b 100%),
+    var(--color-bg);
+}
+html[data-theme='aurora'] body::before {
+  content: '';
+  position: fixed;
+  top: -12vh;
+  left: -10vw;
+  right: -10vw;
+  height: 56vh;
+  background:
+    linear-gradient(97deg, transparent 4%, rgba(45, 212, 191, 0.16) 22%, rgba(96, 165, 250, 0.13) 40%, rgba(167, 243, 208, 0.10) 52%, transparent 66%),
+    linear-gradient(113deg, transparent 34%, rgba(45, 212, 191, 0.11) 56%, rgba(125, 211, 252, 0.09) 70%, transparent 84%);
+  filter: blur(22px);
+  animation: aurora-drift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes aurora-drift {
+  from { transform: skewY(-4deg) translateX(-3vw) scaleY(1); }
+  to { transform: skewY(-6deg) translateX(3vw) scaleY(1.12); }
+}
+
+/* —— 月白纸笺：暖纸纵向渐变 + 衬线字体 + 锐利卡片（信纸气质） —— */
+html[data-theme='paper'] body {
+  background:
+    radial-gradient(ellipse 70% 32% at 50% -12%, rgba(15, 118, 110, 0.06), transparent 60%),
+    linear-gradient(180deg, #f8f5ee 0%, #f5f2ea 55%, #ece5d6 100%);
+}
+html[data-theme='paper'] {
+  --font-sans: Georgia, 'Nimbus Roman', 'Songti SC', 'SimSun', serif;
+}
+html[data-theme='paper'] .card {
+  border-radius: 0.375rem;
+}
+
+/* —— 樱庭薄暮：樱粉暮色渐晕 + 更圆润的卡片；花瓣层见 .theme-petals —— */
+html[data-theme='sakura'] body {
+  background:
+    radial-gradient(ellipse 90% 40% at 82% -14%, rgba(244, 114, 182, 0.15), transparent 62%),
+    radial-gradient(ellipse 70% 34% at 12% 112%, rgba(167, 139, 250, 0.11), transparent 64%),
+    linear-gradient(180deg, #fdf6f9 0%, #fbf4f7 50%, #f6ebf2 100%);
+}
+html[data-theme='sakura'] .card {
+  border-radius: 1.25rem;
+}
+
+/* —— 樱花瓣飘落层（App.vue 挂载，仅樱庭薄暮显示；transform 动画走合成器） —— */
+.theme-petals {
+  position: fixed;
+  inset: 0;
+  z-index: 5; /* 星空之上、内容(z-10)之下 */
+  display: none;
+  pointer-events: none;
+  overflow: hidden;
+}
+html[data-theme='sakura'] .theme-petals {
+  display: block;
+}
+.theme-petals span {
+  position: absolute;
+  top: -4vh;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.55), rgba(249, 168, 212, 0.45));
+  border-radius: 50% 0 50% 50%;
+  animation: petal-fall linear infinite;
+}
+.theme-petals span:nth-child(1) { left: 6%;  animation-duration: 16s; animation-delay: -2s; }
+.theme-petals span:nth-child(2) { left: 18%; animation-duration: 21s; animation-delay: -9s; transform: scale(0.8); }
+.theme-petals span:nth-child(3) { left: 31%; animation-duration: 14s; animation-delay: -5s; transform: scale(1.2); }
+.theme-petals span:nth-child(4) { left: 44%; animation-duration: 24s; animation-delay: -13s; }
+.theme-petals span:nth-child(5) { left: 56%; animation-duration: 17s; animation-delay: -7s; transform: scale(0.7); }
+.theme-petals span:nth-child(6) { left: 66%; animation-duration: 20s; animation-delay: -16s; transform: scale(1.1); }
+.theme-petals span:nth-child(7) { left: 76%; animation-duration: 15s; animation-delay: -4s; }
+.theme-petals span:nth-child(8) { left: 85%; animation-duration: 22s; animation-delay: -11s; transform: scale(0.9); }
+.theme-petals span:nth-child(9) { left: 93%; animation-duration: 18s; animation-delay: -1s; transform: scale(1.15); }
+.theme-petals span:nth-child(10) { left: 12%; animation-duration: 26s; animation-delay: -20s; transform: scale(0.6); }
+@keyframes petal-fall {
+  0% { translate: 0 -4vh; rotate: 0deg; opacity: 0; }
+  8% { opacity: 0.8; }
+  88% { opacity: 0.8; }
+  100% { translate: 6vw 108vh; rotate: 540deg; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme='sunset'] body::before,
+  html[data-theme='aurora'] body::before,
+  .theme-petals span {
+    animation: none;
+  }
+  .theme-petals {
+    display: none;
+  }
+}
+
+/* —— 主题可变光晕工具（替代模板里硬编码的 rgba 光晕，随主题变量换色） —— */
+.glow-orbit-primary {
+  box-shadow: 0 0 16px color-mix(in oklab, var(--color-primary) 25%, transparent);
+}
+.glow-orbit-accent {
+  box-shadow: 0 0 16px color-mix(in oklab, var(--color-accent) 25%, transparent);
+}
+.glow-toast-accent {
+  box-shadow: 0 0 20px color-mix(in oklab, var(--color-accent) 30%, transparent);
+}
+.glow-dot-primary {
+  box-shadow: 0 0 6px color-mix(in oklab, var(--color-primary) 90%, transparent);
+}
+.glow-bar-accent {
+  box-shadow: 0 0 8px color-mix(in oklab, var(--color-accent) 60%, transparent);
+}
+.hover-glow-primary:hover {
+  box-shadow: 0 0 16px color-mix(in oklab, var(--color-primary) 45%, transparent);
+}
+.glow-cursor {
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--color-primary) 55%, transparent));
+}
+
 /* 浅色主题兼容层：
    1) 白色系边框/分隔在白底不可见 → 换成文字色 mix；
    2) 星尘粒子在浅底过亮 → canvas 降透明度；
@@ -326,4 +481,13 @@ html[data-theme='sakura'] .hover\:border-white\/30:hover {
 html[data-theme='paper'] .hover\:bg-white\/5:hover,
 html[data-theme='sakura'] .hover\:bg-white\/5:hover {
   background-color: color-mix(in oklab, var(--color-text) 6%, transparent);
+}
+/* 星辰分隔线的白色渐变线在浅底不可见 → 文字色 mix */
+html[data-theme='paper'] .star-divider::before,
+html[data-theme='sakura'] .star-divider::before {
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--color-text) 18%, transparent));
+}
+html[data-theme='paper'] .star-divider::after,
+html[data-theme='sakura'] .star-divider::after {
+  background: linear-gradient(90deg, color-mix(in oklab, var(--color-text) 18%, transparent), transparent);
 }
