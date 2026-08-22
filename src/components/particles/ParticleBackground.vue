@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { particlesState } from '@/stores/particles'
 import { profile } from '@/data/profile'
 import { useTheme, themeDef } from '@/composables/useTheme'
-import { FlatStarfield } from '@/three/FlatStarfield'
 
 // three.js 不进首屏主包：动态导入 + requestIdleCallback 延迟初始化，
 // 让首屏渲染与 Vue 挂载优先完成（粒子是装饰层，晚 1s 出现无感知）。
@@ -12,7 +11,6 @@ type ParticleSceneCtor = typeof import('@/three/ParticleScene').ParticleScene
 
 const router = useRouter()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const flatCanvasRef = ref<HTMLCanvasElement | null>(null)
 let scene: InstanceType<ParticleSceneCtor> | null = null
 let mediaMobile: MediaQueryList | null = null
 let mediaReduced: MediaQueryList | null = null
@@ -174,12 +172,7 @@ onMounted(() => {
           navStars: navRoutes.value.length,
         })
         // 暖星/流星色不在 init 参数里，初始化后补一次全量场景色
-        scene.setTheme(
-          scenePalette.colorA,
-          scenePalette.colorB,
-          scenePalette.warm,
-          scenePalette.meteor,
-        )
+        scene.setTheme(scenePalette.colorA, scenePalette.colorB, scenePalette.warm, scenePalette.meteor)
       } catch (err) {
         // WebGL 不可用（§5.3）：隐藏 canvas，回退 main.css 里的 CSS 渐变背景
         console.warn('[particles] WebGL 初始化失败，回退静态背景', err)
@@ -201,8 +194,6 @@ onMounted(() => {
       window.addEventListener('starlight:meteor', onMeteorEvent)
       window.addEventListener('blur', clearRepel)
       document.documentElement.addEventListener('mouseleave', clearRepel)
-      // v2.13.1：当前若是浅色主题，WebGL 层让位给 FlatStarfield
-      syncLayers()
     })()
   })
 })
@@ -213,41 +204,15 @@ watch(
     scene?.setDensity(d)
     // 密度 off（如博客文章页）主星隐藏：清掉悬停状态，避免 label 滞留
     if (d === 'off') clearHover()
-    // 浅色 2D 层同规则联动
-    const light = themeDef(current.value).light
-    if (light) flat?.start(d, mediaMobile?.matches ?? false, mediaReduced?.matches ?? false)
   },
 )
 
-// v2.11 主题场景化 + v2.13.1 双层切换：
-// 深色主题 → WebGL 星海（加色发光 + 视差/主星交互），setTheme 实时换色；
-// 浅色主题 → FlatStarfield（2D Canvas 墨点星野，任何环境稳定可见），WebGL 循环暂停省 GPU
+// v2.11 主题场景化：切主题时星空实时换色（粒子仍在运行，无需重建场景）
 const { current } = useTheme()
-let flat: FlatStarfield | null = null
-
-function syncLayers() {
-  const def = themeDef(current.value)
-  const webglCanvas = canvasRef.value
-  const flatCanvas = flatCanvasRef.value
-  if (def.light) {
-    scene?.setRunning(false)
-    if (webglCanvas) webglCanvas.style.display = 'none'
-    if (flatCanvas) {
-      flat ??= new FlatStarfield(flatCanvas)
-      flat.setTheme(def.scene.colorA, def.scene.colorB, def.scene.warm)
-      flat.start(particlesState.density, mediaMobile?.matches ?? false, mediaReduced?.matches ?? false)
-      flatCanvas.style.display = 'block'
-    }
-  } else {
-    flat?.stop()
-    if (flatCanvas) flatCanvas.style.display = 'none'
-    if (webglCanvas) webglCanvas.style.display = 'block'
-    scene?.setRunning(true)
-    scene?.setTheme(def.scene.colorA, def.scene.colorB, def.scene.warm, def.scene.meteor)
-  }
-}
-
-watch(current, () => syncLayers())
+watch(current, (key) => {
+  const p = themeDef(key).scene
+  scene?.setTheme(p.colorA, p.colorB, p.warm, p.meteor)
+})
 
 onUnmounted(() => {
   stopLabelTrack()
@@ -259,8 +224,6 @@ onUnmounted(() => {
   document.documentElement.removeEventListener('mouseleave', clearRepel)
   mediaMobile?.removeEventListener('change', applyMobile)
   mediaReduced?.removeEventListener('change', applyReduced)
-  flat?.dispose()
-  flat = null
   scene?.dispose()
   scene = null
 })
@@ -270,13 +233,6 @@ onUnmounted(() => {
   <canvas
     ref="canvasRef"
     class="pointer-events-none fixed inset-0 z-0 h-full w-full"
-    aria-hidden="true"
-  ></canvas>
-  <!-- v2.13.1 浅色主题星空层：2D Canvas 墨点星野（display 由 syncLayers 切换） -->
-  <canvas
-    ref="flatCanvasRef"
-    class="pointer-events-none fixed inset-0 z-0 h-full w-full"
-    style="display: none"
     aria-hidden="true"
   ></canvas>
   <Transition name="fade">

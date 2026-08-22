@@ -444,7 +444,7 @@ html[data-theme='sakura'] .border-white\/20 {
    由 ParticleBackground 直接 display:none；此规则保留给历史降级路径 */
 html[data-theme='paper'] canvas[aria-hidden='true'],
 html[data-theme='sakura'] canvas[aria-hidden='true'] {
-  opacity: 0.9;
+  opacity: 0.35;
 }
 html[data-theme='paper'] .hover\:bg-white\/\[0\.03\]:hover,
 html[data-theme='sakura'] .hover\:bg-white\/\[0\.03\]:hover {

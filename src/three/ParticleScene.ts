@@ -118,23 +118,9 @@ export class ParticleScene {
     this.applyDensity()
   }
 
-  /** v2.13.1：浅色主题切到 FlatStarfield 时暂停 WebGL 渲染循环（省 GPU），切回恢复 */
-  setRunning(running: boolean): void {
-    if (running) {
-      if (this.rafId || this.disposed || !this.renderer) return
-      this.clock.getDelta() // 丢弃暂停期间的累积 delta
-      this.tick()
-    } else {
-      cancelAnimationFrame(this.rafId)
-      this.rafId = 0
-    }
-  }
-
-  /** v2.11 主题场景化：运行时把星空整体换色（粒子双色 + 暖星 + 星云 tint + 流星）。
-   *  v2.13.1：WebGL 星海仅服务深色主题（加色发光）；浅色主题由 FlatStarfield（2D Canvas）
-   *  渲染——透明画布上的 NormalBlending 在部分环境零输出（多方案实测），不再依赖。 */
+  /** v2.11 主题场景化：运行时把星空整体换色（粒子双色 + 暖星 + 星云 tint + 流星）。颜色写入已有材质 uniforms，不重建几何，零 GC 压力，切换即时生效。 */
   setTheme(colorA: string, colorB: string, warm: string, meteor: string, light = false): void {
-    void light // WebGL 层不再区分深浅（浅色层在 ParticleBackground 切换）
+    void light // 兼容旧调用签名；全部主题统一加色渲染（v2.11 认证行为）
     this.colorA = colorA
     this.colorB = colorB
     const a = new THREE.Color(colorA)
