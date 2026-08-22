@@ -141,18 +141,21 @@ async function toggle() {
   prefetchBlob()
   ensureAnalyser()
   loading.value = true
-  try {
-    el.volume = 0
-    // 先同步发起 play()（激活窗口内），再处理 AudioContext 恢复——顺序不可颠倒
-    const playP = el.play()
-    if (audioCtx?.state === 'suspended') void audioCtx.resume()
-    await playP
-    playing.value = true
-    fadeVolume(0.45)
-    if (!rafId) analyserLoop()
-  } catch {
-    /* 自动播放策略或解码失败：静默保持暂停态 */
-  }
+  el.volume = 0
+  // 关键：play() 必须在点击手势的激活窗口内同步发起——不做任何 await 网络。
+  // play() 的 promise 在首帧真正出声时才 resolve（慢网络下可达数秒），
+  // 故乐观翻转 playing 让 UI 即时反馈，真失败（autoplay 拒绝/解码错误）再回滚。
+  const playP = el.play()
+  if (audioCtx?.state === 'suspended') void audioCtx.resume()
+  playing.value = true
+  fadeVolume(0.45)
+  if (!rafId) analyserLoop()
+  playP.catch(() => {
+    playing.value = false
+    stopAnalyserLoop()
+    audioLevel.value = 0
+    el.pause()
+  })
   loading.value = false
 }
 
