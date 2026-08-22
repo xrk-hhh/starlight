@@ -2,9 +2,10 @@
 import { onUnmounted, ref } from 'vue'
 import { audioLevel } from '@/stores/particles'
 
-// 星港电台（v1.10 起步，v2.12 大修）：
-// 卡顿根因：preload=none 边下边播，播放进度追上缓冲边界即停顿（GitHub Pages 线路不稳时尤甚）。
-// 修复：首次播放先把整首 fetch 成 blob 再播（1.6MB，本地缓存后零网络停顿），失败降级直连。
+// 星港电台（v1.10 起步，v2.12 大修，v2.12.1 根治线上无法起播）：
+// 起播策略：点击后【不等网络】立即从渐进流播放（el.play() 必须落在用户激活窗口内，
+// 任何 await 网络都会耗尽窗口被 autoplay 策略拒绝——线上首播无声的根因）；
+// 同时后台预取整曲 blob，就绪后记录进度无缝换源，第二循环起零网络停顿。
 // 沉浸感：WebAudio AnalyserNode 取真频谱——均衡器条为真实电平，低频电平写入 audioLevel
 // 供 ParticleScene 的 uAudio uniform 消费（星海随音乐呼吸）；reduced-motion 下跳过 analyser。
 // 播放/暂停均做 700ms 音量渐变，避免突兀。
@@ -18,6 +19,7 @@ const reducedMotion =
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 let blobUrl: string | null = null
+let prefetching = false
 let audioCtx: AudioContext | null = null
 let analyser: AnalyserNode | null = null
 let freqData: Uint8Array<ArrayBuffer> | null = null
@@ -29,19 +31,32 @@ const eq = ref([0, 0, 0, 0])
 // analyser 不可用（建链失败/reduced-motion）时均衡器回退 CSS 假动画
 const analyserActive = ref(false)
 
-/** 首次播放前把整首拉成 blob——彻底消除边下边播的中途停顿 */
-async function ensureBlobSource() {
-  if (blobUrl) return
-  loading.value = true
-  try {
-    const res = await fetch(TRACK_SRC)
-    if (!res.ok) throw new Error(String(res.status))
-    blobUrl = URL.createObjectURL(await res.blob())
-    if (audioEl.value) audioEl.value.src = blobUrl
-  } catch {
-    blobUrl = null // 网络失败：保留原 src 走渐进播放（行为同旧版），下次点击重试
-  }
-  loading.value = false
+/** 后台预取整曲 blob（不阻塞播放）：就绪后若正在播放则记录进度无缝换源 */
+function prefetchBlob() {
+  if (blobUrl || prefetching) return
+  prefetching = true
+  fetch(TRACK_SRC)
+    .then((res) => {
+      if (!res.ok) throw new Error(String(res.status))
+      return res.blob()
+    })
+    .then((blob) => {
+      blobUrl = URL.createObjectURL(blob)
+      const el = audioEl.value
+      // 正在播放渐进流：换到 blob 源并回到原进度（同一元素已获准播放，续播无需新手势）
+      if (el && playing.value && el.src !== blobUrl) {
+        const t = el.currentTime
+        el.src = blobUrl
+        el.currentTime = t
+        el.volume = 0.45
+        void el.play().catch(() => {
+          /* 续播被拒（极罕见）：保持暂停态，下次点击从 blob 直连播放 */
+        })
+      }
+    })
+    .catch(() => {
+      prefetching = false // 失败允许下次重试；渐进流播放不受影响
+    })
 }
 
 /** 建 WebAudio 链（每元素只能建一次 source；失败静默回退 CSS 假均衡器） */
@@ -84,6 +99,13 @@ function analyserLoop() {
   audioLevel.value += (raw - audioLevel.value) * (raw > audioLevel.value ? 0.5 : 0.12)
 }
 
+/** 停掉频谱空转循环（暂停/卸载时调用；下次播放重启） */
+function stopAnalyserLoop() {
+  if (rafId) cancelAnimationFrame(rafId)
+  rafId = 0
+  eq.value = [0, 0, 0, 0]
+}
+
 /** 音量渐变（不打断播放；到点后回调，用于暂停前淡出） */
 function fadeVolume(to: number, done?: () => void) {
   const el = audioEl.value
@@ -108,18 +130,23 @@ async function toggle() {
   if (!el) return
   if (playing.value) {
     playing.value = false
+    stopAnalyserLoop()
     fadeVolume(0, () => el.pause())
-    // 电平归零：星海停止呼吸（均衡器由 playing=false 不再更新，CSS 过渡自然落回）
+    // 电平归零：星海停止呼吸
     audioLevel.value = 0
     return
   }
-  await ensureBlobSource()
+  // 关键：play() 必须在点击手势的激活窗口内同步发起——不做任何 await 网络。
+  // 首播走渐进流（缓冲足够撑到 blob 就绪），blob 后台预取完成后无缝换源。
+  prefetchBlob()
   ensureAnalyser()
   loading.value = true
   try {
-    if (audioCtx?.state === 'suspended') await audioCtx.resume()
     el.volume = 0
-    await el.play()
+    // 先同步发起 play()（激活窗口内），再处理 AudioContext 恢复——顺序不可颠倒
+    const playP = el.play()
+    if (audioCtx?.state === 'suspended') void audioCtx.resume()
+    await playP
     playing.value = true
     fadeVolume(0.45)
     if (!rafId) analyserLoop()

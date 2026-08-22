@@ -77,13 +77,36 @@ router.beforeEach(() => {
 
 router.afterEach((to) => {
   loadingState.navigating = false
+  // 导航成功即清除 chunk 自愈标记：本窗口部署期已过，下次部署仍可自愈一次
+  try {
+    sessionStorage.removeItem('starlight:chunk-reloaded')
+  } catch {
+    /* 静默 */
+  }
   const siteName = '个人网站'
   document.title = to.meta.title ? `${to.meta.title} | ${siteName}` : siteName
   particlesState.density = to.meta.particles ?? 'low'
 })
 
-router.onError(() => {
+router.onError((error) => {
   loadingState.navigating = false
+  // v2.12.1 陈旧缓存自愈：GitHub Pages 部署后，旧 HTML 引用的旧分包会 404，
+  // 路由懒加载失败 → 页面空白。检测到 chunk 加载失败时整页刷新拉新 HTML（一次为限，防循环）。
+  const chunkFail =
+    error instanceof Error &&
+    /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(
+      error.message,
+    )
+  if (chunkFail) {
+    try {
+      if (!sessionStorage.getItem('starlight:chunk-reloaded')) {
+        sessionStorage.setItem('starlight:chunk-reloaded', '1')
+        window.location.reload()
+      }
+    } catch {
+      /* storage 不可用时放弃自愈 */
+    }
+  }
 })
 
 // 空闲时后台预取全部分包：用户首次点击导航时模块已在缓存（慢链路关键优化）

@@ -18,6 +18,15 @@ const container = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 let slowTimer: ReturnType<typeof setTimeout> | null = null
 
+/** 失败/缓慢后的手动重试：清掉失败的 script 节点回到 idle，再走正常加载 */
+function retry() {
+  if (container.value) container.value.innerHTML = ''
+  state.value = 'idle'
+  slow.value = false
+  if (slowTimer) clearTimeout(slowTimer)
+  loadComments()
+}
+
 function giscusThemeOf(key: string): string {
   return themeDef(key).giscus
 }
@@ -106,14 +115,15 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 慢网/失败降级出口：GitHub Discussions 永远可达 -->
+    <!-- 慢网/失败降级出口：GitHub Discussions 永远可达 + 可重试 -->
     <div
       v-if="(slow && state === 'loading') || state === 'error'"
       class="mt-4 rounded-lg border border-white/10 bg-surface/50 p-3 text-sm leading-6 text-text-muted"
     >
       <template v-if="state === 'error'">评论区脚本加载失败（giscus.app 可能被网络环境拦截）。</template>
       <template v-else>评论区加载缓慢，可能是网络环境限制了 giscus.app。</template>
-      也可以
+      <button type="button" class="mr-1 text-primary hover:underline" @click="retry">重试</button>
+      或
       <a
         :href="`https://github.com/${giscusConfig.repo}/discussions`"
         target="_blank"

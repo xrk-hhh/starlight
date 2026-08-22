@@ -59,6 +59,19 @@ md.renderer.rules.heading_open = (tokens, idx, options, env, self) => {
     : `<${tag}>`
 }
 
+// v2.12.1：外链新标签打开——文章里的洛谷/GitHub 等链接不再把访客带离本站
+const defaultLinkOpen = md.renderer.rules.link_open
+md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+  const href = String(tokens[idx].attrGet('href') ?? '')
+  if (/^https?:\/\//i.test(href)) {
+    tokens[idx].attrSet('target', '_blank')
+    tokens[idx].attrSet('rel', 'noopener noreferrer')
+  }
+  return defaultLinkOpen
+    ? defaultLinkOpen(tokens, idx, options, env, self)
+    : self.renderToken(tokens, idx, options)
+}
+
 // v2.1：正文图片懒加载——文章多图且多在首屏之下，滚动到再拉取
 const defaultImage = md.renderer.rules.image
 md.renderer.rules.image = (tokens, idx, options, env, self) => {
