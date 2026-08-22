@@ -8,11 +8,11 @@ import { useGsapReveal } from '@/composables/useGsapReveal'
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
-// 友邻星轨（v1.7）：内圈 3 颗顺时针、外圈 3 颗逆时针公转；星标本体反向自转保持朝上。
+// 友邻星轨（v1.7 起步，v2.12 全员入轨）：内圈 3 颗顺时针、外圈其余全部逆时针公转，
+// 轨道灯塔与下方卡片列表一一对应；星标本体反向自转保持朝上。
 // md 以下不渲染轨道（直接展示卡片列表）；reduced-motion 时轨道静止。
 const innerRing = computed(() => friends.slice(0, 3))
-const outerRing = computed(() => friends.slice(3, 6))
-const restFriends = computed(() => friends.slice(6))
+const outerRing = computed(() => friends.slice(3))
 const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
 </script>
 
@@ -25,7 +25,7 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
       subtitle="星港之外的灯塔——内圈是我的常用航线，外圈是朋友们的站点"
     />
 
-    <!-- 轨道视图：中央恒星 + 双圈公转的友邻站点（外圈头像超出轨道盒 28px，上下留白防压字） -->
+    <!-- 轨道视图：中央恒星 + 双圈公转的友邻站点（内圈 3 + 外圈 6，与下方列表一一对应） -->
     <div data-reveal class="mt-10 hidden justify-center md:flex" aria-hidden="true">
       <div class="relative h-[480px] w-[480px]">
         <!-- 中央恒星 -->
@@ -60,7 +60,7 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
           </div>
         </div>
 
-        <!-- 外圈轨道（逆时针） -->
+        <!-- 外圈轨道（逆时针）：外圈 6 座，偏移 30° 错开内圈灯塔 -->
         <div class="absolute inset-0 rounded-full border border-accent/15">
           <div class="orbit-spin-rev absolute inset-0" style="animation-duration: 96s">
             <a
@@ -70,10 +70,10 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
               target="_blank"
               rel="noopener"
               class="absolute left-1/2 top-1/2" tabindex="-1"
-              :style="{ transform: `rotate(${(360 / outerRing.length) * i + 60}deg) translateY(-240px)` }"
+              :style="{ transform: `rotate(${(360 / outerRing.length) * i + 30}deg) translateY(-240px)` }"
             >
               <span class="orbit-counter-rev block" style="animation-duration: 96s">
-                <span class="block" :style="{ transform: `rotate(${(-360 / outerRing.length) * i - 60}deg)` }">
+                <span class="block" :style="{ transform: `rotate(${(-360 / outerRing.length) * i - 30}deg)` }">
                   <span
                     class="flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/40 bg-bg/80 text-xl text-accent glow-orbit-accent backdrop-blur transition-all hover:scale-110 hover:border-accent hover:text-primary"
                   >
@@ -113,7 +113,6 @@ const email = profile.socials.find((s) => s.label === '邮箱')?.url ?? ''
           >↗</span
         >
       </a>
-      <p v-if="restFriends.length" class="sr-only">还有 {{ restFriends.length }} 位友邻即将入轨</p>
     </div>
 
     <!-- 交换友链 -->

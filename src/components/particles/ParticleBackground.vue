@@ -143,6 +143,12 @@ function onKeydown(e: KeyboardEvent) {
   scene?.burstMeteor()
 }
 
+// v2.12 彩蛋入口：其他组件（联络信使发送成功等）广播 starlight:meteor 即划流星
+function onMeteorEvent() {
+  if (coarse || (mediaReduced?.matches ?? false)) return
+  scene?.burstMeteor()
+}
+
 onMounted(() => {
   const canvas = canvasRef.value
   if (!canvas) return
@@ -185,6 +191,7 @@ onMounted(() => {
       window.addEventListener('pointermove', onPointerMove, { passive: true })
       window.addEventListener('click', onClick)
       window.addEventListener('keydown', onKeydown, { passive: true })
+      window.addEventListener('starlight:meteor', onMeteorEvent)
       window.addEventListener('blur', clearRepel)
       document.documentElement.addEventListener('mouseleave', clearRepel)
     })()
@@ -212,6 +219,7 @@ onUnmounted(() => {
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('click', onClick)
   window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('starlight:meteor', onMeteorEvent)
   window.removeEventListener('blur', clearRepel)
   document.documentElement.removeEventListener('mouseleave', clearRepel)
   mediaMobile?.removeEventListener('change', applyMobile)

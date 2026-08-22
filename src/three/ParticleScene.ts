@@ -3,7 +3,7 @@ import vertexShader from './shaders/particles.vert?raw'
 import fragmentShader from './shaders/particles.frag?raw'
 import meteorVertexShader from './shaders/meteor.vert?raw'
 import meteorFragmentShader from './shaders/meteor.frag?raw'
-import { resolveParticleCount, type ParticleDensity } from '@/stores/particles'
+import { resolveParticleCount, audioLevel, type ParticleDensity } from '@/stores/particles'
 
 export interface ParticleSceneOptions {
   count: number
@@ -472,6 +472,7 @@ export class ParticleScene {
         uColorA: { value: new THREE.Color(this.colorA) },
         uColorB: { value: new THREE.Color(this.colorB) },
         uColorC: { value: new THREE.Color('#fbbf24') },
+        uAudio: { value: 0 },
         uMouse: { value: new THREE.Vector3() },
         uRepelRadius: { value: 6 },
         uRepelStrength: { value: 0 },
@@ -585,6 +586,10 @@ export class ParticleScene {
       }
       // 主星与主粒子共享 uTime 语义（漂移动画），需每帧同步
       if (this.navMaterial) this.navMaterial.uniforms.uTime.value = this.elapsed
+      // 音乐电平 → uAudio（v2.12 星海呼吸；静默时为 0 无额外开销）
+      const level = audioLevel.value
+      for (const layer of this.layers) layer.material.uniforms.uAudio.value = level
+      if (this.navMaterial) this.navMaterial.uniforms.uAudio.value = level
       // 星云慢速正弦漂移
       if (this.nebulaGroup?.visible) {
         for (const child of this.nebulaGroup.children) {

@@ -1,43 +1,149 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue'
+import { audioLevel } from '@/stores/particles'
 
-// 星港电台（v1.10）：首页背景音乐按钮——纯音乐 Ethereal Relaxation（Kevin MacLeod, CC BY 4.0）。
-// 点击播放/暂停：播放时唱片旋转、均衡器律动、光环呼吸；首次点击才加载音频（preload none）。
-// 浏览器禁止自动播放，因此不记忆播放状态；离开首页组件卸载即停。
+// 星港电台（v1.10 起步，v2.12 大修）：
+// 卡顿根因：preload=none 边下边播，播放进度追上缓冲边界即停顿（GitHub Pages 线路不稳时尤甚）。
+// 修复：首次播放先把整首 fetch 成 blob 再播（1.6MB，本地缓存后零网络停顿），失败降级直连。
+// 沉浸感：WebAudio AnalyserNode 取真频谱——均衡器条为真实电平，低频电平写入 audioLevel
+// 供 ParticleScene 的 uAudio uniform 消费（星海随音乐呼吸）；reduced-motion 下跳过 analyser。
+// 播放/暂停均做 700ms 音量渐变，避免突兀。
 const audioEl = ref<HTMLAudioElement | null>(null)
 const playing = ref(false)
 const loading = ref(false)
-const SHOW_PILL = ref(false)
+const showPill = ref(false)
 
 const TRACK_SRC = `${import.meta.env.BASE_URL}audio/starlight-theme.mp3`
+const reducedMotion =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+let blobUrl: string | null = null
+let audioCtx: AudioContext | null = null
+let analyser: AnalyserNode | null = null
+let freqData: Uint8Array<ArrayBuffer> | null = null
+let rafId = 0
+let fadeTimer: ReturnType<typeof setInterval> | null = null
+
+// 四段真实电平（0~1）：均衡器条的内联高度
+const eq = ref([0, 0, 0, 0])
+// analyser 不可用（建链失败/reduced-motion）时均衡器回退 CSS 假动画
+const analyserActive = ref(false)
+
+/** 首次播放前把整首拉成 blob——彻底消除边下边播的中途停顿 */
+async function ensureBlobSource() {
+  if (blobUrl) return
+  loading.value = true
+  try {
+    const res = await fetch(TRACK_SRC)
+    if (!res.ok) throw new Error(String(res.status))
+    blobUrl = URL.createObjectURL(await res.blob())
+    if (audioEl.value) audioEl.value.src = blobUrl
+  } catch {
+    blobUrl = null // 网络失败：保留原 src 走渐进播放（行为同旧版），下次点击重试
+  }
+  loading.value = false
+}
+
+/** 建 WebAudio 链（每元素只能建一次 source；失败静默回退 CSS 假均衡器） */
+function ensureAnalyser() {
+  if (analyser || reducedMotion || !audioEl.value) return
+  try {
+    audioCtx = new AudioContext()
+    const source = audioCtx.createMediaElementSource(audioEl.value)
+    analyser = audioCtx.createAnalyser()
+    analyser.fftSize = 256
+    analyser.smoothingTimeConstant = 0.75
+    source.connect(analyser)
+    analyser.connect(audioCtx.destination)
+    freqData = new Uint8Array(analyser.frequencyBinCount)
+    analyserActive.value = true
+  } catch {
+    analyser = null
+  }
+}
+
+function bandAvg(from: number, to: number): number {
+  if (!freqData) return 0
+  let sum = 0
+  for (let i = from; i < to; i++) sum += freqData[i]
+  return sum / (to - from) / 255
+}
+
+function analyserLoop() {
+  rafId = requestAnimationFrame(analyserLoop)
+  if (!analyser || !playing.value) return
+  analyser.getByteFrequencyData(freqData!)
+  eq.value = [
+    Math.min(1, bandAvg(1, 4) * 1.15),
+    Math.min(1, bandAvg(4, 10) * 1.3),
+    Math.min(1, bandAvg(10, 22) * 1.5),
+    Math.min(1, bandAvg(22, 44) * 1.8),
+  ]
+  // 星海呼吸电平：低频为主 + 一点中频，再指数平滑（上升快、回落慢，呼吸感）
+  const raw = eq.value[0] * 0.7 + eq.value[1] * 0.3
+  audioLevel.value += (raw - audioLevel.value) * (raw > audioLevel.value ? 0.5 : 0.12)
+}
+
+/** 音量渐变（不打断播放；到点后回调，用于暂停前淡出） */
+function fadeVolume(to: number, done?: () => void) {
+  const el = audioEl.value
+  if (!el) return
+  if (fadeTimer) clearInterval(fadeTimer)
+  const from = el.volume
+  const steps = 14
+  let i = 0
+  fadeTimer = setInterval(() => {
+    i++
+    el.volume = from + ((to - from) * i) / steps
+    if (i >= steps) {
+      if (fadeTimer) clearInterval(fadeTimer)
+      fadeTimer = null
+      done?.()
+    }
+  }, 50) // 14×50ms = 700ms
+}
 
 async function toggle() {
   const el = audioEl.value
   if (!el) return
   if (playing.value) {
-    el.pause()
     playing.value = false
+    fadeVolume(0, () => el.pause())
+    // 电平归零：星海停止呼吸（均衡器由 playing=false 不再更新，CSS 过渡自然落回）
+    audioLevel.value = 0
     return
   }
+  await ensureBlobSource()
+  ensureAnalyser()
   loading.value = true
   try {
-    el.volume = 0.45
+    if (audioCtx?.state === 'suspended') await audioCtx.resume()
+    el.volume = 0
     await el.play()
     playing.value = true
+    fadeVolume(0.45)
+    if (!rafId) analyserLoop()
   } catch {
     /* 自动播放策略或解码失败：静默保持暂停态 */
   }
   loading.value = false
 }
 
-onUnmounted(() => audioEl.value?.pause())
+onUnmounted(() => {
+  if (rafId) cancelAnimationFrame(rafId)
+  if (fadeTimer) clearInterval(fadeTimer)
+  audioLevel.value = 0
+  audioEl.value?.pause()
+  if (blobUrl) URL.revokeObjectURL(blobUrl)
+  void audioCtx?.close()
+})
 </script>
 
 <template>
   <div
     class="group fixed bottom-6 left-6 z-[55] flex items-center"
-    @mouseenter="SHOW_PILL = true"
-    @mouseleave="SHOW_PILL = false"
+    @mouseenter="showPill = true"
+    @mouseleave="showPill = false"
   >
     <audio ref="audioEl" :src="TRACK_SRC" loop preload="none"></audio>
 
@@ -46,7 +152,7 @@ onUnmounted(() => audioEl.value?.pause())
       type="button"
       :aria-label="playing ? '暂停背景音乐' : '播放背景音乐'"
       :title="playing ? '暂停星港电台' : '播放星港电台'"
-      class="relative flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-surface/80 shadow-lg shadow-black/40 backdrop-blur transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_24px_rgba(34,211,238,0.35)]"
+      class="relative flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-surface/80 shadow-lg shadow-black/40 backdrop-blur transition-all duration-300 hover:border-primary/60 hover-glow-primary"
       @click="toggle"
     >
       <!-- 播放时呼吸光环 -->
@@ -83,17 +189,20 @@ onUnmounted(() => audioEl.value?.pause())
       </span>
     </button>
 
-    <!-- 悬浮曲目条：唱片名 + 均衡器（hover 或播放中显示） -->
+    <!-- 悬浮曲目条：唱片名 + 真实频谱均衡器（hover 或播放中显示） -->
     <Transition name="pill">
       <div
-        v-if="SHOW_PILL || playing"
+        v-if="showPill || playing"
         class="ml-3 flex items-center gap-3 rounded-full border border-white/10 bg-surface/80 py-2 pl-4 pr-5 shadow-lg shadow-black/30 backdrop-blur"
       >
-        <span class="flex items-end gap-[3px]" aria-hidden="true">
-          <span class="eq-bar" :class="{ dancing: playing }" style="animation-delay: 0s"></span>
-          <span class="eq-bar" :class="{ dancing: playing }" style="animation-delay: 0.25s"></span>
-          <span class="eq-bar" :class="{ dancing: playing }" style="animation-delay: 0.5s"></span>
-          <span class="eq-bar" :class="{ dancing: playing }" style="animation-delay: 0.12s"></span>
+        <span class="flex h-4 items-end gap-[3px]" aria-hidden="true">
+          <span
+            v-for="(lvl, i) in eq"
+            :key="i"
+            class="eq-bar"
+            :class="{ dancing: playing && !analyserActive }"
+            :style="{ height: playing ? 3 + lvl * 13 + 'px' : '4px', animationDelay: i * 0.12 + 's' }"
+          ></span>
         </span>
         <span class="whitespace-nowrap">
           <span class="block font-mono text-[11px] text-primary">星港电台 · 播放中</span>
@@ -114,14 +223,14 @@ onUnmounted(() => audioEl.value?.pause())
     transform: rotate(360deg);
   }
 }
-/* 均衡器：未播放时静止低条，播放时跳动 */
+/* 均衡器：频谱数据驱动高度（内联 style）；analyser 不可用时回退 CSS 动画 */
 .eq-bar {
   display: block;
   width: 3px;
-  height: 5px;
+  height: 4px;
   border-radius: 2px;
   background: color-mix(in oklab, var(--color-primary) 55%, transparent);
-  transition: height 0.3s ease;
+  transition: height 0.09s linear;
 }
 .eq-bar.dancing {
   animation: eq-dance 0.9s ease-in-out infinite alternate;

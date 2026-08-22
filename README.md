@@ -22,14 +22,14 @@
 **设计**
 - 🎨 五套主题（v2.11 场景化）：深空星港 / 落日熔金 / 极光冰川 / 月白纸笺 / 樱庭薄暮——不止换色：粒子·星云·流星随主题换色，每主题独立氛围层（落日日轮余晖 / 极光帘幕漂移 / 纸笺衬线字体 / 樱瓣飘落），浅色主题全量适配
 - 🐉 桌宠奶龙 / 奶蛙：原版表情包精灵表动画（erich207 & timerring 素材）——拖拽甩出惯性滑行、边缘反弹、散步跟随光标（悬停暂停）、投喂粒子、时段问候、点击 Q 弹
-- 🎵 星港电台：全站背景音乐（Ethereal Relaxation — Kevin MacLeod, CC BY 4.0），切页不断播
+- 🎵 星港电台（v2.12 大修）：整曲 blob 预取（根治边下边播卡顿）+ WebAudio 真频谱均衡器 + **星海随音乐呼吸**（粒子随低频脉动）+ 播放/暂停音量渐变，切页不断播（Ethereal Relaxation — Kevin MacLeod, CC BY 4.0）
 - 🌌 GPU 粒子星海：三层视差 + 流星 + 排斥场 + 主星导航（可见性暂停 / reduced 静帧）
 - 🗺 版本星座：发版历史排成一条星轨，点击星定位日志
 - 🖥 星港终端：Now 页飞行日志逐行打出
 - 🎇 细节：命令面板（`?`）/ 全局快捷键（`g` 前缀跳页 · `r` 随机漫游 · `c` 复制邮箱，中文输入法兼容）/ Konami 彩蛋 / 打字流星 / 失焦标题 / 星港边缘 toast / hero 视差
 
 **互动**
-- 💬 双通道留言：公开评论走 giscus（GitHub Discussions，滚动预载 + 主题跟随 + 慢网降级出口）；私密信件走「联络信使」表单（姓名/邮箱/主题/消息，Web3Forms 直投或 mailto 降级，草稿自动留存）
+- 💬 双通道留言：公开评论走 giscus（GitHub Discussions，滚动预载 + 主题跟随 + 慢网降级出口）；私密信件走「联络信使」表单（姓名/邮箱/主题/消息，**Web3Forms 在线直投**——无需邮件客户端，发送成功划流星；服务不可达时自动降级 mailto，草稿自动留存）
 
 **基础设施**
 - RSS（atom.xml，35 篇）+ sitemap.xml + robots.txt：postbuild 构建期生成
@@ -77,16 +77,15 @@ public/images/blog/ # 30 张自绘 One Dark 风格 SVG 讲解图（过三重布�
 - 发版只改 `src/data/site.ts` 的 `SITE_VERSION`（时间轴 / Now / 版本星图自动同步）；`index.html` footer 为静态壳需手动同步
 - 新增主题：在 `src/composables/useTheme.ts` 的 `THEMES` 加一项（swatch + scene 场景色板 + giscus 主题），再在 `src/styles/main.css` 补 `html[data-theme='…']` 变量与氛围层、`index.html` 首帧脚本加 key
 
-## 联络信使（可选配置）
+## 联络信使（Web3Forms 直投）
 
-留言板的「联络信使」表单开箱即用：未配置时走 **mailto 降级**（唤起访客邮件客户端，四字段预填）。想让它直投你的邮箱（访客无需邮件客户端），注册 [web3forms.com](https://web3forms.com)（免费）拿到 Access Key，然后：
+留言板的「联络信使」表单已配置 **Web3Forms 在线直投**：访客填写姓名/邮箱/主题/消息后点击「发送电报」，邮件直接送达站长邮箱，全程不离开站点、不唤起邮件客户端。服务不可达时自动降级 mailto（预填邮件），访客永远有出路；草稿自动留存本机。
 
-```bash
-# 项目根目录建 .env（已在 .gitignore，不会提交）
-echo "VITE_WEB3FORMS_ACCESS_KEY=你的key" > .env
-```
+密钥管理（已配置，供换 key 时参考）：
 
-配置后表单经 Web3Forms 直投，失败自动降级 mailto，访客永远有出路。
+- **生产构建**：密钥存于仓库 Actions secret `VITE_WEB3FORMS_ACCESS_KEY`，`deploy.yml` 构建时注入（见 Build 步骤的 env）
+- **本地开发**：项目根目录 `.env`（已被 .gitignore 忽略）写入 `VITE_WEB3FORMS_ACCESS_KEY=…`
+- 换 key：[web3forms.com](https://web3forms.com) 重新生成 → `gh secret set VITE_WEB3FORMS_ACCESS_KEY` 更新 → 本地 `.env` 同步 → 重新部署
 
 ## 致谢与许可
 

@@ -32,7 +32,9 @@ const nailongAvatar = `${import.meta.env.BASE_URL}images/nailong-avatar.jpg`
     :class="scrolled ? 'border-b border-white/10 bg-bg/80 backdrop-blur' : ''"
   >
     <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-      <RouterLink to="/" class="glow-text font-mono text-lg font-bold">LOGO</RouterLink>
+      <RouterLink to="/" class="glow-text font-mono text-lg font-bold tracking-wide" aria-label="STARLIGHT · 返回首页">
+        ✦<span class="ml-1.5 hidden sm:inline">STARLIGHT</span>
+      </RouterLink>
       <ul class="flex items-center gap-4 text-sm text-text-muted sm:gap-6">
         <li v-for="link in links" :key="link.to" :class="link.hideSm ? 'hidden sm:block' : ''">
           <RouterLink

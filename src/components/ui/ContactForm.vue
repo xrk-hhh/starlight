@@ -104,6 +104,8 @@ async function submit() {
     if (result.success) {
       status.value = 'sent'
       statusMsg.value = '电报已发出，站长会尽快回信 ✦'
+      // 人格化小彩蛋：发送成功划一颗流星（ParticleBackground 监听此事件）
+      window.dispatchEvent(new CustomEvent('starlight:meteor'))
       resetForm()
     } else {
       // 服务端拒绝（配额/密钥问题）：降级 mailto，别让访客白打字

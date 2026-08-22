@@ -36,7 +36,11 @@ jobs:
         run: node scripts/fetch-oj-stats.mjs
       - run: npm ci
       - run: npm test
-      - run: npm run build
+      - name: Build
+        run: npm run build
+        env:
+          # 留言板「联络信使」Web3Forms 直投密钥（仓库 secret；未配置则前端降级 mailto）
+          VITE_WEB3FORMS_ACCESS_KEY: ${{ secrets.VITE_WEB3FORMS_ACCESS_KEY }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
