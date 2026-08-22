@@ -440,8 +440,8 @@ html[data-theme='paper'] .border-white\/20,
 html[data-theme='sakura'] .border-white\/20 {
   border-color: color-mix(in oklab, var(--color-text) 14%, transparent);
 }
-/* v2.13：浅色主题星空可见化——加色混合改 NormalBlending（ParticleScene.setTheme）后，
-   canvas 不再需要压暗到 0.35（那是加色混合时代的补偿 hack），提到 0.9 保留一点柔化 */
+/* v2.13.1：浅色主题星空改由 FlatStarfield（2D Canvas）渲染，WebGL canvas 在浅色下
+   由 ParticleBackground 直接 display:none；此规则保留给历史降级路径 */
 html[data-theme='paper'] canvas[aria-hidden='true'],
 html[data-theme='sakura'] canvas[aria-hidden='true'] {
   opacity: 0.9;

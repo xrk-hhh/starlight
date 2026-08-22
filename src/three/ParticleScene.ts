@@ -118,44 +118,46 @@ export class ParticleScene {
     this.applyDensity()
   }
 
+  /** v2.13.1：浅色主题切到 FlatStarfield 时暂停 WebGL 渲染循环（省 GPU），切回恢复 */
+  setRunning(running: boolean): void {
+    if (running) {
+      if (this.rafId || this.disposed || !this.renderer) return
+      this.clock.getDelta() // 丢弃暂停期间的累积 delta
+      this.tick()
+    } else {
+      cancelAnimationFrame(this.rafId)
+      this.rafId = 0
+    }
+  }
+
   /** v2.11 主题场景化：运行时把星空整体换色（粒子双色 + 暖星 + 星云 tint + 流星）。
-   *  v2.13 浅色主题星空可见化：加色混合在浅底上「加光=不可见」——浅色主题切
-   *  NormalBlending（alpha 混合），星云同步切换并把透明度提到可见区间。
-   *  颜色写入已有材质 uniforms，不重建几何，零 GC 压力，切换即时生效。 */
+   *  v2.13.1：WebGL 星海仅服务深色主题（加色发光）；浅色主题由 FlatStarfield（2D Canvas）
+   *  渲染——透明画布上的 NormalBlending 在部分环境零输出（多方案实测），不再依赖。 */
   setTheme(colorA: string, colorB: string, warm: string, meteor: string, light = false): void {
+    void light // WebGL 层不再区分深浅（浅色层在 ParticleBackground 切换）
     this.colorA = colorA
     this.colorB = colorB
     const a = new THREE.Color(colorA)
     const b = new THREE.Color(colorB)
     const w = new THREE.Color(warm)
-    const blending = light ? THREE.NormalBlending : THREE.AdditiveBlending
     for (const layer of this.layers) {
       const u = layer.material.uniforms
       ;(u.uColorA.value as THREE.Color).copy(a)
       ;(u.uColorB.value as THREE.Color).copy(b)
       ;(u.uColorC.value as THREE.Color).copy(w)
-      layer.material.blending = blending
     }
     if (this.navMaterial) {
       const u = this.navMaterial.uniforms
       ;(u.uColorA.value as THREE.Color).copy(a)
       ;(u.uColorB.value as THREE.Color).copy(b)
       ;(u.uColorC.value as THREE.Color).copy(w)
-      this.navMaterial.blending = blending
     }
-    // 星云 tint 交替 A/B 色（buildNebula 同规则）；浅色下 NormalBlending + 提透明度
+    // 星云 tint 交替 A/B 色（buildNebula 同规则）
     this.nebulaGroup?.children.forEach((child, i) => {
-      const sprite = child as THREE.Sprite
-      const mat = sprite.material as THREE.SpriteMaterial
+      const mat = (child as THREE.Sprite).material as THREE.SpriteMaterial
       mat.color.copy(i % 2 === 0 ? a : b)
-      mat.blending = blending
-      if (light) mat.opacity = Math.min(mat.opacity * 2 + 0.04, 0.16)
-      else mat.opacity = Math.max((mat.opacity - 0.04) / 2, 0.04)
     })
-    if (this.meteorMaterial) {
-      ;(this.meteorMaterial.uniforms.uColor.value as THREE.Color).set(meteor)
-      this.meteorMaterial.blending = blending
-    }
+    if (this.meteorMaterial) (this.meteorMaterial.uniforms.uColor.value as THREE.Color).set(meteor)
   }
 
   setMobile(isMobile: boolean): void {
