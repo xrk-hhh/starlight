@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
+import { onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { profile } from '@/data/profile'
 
 // 联络信使（v2.11）：姓名/邮箱/主题/消息四字段电报，双通道投递——
@@ -66,6 +66,39 @@ function resetForm() {
   }
 }
 
+// ===== v2.14 发送成功彩蛋：电波传输仪式 =====
+// 三段式状态（电波发射 → 深空中继 → 星港签收），签收瞬间划流星护航；
+// reduced-motion 下跳过动画直接给终态。stage 与文案同时驱动模板里的步骤指示器。
+const STAGES = ['电波已发射，正奔向深空…', '深空中继站转发中…', '星港签收 ✓'] as const
+const stage = ref(0)
+const reducedMotion =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+let stageTimer: ReturnType<typeof setTimeout> | null = null
+
+function runTransmitSequence() {
+  if (stageTimer) clearTimeout(stageTimer)
+  if (reducedMotion) {
+    finishTransmit()
+    return
+  }
+  stage.value = 1
+  stageTimer = setTimeout(() => {
+    stage.value = 2
+    stageTimer = setTimeout(finishTransmit, 700)
+  }, 700)
+}
+
+function finishTransmit() {
+  stage.value = 3
+  statusMsg.value = '电报已发出，站长会尽快回信 ✦ 一颗流星已划过星海为你护航，你的回执挂在上方讯号区'
+  // 签收瞬间流星护航（ParticleBackground 监听此事件；发送者可感知的彩蛋提示）
+  window.dispatchEvent(new CustomEvent('starlight:meteor'))
+}
+
+onBeforeUnmount(() => {
+  if (stageTimer) clearTimeout(stageTimer)
+})
+
 function openMailto() {
   const body = `${form.message.trim()}\n\n—— ${form.name.trim()}（${form.email.trim()}）\n（来自星港留言板 · 联络信使）`
   const url = `mailto:${email}?subject=${encodeURIComponent(form.subject.trim())}&body=${encodeURIComponent(body)}`
@@ -102,11 +135,16 @@ async function submit() {
     })
     const result = (await res.json()) as { success?: boolean; message?: string }
     if (result.success) {
+      const sender = form.name.trim()
+      const subjectLine = form.subject.trim()
       status.value = 'sent'
-      statusMsg.value = '电报已发出，站长会尽快回信 ✦'
-      // 人格化小彩蛋：发送成功划一颗流星（ParticleBackground 监听此事件）
-      window.dispatchEvent(new CustomEvent('starlight:meteor'))
+      // 人格化彩蛋（v2.14）：三段式传输仪式 + 流星护航 + 深空讯号回执卡
+      // （GuestbookView 监听 starlight:contact-sent 生成仅本次会话可见的回执）
+      window.dispatchEvent(
+        new CustomEvent('starlight:contact-sent', { detail: { name: sender, subject: subjectLine } }),
+      )
       resetForm()
+      runTransmitSequence()
     } else {
       // 服务端拒绝（配额/密钥问题）：降级 mailto，别让访客白打字
       openMailto()
@@ -199,7 +237,28 @@ async function submit() {
         <span v-if="status === 'sending'">发射中…</span>
         <span v-else>发送电报 ✦</span>
       </button>
-      <p v-if="statusMsg" aria-live="polite" class="text-sm text-primary">{{ statusMsg }}</p>
+
+      <!-- v2.14 彩蛋：电波传输仪式（三段式步骤指示器） -->
+      <div v-if="status === 'sent'" class="flex flex-wrap items-center gap-1.5" aria-live="polite">
+        <template v-for="(label, i) in STAGES" :key="label">
+          <span
+            class="flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-[11px] transition-all duration-500"
+            :class="
+              stage > i
+                ? 'border-primary/50 bg-primary/10 text-primary'
+                : 'border-white/10 text-text-muted/40'
+            "
+          >
+            <span v-if="stage > i">{{ i === 2 ? '✓' : '✦' }}</span>
+            {{ label }}
+          </span>
+          <span v-if="i < STAGES.length - 1" class="text-text-muted/30" aria-hidden="true">→</span>
+        </template>
+      </div>
+
+      <p v-if="statusMsg" aria-live="polite" class="text-sm text-primary w-full sm:w-auto">
+        {{ statusMsg }}
+      </p>
       <p v-else class="text-xs text-text-muted/60">草稿自动保留在本机，没写完也不怕丢</p>
     </div>
   </form>

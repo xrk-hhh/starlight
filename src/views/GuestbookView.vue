@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import GiscusComments from '@/components/blog/GiscusComments.vue'
 import ContactForm from '@/components/ui/ContactForm.vue'
@@ -8,8 +8,15 @@ import { useGsapReveal } from '@/composables/useGsapReveal'
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
-// 已捕获的深空讯号（v1.7 装饰彩蛋）：风格化系统日志，留言正片在下方 Giscus 区
-const capturedSignals = [
+// 已捕获的深空讯号（v1.7 装饰彩蛋）：风格化系统日志，留言正片在下方 Giscus 区。
+// v2.14：发送电报成功后，访客自己的电波也会追加为一张「回执卡」（仅本次会话，刷新即散）
+interface Signal {
+  from: string
+  time: string
+  text: string
+  receipt?: boolean
+}
+const capturedSignals = ref<Signal[]>([
   {
     from: '星港主控 AI',
     time: '00:00:07',
@@ -25,7 +32,24 @@ const capturedSignals = [
     time: '∞',
     text: '代码写完了吗？没写完也没关系，先给现在的自己留句话吧。',
   },
-]
+])
+
+// v2.14 彩蛋联动：ContactForm 发送成功广播 starlight:contact-sent → 追加回执卡
+function onContactSent(e: Event) {
+  const detail = (e as CustomEvent<{ name: string; subject: string }>).detail
+  const now = new Date()
+  const hh = String(now.getHours()).padStart(2, '0')
+  const mm = String(now.getMinutes()).padStart(2, '0')
+  const ss = String(now.getSeconds()).padStart(2, '0')
+  capturedSignals.value.push({
+    from: `${detail.name || '无名旅行者'}（你）`,
+    time: `${hh}:${mm}:${ss}`,
+    text: `主题「${detail.subject || '无题'}」的电波已被星港签收。这条回执只存在于当前页面——刷新后随电波消散 ✦`,
+    receipt: true,
+  })
+}
+onMounted(() => window.addEventListener('starlight:contact-sent', onContactSent))
+onUnmounted(() => window.removeEventListener('starlight:contact-sent', onContactSent))
 </script>
 
 <template>
@@ -37,18 +61,20 @@ const capturedSignals = [
       subtitle="把想说的话写成光发过来——私密信件走上面的联络信使，公开留言在下方登录 GitHub 发射"
     />
 
-    <!-- 已捕获的深空讯号（v2.9 重设计）：信号强度条 + 呼吸圆点 + 时间戳角标 -->
+    <!-- 已捕获的深空讯号（v2.9 重设计）：信号强度条 + 呼吸圆点 + 时间戳角标；
+         v2.14：发送电报成功后追加你的「回执卡」（全宽 + 主色描边，刷新即散） -->
     <div data-reveal class="grid gap-4 md:grid-cols-3">
       <div
         v-for="(s, i) in capturedSignals"
-        :key="s.from"
+        :key="s.from + s.time"
         class="card group relative overflow-hidden p-5 font-mono transition-[transform,border-color] duration-300 hover:-translate-y-1"
+        :class="s.receipt ? 'border-primary/40 md:col-span-3' : ''"
       >
         <!-- 顶部信号强度装饰 -->
         <span aria-hidden="true" class="absolute right-4 top-4 flex items-end gap-[3px]">
           <span
 v-for="b in 4" :key="b" class="w-[3px] rounded-sm transition-all duration-300"
-            :class="b <= (3 - i) ? 'bg-primary/80' : 'bg-text-muted/20 group-hover:bg-primary/40'"
+            :class="s.receipt || b <= (3 - i) ? 'bg-primary/80' : 'bg-text-muted/20 group-hover:bg-primary/40'"
             :style="{ height: 4 + b * 3 + 'px' }"></span>
         </span>
         <p class="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-text-muted/50">
@@ -57,10 +83,11 @@ v-for="b in 4" :key="b" class="w-[3px] rounded-sm transition-all duration-300"
             <span class="relative inline-flex h-2 w-2 rounded-full bg-primary/80"></span>
           </span>
           {{ s.from }}
+          <span v-if="s.receipt" class="rounded-full border border-primary/40 px-1.5 py-px text-[9px] text-primary">回执</span>
         </p>
-        <p class="mt-3 text-sm leading-6 text-text-muted">{{ s.text }}</p>
+        <p class="mt-3 text-sm leading-6" :class="s.receipt ? 'text-text' : 'text-text-muted'">{{ s.text }}</p>
         <p class="mt-3 border-t border-white/5 pt-2 text-[10px] tracking-widest text-text-muted/40">
-          T+{{ s.time }} · SIGNAL LOCKED
+          T+{{ s.time }} · {{ s.receipt ? 'SIGNED · SESSION ONLY' : 'SIGNAL LOCKED' }}
         </p>
       </div>
     </div>
@@ -72,7 +99,10 @@ v-for="b in 4" :key="b" class="w-[3px] rounded-sm transition-all duration-300"
       <div class="mb-6 flex items-baseline justify-between gap-4">
         <div>
           <h2 class="text-lg font-semibold">联络信使 ✉</h2>
-          <p class="mt-1 text-sm text-text-muted">像发邮件一样给站长发一封电报——不用登录，写下即发。</p>
+          <p class="mt-1 text-sm text-text-muted">
+            像发邮件一样给站长发一封电报——不用登录，写下即发。<br class="hidden sm:block" />
+            <span class="text-text-muted/70">发送成功后会有一场小小的传输仪式，你的回执将挂进上方讯号区 ✦</span>
+          </p>
         </div>
         <span class="hidden font-mono text-[10px] uppercase tracking-[0.3em] text-text-muted/40 sm:block"
           >Contact Beacon</span
