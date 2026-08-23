@@ -302,6 +302,17 @@ html[data-theme='sunset'] body::before {
   0%, 100% { opacity: 0.72; }
   50% { opacity: 1; }
 }
+/* v2.16 落日专属适配：
+   1) 代码块暖化——One Dark 的冷蓝底（#282c34）在暖棕页面里穿帮，换成等亮度暖棕
+      （token 色板按 #282c34 亮度设计，#2a211b 亮度差 <2%，可读性不受影响）
+   2) 卡片发丝边带一丝琥珀，暖色页面更整体 */
+html[data-theme='sunset'] .blog-content pre {
+  background-color: #2a211b !important;
+  border-color: rgba(245, 158, 11, 0.16);
+}
+html[data-theme='sunset'] .card {
+  border-color: rgba(245, 158, 11, 0.14);
+}
 
 /* —— 极光冰川：顶部极光帘幕（双向缓漂 + 呼吸缩放）+ 底部冰面反光 —— */
 html[data-theme='aurora'] body {

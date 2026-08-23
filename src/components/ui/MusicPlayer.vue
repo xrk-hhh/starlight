@@ -237,8 +237,9 @@ onUnmounted(() => {
         class="vinyl relative flex h-10 w-10 items-center justify-center rounded-full border border-white/10"
         :class="{ spinning: playing }"
         :style="{
+          // v2.16 沟纹主题化：surface 压暗为纹、略提为槽——深浅主题都成立（原冷灰蓝硬编码）
           background:
-            'repeating-radial-gradient(circle at 50% 50%, #16161f 0 2px, #1f1f2c 2px 3px, #16161f 3px 5px)',
+            `repeating-radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--color-surface) 72%, #000) 0 2px, color-mix(in oklab, var(--color-surface) 88%, #000) 2px 3px, color-mix(in oklab, var(--color-surface) 72%, #000) 3px 5px)`,
         }"
       >
         <!-- 唱片标签：星形中心孔 -->

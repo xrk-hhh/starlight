@@ -113,8 +113,9 @@ onUnmounted(() => {
           </text>
           <defs>
             <linearGradient id="nameGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#22d3ee" />
-              <stop offset="1" stop-color="#8b5cf6" />
+              <!-- v2.16 主题变量化：hero 名字渐变随主题（stop-color 走 CSS 变量） -->
+              <stop offset="0" style="stop-color: var(--color-primary)" />
+              <stop offset="1" style="stop-color: var(--color-accent)" />
             </linearGradient>
           </defs>
         </svg>

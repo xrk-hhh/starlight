@@ -167,7 +167,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 标题 glitch：三层叠放 = 真实 h1 文字 + ::before(青 #22d3ee) + ::after(紫 #8b5cf6) */
+/* 标题 glitch：三层叠放 = 真实 h1 文字 + ::before/::after（主题 primary/accent 双色） */
 .glitch-title :deep(h1) {
   position: relative;
 }
@@ -184,13 +184,14 @@ onUnmounted(() => {
 }
 
 .glitch-title.glitching :deep(h1)::before {
-  color: #22d3ee;
+  /* v2.16 主题变量化：glitch 双色跟随主题（落日=琥珀×玫红，极光=青绿×冰蓝） */
+  color: var(--color-primary);
   animation-name: glitch-a;
   animation-duration: 90ms;
 }
 
 .glitch-title.glitching :deep(h1)::after {
-  color: #8b5cf6;
+  color: var(--color-accent);
   animation-name: glitch-b;
   animation-duration: 150ms;
 }

@@ -72,14 +72,14 @@ const hovered = ref<number | null>(null)
           <stop offset="1" style="stop-color: var(--color-accent)" />
         </linearGradient>
         <filter id="vertexGlow" x="-80%" y="-80%" width="260%" height="260%">
-          <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#8b5cf6" flood-opacity="0.9" />
+          <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="var(--color-accent)" flood-opacity="0.9" />
         </filter>
       </defs>
 
       <!-- 外圈星座装饰环：慢旋虚线 + 四颗方位星 -->
       <g class="deco-ring">
-        <circle :cx="CX" :cy="CY" :r="R + 18" fill="none" stroke="rgba(139,92,246,0.18)" stroke-width="1" stroke-dasharray="2 7" />
-        <circle v-for="k in 4" :key="k" :cx="CX + (R + 18) * Math.cos(Math.PI / 4 + (Math.PI / 2) * (k - 1))" :cy="CY - (R + 18) * Math.sin(Math.PI / 4 + (Math.PI / 2) * (k - 1))" r="1.8" fill="#22d3ee" opacity="0.7" />
+        <circle :cx="CX" :cy="CY" :r="R + 18" fill="none" class="deco-ring-line" stroke-width="1" stroke-dasharray="2 7" />
+        <circle v-for="k in 4" :key="k" :cx="CX + (R + 18) * Math.cos(Math.PI / 4 + (Math.PI / 2) * (k - 1))" :cy="CY - (R + 18) * Math.sin(Math.PI / 4 + (Math.PI / 2) * (k - 1))" r="1.8" style="fill: var(--color-primary)" opacity="0.7" />
       </g>
 
       <!-- 刻度环：渐次绘入 + 顶轴刻度数字 -->
@@ -124,7 +124,7 @@ const hovered = ref<number | null>(null)
       <!-- 轴标签 + 数值（hover 联动） -->
       <g v-for="l in labels" :key="'l' + l.label" @mouseenter="hovered = l.i" @mouseleave="hovered = null">
         <text :x="l.x" :y="l.y" :text-anchor="l.anchor" class="fill-text-muted font-mono transition-all duration-200" :font-size="hovered === l.i ? 12 : 11" :font-weight="hovered === l.i ? 600 : 400">{{ l.label }}</text>
-        <text :x="l.x" :y="l.y + 14" :text-anchor="l.anchor" class="font-mono transition-opacity duration-200" :fill="hovered === l.i ? '#22d3ee' : 'rgba(156,163,175,0.55)'" font-size="10" :opacity="hovered === l.i ? 1 : 0.75">{{ l.value }}</text>
+        <text :x="l.x" :y="l.y + 14" :text-anchor="l.anchor" class="font-mono transition-opacity duration-200" :fill="hovered === l.i ? 'var(--color-primary)' : 'rgba(156,163,175,0.55)'" font-size="10" :opacity="hovered === l.i ? 1 : 0.75">{{ l.value }}</text>
       </g>
     </svg>
     <p class="relative mt-1 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-text-muted/50">Skill Nebula · 技能星云</p>
@@ -149,6 +149,10 @@ const hovered = ref<number | null>(null)
   transform-box: fill-box;
   transform-origin: center;
   animation: deco-rotate 120s linear infinite;
+}
+/* v2.16 装饰环虚线：主题 accent 淡描（原硬编码紫） */
+.deco-ring-line {
+  stroke: color-mix(in oklab, var(--color-accent) 18%, transparent);
 }
 @keyframes deco-rotate {
   to { transform: rotate(360deg); }

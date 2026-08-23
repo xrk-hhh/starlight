@@ -112,13 +112,17 @@
           transform: rotate(360deg);
         }
       }
-      /* 各主题的启动遮罩底色（v1.9） */
+      /* 各主题的启动遮罩底色与 spinner 主色（v1.9 起；v2.16 spinner 按主题分色，落日不再闪青色） */
       html[data-theme='sunset'] #boot-hint { background: #120c0a; }
+      html[data-theme='sunset'] .boot-spinner { border-color: rgba(245, 158, 11, 0.3); border-top-color: #f59e0b; }
       html[data-theme='aurora'] #boot-hint { background: #071016; }
+      html[data-theme='aurora'] .boot-spinner { border-color: rgba(45, 212, 191, 0.3); border-top-color: #2dd4bf; }
       html[data-theme='paper'] #boot-hint { background: #f5f2ea; }
       html[data-theme='paper'] #boot-hint p { color: #78716c; }
+      html[data-theme='paper'] .boot-spinner { border-color: rgba(15, 118, 110, 0.3); border-top-color: #0f766e; }
       html[data-theme='sakura'] #boot-hint { background: #fbf4f7; }
       html[data-theme='sakura'] #boot-hint p { color: #9a7f8c; }
+      html[data-theme='sakura'] .boot-spinner { border-color: rgba(190, 24, 93, 0.3); border-top-color: #be185d; }
       @media (prefers-reduced-motion: reduce) {
         .boot-spinner {
           animation: none;
@@ -178,7 +182,7 @@
             © <span id="footer-year">2026</span> xrk-hhh · 按 ? 查看快捷键
             <span id="visit-greet" class="ml-1"></span>
           </p>
-          <a data-spa href="%BASE_URL%versions" class="font-mono text-text-muted/70 hover:text-primary">v2.15.3</a>
+          <a data-spa href="%BASE_URL%versions" class="font-mono text-text-muted/70 hover:text-primary">v2.16.0</a>
         </div>
       </div>
     </footer>
