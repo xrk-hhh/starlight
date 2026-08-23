@@ -18,14 +18,20 @@ describe('真实文章内容', () => {
     }
   })
 
-  it('文章正文可安全渲染（无原始 script，正文不含重复 h1）', () => {
-    for (const [path, raw] of entries) {
-      const slug = path.split('/').pop()!.replace(/\.md$/, '')
-      const post = parseBlogPost(raw, slug)
-      const html = renderMarkdown(post.content)
-      expect(html).not.toContain('<script>')
-      // h1 由 BlogPostView 用 post.title 渲染，正文里不应再出现
-      expect(html).not.toContain('<h1>')
-    }
-  })
+  // v2.15：双主题 shiki 高亮（每个 token 计算两套主题色）使全量渲染耗时接近翻倍，
+  // CI 机器上会超过 vitest 默认 5s——放宽到 30s（本地约 1-2s）
+  it(
+    '文章正文可安全渲染（无原始 script，正文不含重复 h1）',
+    () => {
+      for (const [path, raw] of entries) {
+        const slug = path.split('/').pop()!.replace(/\.md$/, '')
+        const post = parseBlogPost(raw, slug)
+        const html = renderMarkdown(post.content)
+        expect(html).not.toContain('<script>')
+        // h1 由 BlogPostView 用 post.title 渲染，正文里不应再出现
+        expect(html).not.toContain('<h1>')
+      }
+    },
+    30_000,
+  )
 })
