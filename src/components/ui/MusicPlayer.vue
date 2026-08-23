@@ -31,7 +31,11 @@ const eq = ref([0, 0, 0, 0])
 // analyser 不可用（建链失败/reduced-motion）时均衡器回退 CSS 假动画
 const analyserActive = ref(false)
 
-/** 后台预取整曲 blob（不阻塞播放）：就绪后若正在播放则记录进度无缝换源 */
+/** 后台预取整曲 blob（不阻塞播放，悬停/首次播放时触发）。
+ *  v2.15.2 关键修复：预取完成后【不做任何换源】——此前在 fetch 回调里给正在缓冲的
+ *  渐渐流换源续播，而元素尚未真正出声（未获自动播放授权），换源后的 play() 被
+ *  autoplay 策略拒绝且被静默吞掉——正是「点了没声、自己停下来、再点才有声」的根因。
+ *  blob 只在【下一次点击的手势内】被消费（见 toggle），保证 play() 永远在手势上下文。 */
 function prefetchBlob() {
   if (blobUrl || prefetching) return
   prefetching = true
@@ -42,17 +46,6 @@ function prefetchBlob() {
     })
     .then((blob) => {
       blobUrl = URL.createObjectURL(blob)
-      const el = audioEl.value
-      // 正在播放渐进流：换到 blob 源并回到原进度（同一元素已获准播放，续播无需新手势）
-      if (el && playing.value && el.src !== blobUrl) {
-        const t = el.currentTime
-        el.src = blobUrl
-        el.currentTime = t
-        el.volume = 0.45
-        void el.play().catch(() => {
-          /* 续播被拒（极罕见）：保持暂停态，下次点击从 blob 直连播放 */
-        })
-      }
     })
     .catch(() => {
       prefetching = false // 失败允许下次重试；渐进流播放不受影响
@@ -136,14 +129,19 @@ async function toggle() {
     audioLevel.value = 0
     return
   }
-  // 关键：play() 必须在点击手势的激活窗口内同步发起——不做任何 await 网络。
-  // 首播走渐进流（缓冲足够撑到 blob 就绪），blob 后台预取完成后无缝换源。
+  // 关键约束：play() 必须在点击手势的激活窗口内同步发起——不做任何 await 网络。
+  // v2.15.2：blob 若已就绪（悬停预取的成果），在【手势内】切到 blob 源——本地直连秒播，
+  // 彻底绕开渐进流的首声缓冲；未就绪则走渐进流立即播，blob 留给下一次点击消费。
+  if (blobUrl && el.src !== blobUrl) {
+    const t = el.currentTime
+    el.src = blobUrl
+    if (t > 0.1 && Number.isFinite(t)) el.currentTime = t
+  }
   prefetchBlob()
   ensureAnalyser()
   loading.value = true
   el.volume = 0
-  // 关键：play() 必须在点击手势的激活窗口内同步发起——不做任何 await 网络。
-  // play() 的 promise 在首帧真正出声时才 resolve（慢网络下可达数秒），
+  // play() 的 promise 在首帧真正出声时才 resolve（慢网络渐进流下可达数秒），
   // 故乐观翻转 playing 让 UI 即时反馈，真失败（autoplay 拒绝/解码错误）再回滚。
   const playP = el.play()
   if (audioCtx?.state === 'suspended') void audioCtx.resume()
