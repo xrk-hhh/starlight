@@ -81,7 +81,7 @@ public/images/blog/ # 30 张自绘 One Dark 风格 SVG 讲解图（过三重布�
 
 | 想改什么 | 去哪里改 | 注意 |
 |---|---|---|
-| 发新版本 | `src/data/site.ts`（版本号）+ `src/data/versions.ts`（**只在数组最顶部插入新条目**）+ `index.html` footer 版本号 | 顺序/去重由 `versions.test.ts` 在 CI 拦截，插错位置会红 |
+| 发新版本 | `node scripts/release.mjs "vX.Y.Z" "note"` 一条命令（改 site.ts/footer/插入版本星图并自校验） | 条目必须**字面量**（禁 SITE_VERSION 引用，测试源码级断言）；CRLF 曾致七条记录丢失，脚本按行处理免疫 |
 | 加/换友链 | `src/data/friends.ts`（前 3 位进内圈轨道，其余进外圈） | 同步核对下方卡片描述 |
 | 写新文章 | `src/blog/` 新建 `YYYY-MM-DD-slug.md` | atom.xml / sitemap 由 postbuild 自动收 |
 | 换背景音乐 | `public/audio/starlight-theme.mp3` + `MusicPlayer.vue` 曲目名文案 | 音乐需可自由使用（当前 CC BY 4.0） |

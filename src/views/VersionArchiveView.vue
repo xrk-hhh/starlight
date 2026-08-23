@@ -41,7 +41,7 @@ useGsapReveal(scopeRef)
       viewBox="0 0 640 260"
       class="mb-14 w-full select-none"
       role="img"
-      aria-label="版本星座图：从 v1.0 到 v2.6 的星轨"
+      :aria-label="`版本星座图：从 ${versions[versions.length - 1]?.v ?? 'v1.0.0'} 到 ${versions[0]?.v ?? ''} 的星轨`"
     >
       <!-- 星轨连线 -->
       <path
