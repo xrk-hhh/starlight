@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
+import { resolve } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { load as yamlLoad } from 'js-yaml'
 import type { Plugin } from 'vite'
@@ -20,8 +21,9 @@ function blogMetaPlugin(): Plugin {
     load(id) {
       const [file, query = ''] = id.split('?')
       if (!file.endsWith('.md') || !query.includes('blogmeta')) return
-      // vite 传入的 md id 通常是根相对 POSIX 路径（/src/blog/x.md）；Windows 下也可能是带盘符的绝对路径
-      const abs = file.startsWith('/') ? fileURLToPath(new URL('.' + file, import.meta.url)) : file
+      // md id 通常是根相对 POSIX 路径（/src/blog/x.md）；vitest 里是绝对路径
+      // （POSIX /home/… 或 Windows D:/…）。path.resolve 对两种都正确。
+      const abs = resolve(process.cwd(), file)
       const raw = readFileSync(abs, 'utf8')
       const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/)
       const fm = (m ? yamlLoad(m[1]) : {}) as Record<string, unknown>
