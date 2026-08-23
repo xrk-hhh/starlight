@@ -5,8 +5,8 @@ import { renderMarkdown } from '@/lib/markdown'
 const entries = Object.entries(blogModules)
 
 describe('真实文章内容', () => {
-  it('共 34 篇文章且 frontmatter 完整（title/date/tags/desc）', () => {
-    expect(entries).toHaveLength(35)
+  it('共 36 篇文章且 frontmatter 完整（title/date/tags/desc）', () => {
+    expect(entries).toHaveLength(36)
     for (const [path, raw] of entries) {
       const slug = path.split('/').pop()!.replace(/\.md$/, '')
       const post = parseBlogPost(raw, slug)

@@ -11,7 +11,7 @@
 ## 功能地图
 
 **内容**
-- 📚 博客知识库：35 篇文章（31 篇算法题解，含难度星级 1~5、来源均为本人真实提交）+ 两级标签（分类 → 知识点）+ 搜索 + 归档时间线 + 随机漫游
+- 📚 博客知识库：36 篇文章（31 篇算法题解，含难度星级 1~5、来源均为本人真实提交）+ 两级标签（分类 → 知识点）+ 搜索 + 归档时间线 + 随机漫游
 - 📖 阅读体验：文章 TOC scroll-spy、代码高亮（One Dark Pro，shiki）、复制按钮、图片 Lightbox、←/→ 翻篇、相关文章推荐
 - 🎯 今日一题：按日期确定性轮换的算法题推荐
 - 🛠 项目星轨：原生横向滚动轨道（拖拽/方向键/按钮），真实运行截图封面
@@ -33,7 +33,7 @@
 - 🎊 电报彩蛋「传输仪式」（v2.14）：发送成功后三段式传输状态（电波发射 → 深空中继 → 星港签收），签收瞬间流星护航，你的电波化作「回执卡」挂进深空讯号区（仅本次会话可见）
 
 **基础设施**
-- RSS（atom.xml，35 篇）+ sitemap.xml + robots.txt：postbuild 构建期生成
+- RSS（atom.xml，36 篇）+ sitemap.xml + robots.txt：postbuild 构建期生成
 - CI：GitHub Actions 定时+推送部署；构建前拉取 GitHub/OJ 统计；Node 24
 - 性能：首屏 JS 按需加载（粒子/语法包/音频全部 idle 或路由级）、wasm 零依赖（shiki JS 引擎）、CLS 0、axe 清零
 
@@ -63,7 +63,7 @@ src/
 │   ├── particles/  # WebGL 粒子背景
 │   └── blog/       # Giscus 评论
 ├── composables/    # 主题/视差/reveal/惯性倾斜/打字机/计数 等
-├── blog/           # 35 篇 Markdown 文章（frontmatter: title/date/tags/category/difficulty）
+├── blog/           # 36 篇 Markdown 文章（frontmatter: title/date/tags/category/difficulty）
 ├── data/           # profile / projects / friends / oj / site（版本单一源）
 ├── lib/            # markdown 渲染（shiki One Dark Pro）/ 博客解析（CRLF 兼容）
 └── three/          # ParticleScene（三层星海）
