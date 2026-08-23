@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { projects } from '@/data/projects'
-import { listPosts, blogModules } from '@/lib/blog'
+import { listPostMetas, blogMetas } from '@/lib/blog'
 import { useCountUp } from '@/composables/useCountUp'
 
 // 星光统计带（v1.6）：项目/文章/GitHub 数据带滚动计数；github-stats 失败时静默降级为本地数据
 const BASE_URL = import.meta.env.BASE_URL
-const postCount = listPosts(blogModules).length
+const postCount = listPostMetas(blogMetas).length
 const stats = ref<{ repos: number; stars: number } | null>(null)
 const rowEl = ref<HTMLElement | null>(null)
 const { values } = useCountUp(rowEl, () => [

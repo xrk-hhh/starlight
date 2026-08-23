@@ -2,10 +2,50 @@ import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
+import { readFileSync } from 'node:fs'
+import { load as yamlLoad } from 'js-yaml'
+import type { Plugin } from 'vite'
+
+/**
+ * v2.18 性能核心：构建期 frontmatter 提取插件。
+ * `import.meta.glob('…*.md', { query: '?blogmeta' })` 得到的模块在构建期就把
+ * YAML frontmatter 解析成对象导出（与 parseBlogPost 输出同构、content 为空串），
+ * 浏览器端列表/统计/今日一题因此不再需要打包 36 篇全文（-225KB raw / -85KB gzip）
+ * 和运行时 js-yaml；全文走 ?raw 懒加载，按需单篇成 chunk。
+ */
+function blogMetaPlugin(): Plugin {
+  return {
+    name: 'starlight-blog-meta',
+    enforce: 'pre',
+    load(id) {
+      const [file, query = ''] = id.split('?')
+      if (!file.endsWith('.md') || !query.includes('blogmeta')) return
+      // vite 传入的 md id 通常是根相对 POSIX 路径（/src/blog/x.md）；Windows 下也可能是带盘符的绝对路径
+      const abs = file.startsWith('/') ? fileURLToPath(new URL('.' + file, import.meta.url)) : file
+      const raw = readFileSync(abs, 'utf8')
+      const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/)
+      const fm = (m ? yamlLoad(m[1]) : {}) as Record<string, unknown>
+      const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : []
+      const meta = {
+        slug: file.split('/').pop()!.replace(/\.md$/, ''),
+        title: String(fm.title ?? ''),
+        date: fm.date instanceof Date ? fm.date.toISOString().slice(0, 10) : String(fm.date ?? ''),
+        tags,
+        desc: typeof fm.desc === 'string' ? fm.desc : '',
+        content: '',
+        category: typeof fm.category === 'string' && fm.category ? fm.category : (tags[0] ?? ''),
+        difficulty:
+          typeof fm.difficulty === 'number' ? Math.min(5, Math.max(1, fm.difficulty)) : 0,
+      }
+      return `export default ${JSON.stringify(meta)}`
+    },
+  }
+}
 
 export default defineConfig(({ command }) => ({
   base: command === 'serve' ? '/' : '/starlight/',
   plugins: [
+    blogMetaPlugin(),
     vue(),
     tailwindcss(),
     // dev：把生产子路径 /starlight/* 重写回根路径，

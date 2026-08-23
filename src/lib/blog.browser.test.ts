@@ -20,7 +20,7 @@ describe('parseBlogPost（浏览器环境回归）', () => {
   it('不依赖 Node Buffer：解析 frontmatter 与正文', async () => {
     // 模拟浏览器：抹掉 Node 全局 Buffer（jsdom env 仍运行在 Node 上，需显式抹除）
     vi.stubGlobal('Buffer', undefined)
-    const { parseBlogPost, listPosts } = await import('./blog')
+    const { parseBlogPost, listPosts } = await import('./blog-parse')
     const post = parseBlogPost(sample, '2026-08-13-hello')
     expect(post.slug).toBe('2026-08-13-hello')
     expect(post.title).toBe('你好，世界')

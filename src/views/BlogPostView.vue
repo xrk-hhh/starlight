@@ -1,24 +1,28 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { listPosts, blogModules, countWords, readingTimeMinutes } from '@/lib/blog'
+import { listPostMetas, blogMetas, loadPostRaw, countWords, readingTimeMinutes } from '@/lib/blog'
 import { renderMarkdown } from '@/lib/markdown'
 import GiscusComments from '@/components/blog/GiscusComments.vue'
 
 const route = useRoute()
 const router = useRouter()
+// v2.18 性能重构：meta（标题/日期/标签/难度/上下篇）来自构建期解析的轻量列表，
+// 同步立即可用；全文（raw markdown）按 slug 懒加载，到位后渲染正文与目录。
 const post = computed(() =>
-  listPosts(blogModules).find((p) => p.slug === route.params.slug),
+  listPostMetas(blogMetas).find((p) => p.slug === route.params.slug),
 )
-const html = computed(() => (post.value ? renderMarkdown(post.value.content) : ''))
+const rawContent = ref('')
+const contentLoading = ref(true)
+const html = computed(() => (rawContent.value ? renderMarkdown(rawContent.value) : ''))
 
-const wordCount = computed(() => (post.value ? countWords(post.value.content) : 0))
-const minutes = computed(() => (post.value ? readingTimeMinutes(post.value.content) : 0))
+const wordCount = computed(() => (rawContent.value ? countWords(rawContent.value) : 0))
+const minutes = computed(() => (rawContent.value ? readingTimeMinutes(rawContent.value) : 0))
 
 const progress = ref(0)
 
 // 上一篇/下一篇（v2.3）：列表按日期倒序，prev 更新、next 更早
-const ordered = computed(() => listPosts(blogModules))
+const ordered = computed(() => listPostMetas(blogMetas))
 const postIdx = computed(() => ordered.value.findIndex((p) => p.slug === route.params.slug))
 const prevPost = computed(() => (postIdx.value > 0 ? ordered.value[postIdx.value - 1] : null))
 const nextPost = computed(() =>
@@ -123,9 +127,16 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
 })
+// v2.18：全文懒加载——meta 已同步渲染（标题区立即出），raw 到位后 v-html 更新，
+// watch 回调里的 collectHeadings/enhance 在 nextTick 后跑（渲染顺序天然正确）。
 watch(
   () => route.params.slug,
-  async () => {
+  async (slug) => {
+    contentLoading.value = true
+    rawContent.value = ''
+    const raw = await loadPostRaw(String(slug))
+    rawContent.value = raw ?? ''
+    contentLoading.value = false
     await nextTick()
     collectHeadings()
     enhanceCodeBlocks()
@@ -183,8 +194,17 @@ watch(
           <span class="text-accent/90">{{ '★'.repeat(post.difficulty) }}</span><span class="text-white/15">{{ '★'.repeat(5 - post.difficulty) }}</span>
         </span>
       </div>
+      <!-- v2.18 全文懒加载：meta 秒出，正文骨架占位（防高度跳变） -->
+      <div v-if="contentLoading" class="blog-content mt-10 space-y-4" aria-live="polite">
+        <div class="h-4 w-2/3 animate-pulse rounded bg-text/10"></div>
+        <div class="h-4 w-full animate-pulse rounded bg-text/10"></div>
+        <div class="h-4 w-5/6 animate-pulse rounded bg-text/10"></div>
+        <div class="h-32 w-full animate-pulse rounded-lg bg-text/10"></div>
+        <div class="h-4 w-1/2 animate-pulse rounded bg-text/10"></div>
+        <p class="pt-2 font-mono text-xs text-text-muted/60">正在从星港书库调取全文…</p>
+      </div>
       <!-- eslint-disable-next-line vue/no-v-html -- 内容经 markdown-it（html:false）+ shiki 渲染，无原始 HTML 通过，XSS 面有测试覆盖 -->
-      <div ref="contentEl" class="blog-content mt-10" @click="onContentClick" v-html="html"></div>
+      <div v-else ref="contentEl" class="blog-content mt-10" @click="onContentClick" v-html="html"></div>
 
       <!-- 上一篇 / 下一篇（v2.3） -->
       <nav v-if="prevPost || nextPost" aria-label="相邻文章" class="mt-14 grid gap-4 sm:grid-cols-2">

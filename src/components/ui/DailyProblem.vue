@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { listPosts, blogModules } from '@/lib/blog'
+import { listPostMetas, blogMetas } from '@/lib/blog'
 
 // 今日一题（v2.6）：按本地日期确定性轮换——同一天所有访客看到同一题，
 // 算法文库里难度>0 的篇目做简单 hash 挑选。零后端、零随机跳变。
 const algoPosts = computed(() =>
-  listPosts(blogModules).filter((p) => p.difficulty > 0),
+  listPostMetas(blogMetas).filter((p) => p.difficulty > 0),
 )
 
 // FNV-1a：短小、分布均匀，够日常轮换用

@@ -35,7 +35,7 @@
 **基础设施**
 - RSS（atom.xml，36 篇）+ sitemap.xml + robots.txt：postbuild 构建期生成
 - CI：GitHub Actions 定时+推送部署；构建前拉取 GitHub/OJ 统计；Node 24
-- 性能：首屏 JS 按需加载（粒子/语法包/音频全部 idle 或路由级）、wasm 零依赖（shiki JS 引擎）、CLS 0、axe 清零
+- 性能：首屏 JS 按需加载（粒子/语法包/音频全部 idle 或路由级）、**博客数据构建期分层（v2.18）**——列表/统计走构建期 frontmatter 元数据（blog chunk 225KB→19KB，gzip -92%），36 篇全文按篇懒加载（单篇 2-6KB）、运行时零 js-yaml、wasm 零依赖（shiki JS 引擎）、CLS 0、axe 清零
 
 ## 快速开始
 

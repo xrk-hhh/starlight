@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { parseBlogPost, listPosts, countWords, readingTimeMinutes } from './blog'
+import { countWords, readingTimeMinutes } from './blog'
+import { parseBlogPost, listPosts } from './blog-parse'
 
 const sample = `---
 title: 你好，世界

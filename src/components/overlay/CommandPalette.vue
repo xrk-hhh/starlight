@@ -54,8 +54,8 @@ function showFeedback(msg: string) {
 }
 
 async function wanderRandom() {
-  const { listPosts, blogModules } = await import('@/lib/blog')
-  const posts = listPosts(blogModules)
+  const { listPostMetas, blogMetas } = await import('@/lib/blog')
+  const posts = listPostMetas(blogMetas)
   if (!posts.length) return
   void router.push(`/blog/${posts[Math.floor(Math.random() * posts.length)].slug}`)
   close()

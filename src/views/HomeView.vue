@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { profile } from '@/data/profile'
 import { projects } from '@/data/projects'
-import { listPosts, blogModules } from '@/lib/blog'
+import { listPostMetas, blogMetas } from '@/lib/blog'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import ElasticHeading from '@/components/ui/ElasticHeading.vue'
 import OrbitText from '@/components/ui/OrbitText.vue'
@@ -24,7 +24,7 @@ function onHintScroll() {
 }
 
 const featuredProjects = projects.filter((p) => p.featured).slice(0, 4)
-const latestPosts = listPosts(blogModules).slice(0, 3)
+const latestPosts = listPostMetas(blogMetas).slice(0, 3)
 
 const { text: typed } = useTypewriter(profile.typedPhrases)
 

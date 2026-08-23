@@ -1,4 +1,9 @@
-import { load } from 'js-yaml'
+// v2.18 性能重构：列表数据与全文分离。
+// blogMetas：构建期解析的 frontmatter（vite 插件 ?blogmeta，与 parseBlogPost 输出同构、
+// content 为空串）——列表/统计/今日一题/上下篇全部走这里，36 篇全文不再进列表路径，
+// 运行时也不再需要 js-yaml。
+// blogRaws：全文懒加载（?raw 非 eager），文章页按 slug 取，单篇独立 chunk。
+// parseBlogPost / listPosts（运行时 frontmatter 解析族）已抽至 ./blog-parse，仅测试使用。
 
 export interface BlogMeta {
   slug: string
@@ -13,40 +18,26 @@ export interface BlogMeta {
   difficulty: number
 }
 
-const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
+export const blogMetas = import.meta.glob('../blog/*.md', {
+  query: '?blogmeta',
+  import: 'default',
+  eager: true,
+}) as Record<string, BlogMeta>
 
-export function parseBlogPost(raw: string, slug: string): BlogMeta {
-  const match = raw.match(FRONTMATTER_RE)
-  const data = match ? ((load(match[1]) as Record<string, unknown>) ?? {}) : {}
-  const content = match ? raw.slice(match[0].length) : raw
-  if (typeof data.title !== 'string' || !data.title) {
-    throw new Error(`[blog] ${slug}: frontmatter 缺少 title`)
-  }
-  if (typeof data.date !== 'string' && !(data.date instanceof Date)) {
-    throw new Error(`[blog] ${slug}: frontmatter 缺少 date`)
-  }
-  const date =
-    data.date instanceof Date ? data.date.toISOString().slice(0, 10) : String(data.date)
-  const tags = Array.isArray(data.tags) ? data.tags.map(String) : []
-  return {
-    slug,
-    title: data.title,
-    date,
-    tags,
-    desc: typeof data.desc === 'string' ? data.desc : '',
-    content,
-    category: typeof data.category === 'string' && data.category ? data.category : tags[0] ?? '',
-    difficulty: typeof data.difficulty === 'number' ? Math.min(5, Math.max(1, data.difficulty)) : 0,
-  }
+export const blogRaws = import.meta.glob('../blog/*.md', {
+  query: '?raw',
+  import: 'default',
+}) as Record<string, () => Promise<string>>
+
+/** 列表（同步、零解析）：meta 已在构建期展开，按日期倒序 */
+export function listPostMetas(metas: Record<string, BlogMeta>): BlogMeta[] {
+  return Object.values(metas).sort((a, b) => (a.date < b.date ? 1 : -1))
 }
 
-export function listPosts(modules: Record<string, string>): BlogMeta[] {
-  return Object.entries(modules)
-    .map(([path, raw]) => {
-      const slug = path.split('/').pop()!.replace(/\.md$/, '')
-      return parseBlogPost(raw, slug)
-    })
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
+/** 取单篇全文（懒加载 chunk）；找不到返回 null（404 由调用方处理） */
+export async function loadPostRaw(slug: string): Promise<string | null> {
+  const hit = blogRaws['../blog/' + slug + '.md']
+  return hit ? hit() : null
 }
 
 /** 统计字数：中文按字符计，英文按空格分词计；忽略代码块与 markdown 标记 */
@@ -63,11 +54,3 @@ export function countWords(markdown: string): number {
 export function readingTimeMinutes(markdown: string): number {
   return Math.max(1, Math.ceil(countWords(markdown) / 400))
 }
-
-// TODO（性能扩展点，Plan §7）：文章数超过 15 篇时，
-// 评估 shiki 构建时预编译或按需加载渲染依赖。
-export const blogModules = import.meta.glob('../blog/*.md', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-}) as Record<string, string>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { listPosts, blogModules, type BlogMeta } from '@/lib/blog'
+import { listPostMetas, blogMetas, type BlogMeta } from '@/lib/blog'
 import SectionTitle from '@/components/ui/SectionTitle.vue'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import { useInertiaTilt } from '@/composables/useInertiaTilt'
 
 const router = useRouter()
-const posts = listPosts(blogModules)
+const posts = listPostMetas(blogMetas)
 const scopeRef = ref<HTMLElement | null>(null)
 useGsapReveal(scopeRef)
 
