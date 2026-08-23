@@ -2,17 +2,19 @@
 import { onUnmounted, ref } from 'vue'
 import { audioLevel } from '@/stores/particles'
 
-// 星港电台（v1.10 起步，v2.12 大修，v2.12.1 根治线上无法起播）：
-// 起播策略：点击后【不等网络】立即从渐进流播放（el.play() 必须落在用户激活窗口内，
-// 任何 await 网络都会耗尽窗口被 autoplay 策略拒绝——线上首播无声的根因）；
-// 同时后台预取整曲 blob，就绪后记录进度无缝换源，第二循环起零网络停顿。
-// 沉浸感：WebAudio AnalyserNode 取真频谱——均衡器条为真实电平，低频电平写入 audioLevel
-// 供 ParticleScene 的 uAudio uniform 消费（星海随音乐呼吸）；reduced-motion 下跳过 analyser。
-// 播放/暂停均做 700ms 音量渐变，避免突兀。
+// 星港电台（v1.10 起步，v2.12 系列大修，v2.15.3 根治慢网络首播）：
+// 三条铁律（每个都来自一次真实事故）：
+// 1) play() 只在点击手势内同步发起——await 网络会耗尽激活窗口被 autoplay 拒绝
+// 2) 播放中永不换源——元素未出声时换源续播会被策略拒绝且静默死掉
+// 3) 不双下载——渐进流播放时立即中止后台 fetch：同一文件两条连接在慢网络下
+//    互相抢带宽，渐进流迟迟凑不齐首段缓冲（长久无声/反复停顿的真凶）
+// blob 消费时机：仅在点击手势内（悬停预取成果秒播）；fetch 在暂停后/悬停时重挂。
 const audioEl = ref<HTMLAudioElement | null>(null)
 const playing = ref(false)
 const loading = ref(false)
 const showPill = ref(false)
+// 缓冲状态（waiting/canplay 事件驱动）：慢网络首播给用户看得见的反馈而非无声死等
+const buffering = ref(false)
 
 const TRACK_SRC = `${import.meta.env.BASE_URL}audio/starlight-theme.mp3`
 const reducedMotion =
@@ -20,6 +22,8 @@ const reducedMotion =
 
 let blobUrl: string | null = null
 let prefetching = false
+let prefetchAbort: AbortController | null = null
+let refetchTimer: ReturnType<typeof setTimeout> | null = null
 let audioCtx: AudioContext | null = null
 let analyser: AnalyserNode | null = null
 let freqData: Uint8Array<ArrayBuffer> | null = null
@@ -31,15 +35,12 @@ const eq = ref([0, 0, 0, 0])
 // analyser 不可用（建链失败/reduced-motion）时均衡器回退 CSS 假动画
 const analyserActive = ref(false)
 
-/** 后台预取整曲 blob（不阻塞播放，悬停/首次播放时触发）。
- *  v2.15.2 关键修复：预取完成后【不做任何换源】——此前在 fetch 回调里给正在缓冲的
- *  渐渐流换源续播，而元素尚未真正出声（未获自动播放授权），换源后的 play() 被
- *  autoplay 策略拒绝且被静默吞掉——正是「点了没声、自己停下来、再点才有声」的根因。
- *  blob 只在【下一次点击的手势内】被消费（见 toggle），保证 play() 永远在手势上下文。 */
+/** 后台预取整曲 blob（悬停/暂停后触发；可中止） */
 function prefetchBlob() {
   if (blobUrl || prefetching) return
   prefetching = true
-  fetch(TRACK_SRC)
+  prefetchAbort = new AbortController()
+  fetch(TRACK_SRC, { signal: prefetchAbort.signal })
     .then((res) => {
       if (!res.ok) throw new Error(String(res.status))
       return res.blob()
@@ -48,8 +49,25 @@ function prefetchBlob() {
       blobUrl = URL.createObjectURL(blob)
     })
     .catch(() => {
-      prefetching = false // 失败允许下次重试；渐进流播放不受影响
+      prefetching = false // 失败/中止都允许重试（渐进流播放不受影响）
     })
+    .finally(() => {
+      prefetchAbort = null
+    })
+}
+
+/** 中止后台 fetch：渐进流即将独占带宽（v2.15.3 双下载竞争修复）。
+ *  播放会话结束（暂停）后 idle 重挂 fetch，为下一次点击备好秒播。 */
+function abortPrefetchForPlayback() {
+  prefetchAbort?.abort()
+}
+
+function scheduleRefetchAfterPause() {
+  if (blobUrl || refetchTimer) return
+  refetchTimer = setTimeout(() => {
+    refetchTimer = null
+    prefetchBlob()
+  }, 2500)
 }
 
 /** 建 WebAudio 链（每元素只能建一次 source；失败静默回退 CSS 假均衡器） */
@@ -125,19 +143,22 @@ async function toggle() {
     playing.value = false
     stopAnalyserLoop()
     fadeVolume(0, () => el.pause())
-    // 电平归零：星海停止呼吸
+    // 电平归零：星海停止呼吸；暂停后 idle 重挂 fetch，为下一次点击备好秒播
     audioLevel.value = 0
+    scheduleRefetchAfterPause()
     return
   }
   // 关键约束：play() 必须在点击手势的激活窗口内同步发起——不做任何 await 网络。
-  // v2.15.2：blob 若已就绪（悬停预取的成果），在【手势内】切到 blob 源——本地直连秒播，
-  // 彻底绕开渐进流的首声缓冲；未就绪则走渐进流立即播，blob 留给下一次点击消费。
   if (blobUrl && el.src !== blobUrl) {
+    // blob 已就绪（悬停预取成果）：手势内切本地源秒播，零网络
     const t = el.currentTime
     el.src = blobUrl
     if (t > 0.1 && Number.isFinite(t)) el.currentTime = t
+  } else {
+    // blob 未就绪：走渐进流，并立即中止后台 fetch——同一文件双下载在慢网络下
+    // 互相抢带宽，是首播长久无声/反复停顿的真凶（v2.15.3）
+    abortPrefetchForPlayback()
   }
-  prefetchBlob()
   ensureAnalyser()
   loading.value = true
   el.volume = 0
@@ -157,9 +178,22 @@ async function toggle() {
   loading.value = false
 }
 
+// 缓冲状态事件：waiting=凑缓冲（慢网络首播给看得见的反馈），playing/canplay=恢复
+function onWaiting() {
+  if (playing.value) buffering.value = true
+}
+function onPlaying() {
+  buffering.value = false
+}
+function onCanPlay() {
+  buffering.value = false
+}
+
 onUnmounted(() => {
   if (rafId) cancelAnimationFrame(rafId)
   if (fadeTimer) clearInterval(fadeTimer)
+  if (refetchTimer) clearTimeout(refetchTimer)
+  prefetchAbort?.abort()
   audioLevel.value = 0
   audioEl.value?.pause()
   if (blobUrl) URL.revokeObjectURL(blobUrl)
@@ -173,7 +207,15 @@ onUnmounted(() => {
     @mouseenter="showPill = true; prefetchBlob()"
     @mouseleave="showPill = false"
   >
-    <audio ref="audioEl" :src="TRACK_SRC" loop preload="none"></audio>
+    <audio
+      ref="audioEl"
+      :src="TRACK_SRC"
+      loop
+      preload="none"
+      @waiting="onWaiting"
+      @playing="onPlaying"
+      @canplay="onCanPlay"
+    ></audio>
 
     <!-- 唱片按钮本体 -->
     <button
@@ -233,8 +275,12 @@ onUnmounted(() => {
           ></span>
         </span>
         <span class="whitespace-nowrap">
-          <span class="block font-mono text-[11px] text-primary">星港电台 · 播放中</span>
-          <span class="block text-[10px] text-text-muted/70">Ethereal Relaxation — Kevin MacLeod (CC BY 4.0)</span>
+          <span class="block font-mono text-[11px] text-primary">
+            {{ buffering ? '星港电台 · 信号缓冲中…' : '星港电台 · 播放中' }}
+          </span>
+          <span class="block text-[10px] text-text-muted/70">
+            {{ buffering ? '慢网路首播需数秒，下一曲起本地直连' : 'Ethereal Relaxation — Kevin MacLeod (CC BY 4.0)' }}
+          </span>
         </span>
       </div>
     </Transition>
