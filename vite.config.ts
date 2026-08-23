@@ -28,6 +28,14 @@ function blogMetaPlugin(): Plugin {
       const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/)
       const fm = (m ? yamlLoad(m[1]) : {}) as Record<string, unknown>
       const tags = Array.isArray(fm.tags) ? fm.tags.map(String) : []
+      // 校验对齐 blog-parse 的 parseBlogPost：坏 frontmatter 直接构建失败（fail fast），
+      // 不允许静默空标题混进列表
+      if (typeof fm.title !== 'string' || !fm.title) {
+        throw new Error(`[blogmeta] ${file}: frontmatter 缺少 title`)
+      }
+      if (typeof fm.date !== 'string' && !(fm.date instanceof Date)) {
+        throw new Error(`[blogmeta] ${file}: frontmatter 缺少 date`)
+      }
       const meta = {
         slug: file.split('/').pop()!.replace(/\.md$/, ''),
         title: String(fm.title ?? ''),

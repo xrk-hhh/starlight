@@ -129,12 +129,17 @@ onUnmounted(() => {
 })
 // v2.18：全文懒加载——meta 已同步渲染（标题区立即出），raw 到位后 v-html 更新，
 // watch 回调里的 collectHeadings/enhance 在 nextTick 后跑（渲染顺序天然正确）。
+// v2.18.1 竞态守卫：←/→ 快速翻篇时，前一篇的慢请求可能晚于后一篇返回——
+// 用自增令牌丢弃过期响应，防止旧正文覆盖新路由。
+let loadToken = 0
 watch(
   () => route.params.slug,
   async (slug) => {
+    const token = ++loadToken
     contentLoading.value = true
     rawContent.value = ''
     const raw = await loadPostRaw(String(slug))
+    if (token !== loadToken) return // 已翻到另一篇，本次结果作废
     rawContent.value = raw ?? ''
     contentLoading.value = false
     await nextTick()
@@ -189,7 +194,10 @@ watch(
       <div class="mt-3 flex items-center gap-4 font-mono text-sm text-text-muted">
         <time>{{ post.date }}</time>
         <span v-for="tag in post.tags" :key="tag">#{{ tag }}</span>
-        <span class="text-text-muted">约 {{ wordCount }} 字 · 阅读 {{ minutes }} 分钟</span>
+        <span class="text-text-muted">
+          <template v-if="contentLoading">统计中…</template>
+          <template v-else>约 {{ wordCount }} 字 · 阅读 {{ minutes }} 分钟</template>
+        </span>
         <span v-if="post.difficulty" class="text-xs leading-none tracking-tight" :aria-label="`难度 ${post.difficulty} 星`">
           <span class="text-accent/90">{{ '★'.repeat(post.difficulty) }}</span><span class="text-white/15">{{ '★'.repeat(5 - post.difficulty) }}</span>
         </span>
