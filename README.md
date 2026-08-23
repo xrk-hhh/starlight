@@ -75,8 +75,19 @@ public/images/blog/ # 30 张自绘 One Dark 风格 SVG 讲解图（过三重布�
 
 - 文章放 `src/blog/`，文件名 `YYYY-MM-DD-slug.md`；frontmatter 需含 `title/date/tags/desc`，算法题解加 `category: 算法竞赛` 与 `difficulty: 1-5`
 - 示意图放 `public/images/blog/`，引用前过布局检查（文本相交 / 越界 / 遮挡）
-- 发版只改 `src/data/site.ts` 的 `SITE_VERSION`（时间轴 / Now / 版本星图自动同步）；`index.html` footer 为静态壳需手动同步
-- 新增主题：在 `src/composables/useTheme.ts` 的 `THEMES` 加一项（swatch + scene 场景色板 + giscus 主题），再在 `src/styles/main.css` 补 `html[data-theme='…']` 变量与氛围层、`index.html` 首帧脚本加 key
+- 新增主题：在 `src/composables/useTheme.ts` 的 `THEMES` 加一项（swatch + scene 场景色板 + light 标志 + giscus 主题），再在 `src/styles/main.css` 补 `html[data-theme='…']` 变量与氛围层、`index.html` 首帧脚本加 key
+
+## 常用改动速查表
+
+| 想改什么 | 去哪里改 | 注意 |
+|---|---|---|
+| 发新版本 | `src/data/site.ts`（版本号）+ `src/data/versions.ts`（**只在数组最顶部插入新条目**）+ `index.html` footer 版本号 | 顺序/去重由 `versions.test.ts` 在 CI 拦截，插错位置会红 |
+| 加/换友链 | `src/data/friends.ts`（前 3 位进内圈轨道，其余进外圈） | 同步核对下方卡片描述 |
+| 写新文章 | `src/blog/` 新建 `YYYY-MM-DD-slug.md` | atom.xml / sitemap 由 postbuild 自动收 |
+| 换背景音乐 | `public/audio/starlight-theme.mp3` + `MusicPlayer.vue` 曲目名文案 | 音乐需可自由使用（当前 CC BY 4.0） |
+| 换 Web3Forms key | `gh secret set VITE_WEB3FORMS_ACCESS_KEY` + 本地 `.env` | 重新部署后生效 |
+| 调粒子/星空 | **不要动**——粒子栈与 v2.11 逐字节一致（用户认证行为） | 改前先在真实浏览器多主题验证 |
+| 评论区 | `src/config/giscus.ts` | 主题跟随站点（light/dark 自动） |
 
 ## 联络信使（Web3Forms 直投）
 

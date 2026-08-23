@@ -440,6 +440,17 @@ html[data-theme='paper'] .border-white\/20,
 html[data-theme='sakura'] .border-white\/20 {
   border-color: color-mix(in oklab, var(--color-text) 14%, transparent);
 }
+/* v2.15 双主题代码高亮：浅色主题把代码块切到 GitHub Light（shiki 输出的
+   --shiki-light 变量组；inline style 为深色值故需 !important 覆盖） */
+html[data-theme='paper'] .blog-content pre,
+html[data-theme='sakura'] .blog-content pre {
+  background-color: var(--shiki-light-bg, #fff) !important;
+  border-color: color-mix(in oklab, var(--color-text) 12%, transparent);
+}
+html[data-theme='paper'] .blog-content pre span,
+html[data-theme='sakura'] .blog-content pre span {
+  color: var(--shiki-light, inherit) !important;
+}
 /* v2.11 认证行为：星尘粒子在浅底压暗至 0.35（预乘合成下加色粒子呈柔和彩点） */
 html[data-theme='paper'] canvas[aria-hidden='true'],
 html[data-theme='sakura'] canvas[aria-hidden='true'] {

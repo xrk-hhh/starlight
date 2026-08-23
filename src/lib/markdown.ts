@@ -14,8 +14,9 @@ const md = new MarkdownIt({
 // 采用 shiki/core 细粒度集成（官方 fine-grained bundle 推荐形态）：
 // 只注册文章实际用到的语言，避免 bundle-full 把全部内置语言打进产物。
 const highlighter = await createHighlighterCore({
-  // One Dark Pro：与编辑器一致的代码高亮（v1.12）
-  themes: [import('@shikijs/themes/one-dark-pro')],
+  // v2.15 双主题：深色主题 One Dark Pro，浅色主题（纸笺/樱庭）经 CSS 切到 GitHub Light，
+  // 浅色页面不再被黑底代码块打断（shiki dual-theme 输出 --shiki-light 变量组）
+  themes: [import('@shikijs/themes/one-dark-pro'), import('@shikijs/themes/github-light')],
   langs: [import('@shikijs/langs/python'), import('@shikijs/langs/cpp')],
   // JS 正则引擎（v2.4）：替代 oniguruma+wasm——博客路由少加载一个 622KB
   // （gzip 232KB）的 chunk，语法着色结果一致；shiki 官方推荐的轻量路径。
@@ -30,7 +31,9 @@ md.use(
     // 属 @shikijs/markdown-it@4 边界的已知类型噪声，运行时同源。
     highlighter as unknown as Parameters<typeof fromHighlighter>[0],
     {
-      theme: 'one-dark-pro',
+      themes: { light: 'github-light', dark: 'one-dark-pro' },
+      // 默认渲染深色值（inline color: var(--shiki-dark)），浅色主题由 main.css 覆盖变量
+      defaultColor: 'dark',
       // 'text' 是 shiki 运行时的特殊纯文本语言（isPlainLang 白名单），
       // 但未收录进 BundledLanguage 类型联合，此处显式断言。
       // 未注册的语言由此优雅降级为纯文本，不抛错。

@@ -172,7 +172,7 @@ onUnmounted(() => {
 <template>
   <div
     class="group fixed bottom-6 left-6 z-[55] flex items-center"
-    @mouseenter="showPill = true"
+    @mouseenter="showPill = true; prefetchBlob()"
     @mouseleave="showPill = false"
   >
     <audio ref="audioEl" :src="TRACK_SRC" loop preload="none"></audio>

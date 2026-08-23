@@ -53,6 +53,8 @@
     </script>
   </head>
   <body>
+    <!-- v2.15 可用性：键盘/读屏用户的首个 Tab 停留点，跳过导航直达正文 -->
+    <a class="skip-link" href="#main">跳到主内容</a>
     <div id="app" style="min-height: 100vh"></div>
     <script>
       // 首帧高度占位（v1.7）：仅为消除 Vue mount「空→满」的文档高度跳变（CLS 伪影）。
@@ -122,6 +124,24 @@
           animation: none;
         }
       }
+      /* skip 链接：平时视觉隐藏，Tab 聚焦时浮现（v2.15） */
+      .skip-link {
+        position: fixed;
+        top: -48px;
+        left: 12px;
+        z-index: 10000;
+        padding: 10px 16px;
+        border-radius: 0 0 10px 10px;
+        background: #12121e;
+        border: 1px solid rgba(34, 211, 238, 0.5);
+        color: #22d3ee;
+        font-size: 13px;
+        text-decoration: none;
+        transition: top 0.15s ease;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
     </style>
     <!--
       footer 静态化（v1.5）：首帧即存在于 DOM，避免 Vue mount「空→满」插入的 CLS 伪影。
@@ -154,13 +174,29 @@
           </div>
         </div>
         <div class="mt-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-text-muted">
-          <p>© <span id="footer-year">2026</span> xrk-hhh · 按 ? 查看快捷键</p>
-          <a data-spa href="%BASE_URL%versions" class="font-mono text-text-muted/70 hover:text-primary">v2.14.1</a>
+          <p>
+            © <span id="footer-year">2026</span> xrk-hhh · 按 ? 查看快捷键
+            <span id="visit-greet" class="ml-1"></span>
+          </p>
+          <a data-spa href="%BASE_URL%versions" class="font-mono text-text-muted/70 hover:text-primary">v2.15.0</a>
         </div>
       </div>
     </footer>
     <script>
       document.getElementById('footer-year').textContent = String(new Date().getFullYear());
+      // v2.15 人格化问候：localStorage 记到访次数（仅本机，不上报任何数据）
+      (function () {
+        try {
+          var n = parseInt(localStorage.getItem('starlight:visits') || '0', 10) + 1;
+          localStorage.setItem('starlight:visits', String(n));
+          var el = document.getElementById('visit-greet');
+          if (el)
+            el.textContent =
+              n === 1 ? '· ✦ 欢迎首次到访星港' : n < 10 ? '· ✦ 你已第 ' + n + ' 次回到星港' : '· ✦ 星港的老朋友，第 ' + n + ' 次巡航';
+        } catch (e) {
+          /* storage 不可用时静默 */
+        }
+      })();
     </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
