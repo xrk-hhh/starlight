@@ -4,12 +4,10 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 // 桌宠 v4（v1.9）：真·原版奶龙（erich207/nailong-codex-pet）与奶蛙（timerring/codex-pet-naiwa）
 // 双角色精灵表动画——素材为 Codex v2 桌宠格式的透明背景帧，裁出 4 行并压缩：
 // row0 idle(6帧) / row1 waving(4帧) / row2 jumping(5帧) / row3 running(6帧)。
+// v2.15.1：帧动画由 CSS steps() 驱动（.pet-anim-* 类，见 style 块），不再有 JS 帧循环。
 // 交互：拖拽 / 点击说话 / 双击跳跃 / ✕ 收起（sessionStorage）；hover 出现切换按钮选角色。
 type Mood = 'idle' | 'poke' | 'dance' | 'drag'
 type Char = 'nailong' | 'naiwa'
-
-const ROW_OF: Record<Mood, number> = { idle: 0, poke: 1, dance: 2, drag: 3 }
-const FRAMES_OF: Record<Mood, number> = { idle: 6, poke: 4, dance: 5, drag: 6 }
 
 const CHAR_META: Record<Char, { name: string; sheet: string; lines: string[]; hi: string; feed: string[]; walk: string[] }> = {
   nailong: {
@@ -65,29 +63,21 @@ const pos = ref({ x: 0, y: 0 })
 const dragging = ref(false)
 const bubble = ref('')
 const hidden = ref(false)
-// 性能（v1.10.2）：桌宠整体延迟到 idle 后挂载——不抢首屏渲染与带宽；
-// 第二角色精灵表也不再预载，切换时按需拉取（本地/CDN 下几乎无感）
+// 性能（v1.10.2）：桌宠整体延迟到 idle 后挂载——不抢首屏渲染与带宽
+// 性能（v2.15.1）：帧动画从 setInterval+Vue ref 改为 CSS steps() 合成器驱动——
+// 空闲时零 JS/零响应式开销，页面切后台自动暂停；第二角色表空闲 4s 后预载，切换零延迟
 const ready = ref(false)
 
 const sheetUrl = computed(() => CHAR_META[char.value].sheet)
 const sheetStyle = computed(() => ({
+  // --fw/--fh 供帧动画 keyframes 计算帧偏移（与 JS 常量同源）
+  '--fw': DISPLAY_W + 'px',
+  '--fh': FRAME_H + 'px',
   width: DISPLAY_W + 'px',
   height: FRAME_H + 'px',
   backgroundImage: `url(${sheetUrl.value})`,
   backgroundSize: `${DISPLAY_W * 8}px ${FRAME_H * 4}px`,
-  backgroundPosition: `-${frame.value * DISPLAY_W}px -${ROW_OF[mood.value] * FRAME_H}px`,
 }))
-
-// 帧步进：110ms/帧，按当前情绪的帧数循环
-const frame = ref(0)
-let frameTimer = 0
-function startFrameLoop() {
-  window.clearInterval(frameTimer)
-  frame.value = 0
-  frameTimer = window.setInterval(() => {
-    frame.value = (frame.value + 1) % FRAMES_OF[mood.value]
-  }, 110)
-}
 
 function speak(text?: string) {
   const meta = CHAR_META[char.value]
@@ -101,16 +91,15 @@ let moodTimer = 0
 function setMood(m: Mood, backMs?: number) {
   window.clearTimeout(moodTimer)
   moodLockedUntil = backMs ? performance.now() + backMs : 0
-  if (mood.value !== m) {
-    mood.value = m
-    startFrameLoop()
-  }
+  mood.value = m // 帧动画由 mood class 的 CSS steps() 驱动，换类即自动从头播放
   if (backMs) {
     moodTimer = window.setTimeout(() => setMood('idle'), backMs)
   }
 }
 
-// 角色切换（记忆选择；第二角色精灵表切换时按需加载，不为它预载带宽）
+// 角色切换（记忆选择；变身旋转一圈亮相——表已空闲预载，切换零白屏）
+const morphSpin = ref(false)
+let morphTimer = 0
 function switchChar() {
   char.value = char.value === 'nailong' ? 'naiwa' : 'nailong'
   try {
@@ -118,8 +107,19 @@ function switchChar() {
   } catch {
     /* storage 不可用时静默 */
   }
+  morphSpin.value = true
+  window.clearTimeout(morphTimer)
+  morphTimer = window.setTimeout(() => (morphSpin.value = false), 700)
   setMood('poke', 2200)
   speak(CHAR_META[char.value].hi)
+}
+
+/** 空闲预载另一角色的精灵表（~85KB，一次性的），首次切换时零延迟 */
+function preloadOtherSheet() {
+  const other = char.value === 'nailong' ? CHAR_META.naiwa.sheet : CHAR_META.nailong.sheet
+  const img = new Image()
+  img.decoding = 'async'
+  img.src = other
 }
 
 function clampToViewport(x: number, y: number) {
@@ -151,6 +151,9 @@ const feedCount = ref(0)
 let walkTarget: { x: number; y: number } | null = null
 let animRaf = 0
 let moodLockedUntil = 0
+// v2.15.1 滑行倾斜：按水平速度前倾（身体语言表达「正在滑」），停止时经 transform
+// transition 平滑回正；与拖拽 scale 互斥（拖拽中不滑，滑行中不拖）
+const glideTilt = ref(0)
 
 function onGlobalMouseMove(e: MouseEvent) {
   if (walkMode.value && !dragging.value) {
@@ -174,9 +177,12 @@ function startAnimLoop() {
       if (pos.value.y <= 8 || pos.value.y >= window.innerHeight - FRAME_H - 8) vel.y *= -0.55
       vel.x *= 0.94
       vel.y *= 0.94
+      // 滑行倾斜角：随水平速度前倾（限 ±16°），减速时自然回正
+      glideTilt.value = Math.max(-16, Math.min(16, vel.x * 1.1))
       if (Math.hypot(vel.x, vel.y) < 0.15) {
         gliding = false
         vel = { x: 0, y: 0 }
+        glideTilt.value = 0
       } else {
         moving = true
       }
@@ -193,10 +199,7 @@ function startAnimLoop() {
     // 自动情绪：移动=奔跑行，静止=待机；不打断 poke/dance 等定时情绪
     if (now > moodLockedUntil) {
       const want: Mood = moving ? 'drag' : 'idle'
-      if (mood.value !== want) {
-        mood.value = want
-        startFrameLoop()
-      }
+      mood.value = want
     }
     if (moving || gliding || (walkMode.value && walkTarget && !walkPaused.value)) animRaf = requestAnimationFrame(step)
     else if (walkMode.value) animRaf = requestAnimationFrame(step) // 散步暂停中也保持心跳，恢复即走
@@ -232,6 +235,9 @@ function spawnFeedFx() {
   }, 1100)
 }
 
+// v2.15.1 投喂咀嚼：身体快速小幅左右摆 + squash（与帧动画/上浮粒子正交叠加）
+const chewing = ref(false)
+let chewTimer = 0
 function feed() {
   feedCount.value += 1
   spawnFeedFx()
@@ -240,6 +246,9 @@ function feed() {
   } catch {
     /* storage 不可用时静默 */
   }
+  chewing.value = true
+  window.clearTimeout(chewTimer)
+  chewTimer = window.setTimeout(() => (chewing.value = false), 1600)
   setMood('poke', 2200)
   const meta = CHAR_META[char.value]
   const line = feedCount.value % 4 === 0 ? `已投喂 ${feedCount.value} 次，好感度 ↑` : meta.feed[Math.floor(Math.random() * meta.feed.length)]
@@ -250,6 +259,7 @@ function onPointerDown(e: PointerEvent) {
   dragging.value = true
   moved = 0
   vel = { x: 0, y: 0 }
+  glideTilt.value = 0 // 抓起来瞬间回正
   lastPetX = e.clientX
   lastPetY = e.clientY
   lastMoveAt = performance.now()
@@ -353,7 +363,9 @@ onMounted(() => {
     pos.value = clampToViewport(24, window.innerHeight - FRAME_H - 112)
     window.addEventListener('resize', onResize)
     window.addEventListener('mousemove', onGlobalMouseMove, { passive: true })
-    startFrameLoop()
+    // 帧动画已由 CSS steps() 驱动（挂载即播），无 JS 循环可启动；
+    // 空闲 4s 后预载另一角色精灵表，首次切换零白屏
+    window.setTimeout(preloadOtherSheet, 4000)
     // 时段问候（每次会话首次登场一次）
     try {
       if (!sessionStorage.getItem('starlight:pet-greeted')) {
@@ -382,10 +394,11 @@ onMounted(() => {
 })
 onUnmounted(() => {
   window.clearTimeout(bounceTimer)
+  window.clearTimeout(morphTimer)
+  window.clearTimeout(chewTimer)
   window.removeEventListener('resize', onResize)
   window.removeEventListener('mousemove', onGlobalMouseMove)
   if (animRaf) cancelAnimationFrame(animRaf)
-  window.clearInterval(frameTimer)
   window.clearTimeout(moodTimer)
   window.clearTimeout(bubbleTimer)
 })
@@ -469,17 +482,25 @@ onUnmounted(() => {
       {{ f.kind }}
     </span>
 
-    <!-- 精灵表动画：交互事件挂稳定容器（换 mood 不换元素，事件不丢）；
-         静止时降透明度让路给被遮挡的正文，hover/拖拽/说话时恢复。
-         注意只过渡 transform/opacity——精灵表帧动画靠 background-position
-         步进，transition-all 会把每帧变成平滑滑动（闪烁平移的根源） -->
+    <!-- 精灵表动画（v2.15.1 重构）：帧循环由 CSS steps() 合成器驱动（mood 类），
+         行为动画全部与帧动画正交叠加：
+         · walk-bob   散步颠簸（小跑起伏）
+         · chew       投喂咀嚼（快速左右摆）
+         · morph-spin 切换变身（旋转一圈亮相）
+         · glideTilt  惯性滑行前倾（inline transform，随速度）
+         交互事件挂稳定容器（换 mood 不换元素，事件不丢）；静止时降透明度让路给正文。
+         注意只过渡 transform/opacity——精灵表帧动画靠 background-position 步进 -->
     <div
       class="cursor-grab touch-none select-none drop-shadow-[0_10px_16px_rgba(0,0,0,0.4)] transition-[transform,opacity] duration-200 active:cursor-grabbing group-hover:opacity-100"
       :class="[
+        `pet-anim-${mood}`,
         dragging || bubble ? 'opacity-100' : 'opacity-60',
         { 'scale-110': dragging, 'poke-bounce': pokeBounce },
+        { 'walk-bob': walkMode && !walkPaused && !dragging },
+        { chew: chewing },
+        { 'morph-spin': morphSpin },
       ]"
-      :style="sheetStyle"
+      :style="{ ...sheetStyle, transform: glideTilt ? `rotate(${glideTilt}deg)` : undefined }"
       role="img"
       :aria-label="`桌宠${CHAR_META[char].name}，可以拖拽玩耍`"
       @pointerdown="onPointerDown"
@@ -500,6 +521,65 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* ===== v2.15.1 帧动画：CSS steps() 合成器驱动（替代 setInterval+Vue ref） =====
+   每行一张情绪（row0 idle 6帧 / row1 poke 4帧 / row2 dance 5帧 / row3 drag 6帧），
+   110ms/帧 → 时长 = 帧数 × 0.11s；steps(N) 精确跳帧不做插值。
+   收益：空闲零 JS/零响应式开销，页面切后台浏览器自动暂停动画与计时。 */
+.pet-anim-idle {
+  animation: pet-row0 0.66s steps(6) infinite;
+}
+.pet-anim-poke {
+  animation: pet-row1 0.44s steps(4) infinite;
+}
+.pet-anim-dance {
+  animation: pet-row2 0.55s steps(5) infinite;
+}
+.pet-anim-drag {
+  animation: pet-row3 0.66s steps(6) infinite;
+}
+@keyframes pet-row0 {
+  from { background-position: 0 calc(var(--fh) * 0); }
+  to { background-position: calc(var(--fw) * -6) calc(var(--fh) * 0); }
+}
+@keyframes pet-row1 {
+  from { background-position: 0 calc(var(--fh) * 1); }
+  to { background-position: calc(var(--fw) * -4) calc(var(--fh) * 1); }
+}
+@keyframes pet-row2 {
+  from { background-position: 0 calc(var(--fh) * 2); }
+  to { background-position: calc(var(--fw) * -5) calc(var(--fh) * 2); }
+}
+@keyframes pet-row3 {
+  from { background-position: 0 calc(var(--fh) * 3); }
+  to { background-position: calc(var(--fw) * -6) calc(var(--fh) * 3); }
+}
+
+/* ===== 行为动画（与帧动画正交：transform 系） ===== */
+/* 散步颠簸：小跑的上下起伏 + 微倾 */
+.walk-bob {
+  animation: walk-bob 0.42s ease-in-out infinite alternate;
+}
+@keyframes walk-bob {
+  from { transform: translateY(0) rotate(-2deg); }
+  to { transform: translateY(-5px) rotate(2deg); }
+}
+/* 投喂咀嚼：快速左右摆 + 轻微 squash */
+.chew {
+  animation: chew 0.16s ease-in-out infinite alternate;
+}
+@keyframes chew {
+  from { transform: rotate(-4deg) scale(1.04, 0.96); }
+  to { transform: rotate(4deg) scale(0.97, 1.03); }
+}
+/* 切换变身：旋转一圈 + 缩放亮相 */
+.morph-spin {
+  animation: morph-spin 0.65s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+@keyframes morph-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  45% { transform: rotate(200deg) scale(0.55); }
+  100% { transform: rotate(360deg) scale(1); }
+}
 /* 点击 Q 弹（v2.9）：与帧动画（background-position）正交，transform 独立作用 */
 .poke-bounce {
   animation: poke-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -520,8 +600,16 @@ onUnmounted(() => {
   100% { opacity: 0; transform: translate(calc(-50% + var(--fx-dx, 0px)), -64px) scale(1.1) rotate(8deg); }
 }
 @media (prefers-reduced-motion: reduce) {
+  /* 帧动画静止在各情绪首帧；行为动画全部关闭（滑行倾角由 JS 常零值关闭） */
+  .pet-anim-idle { animation: none; background-position: 0 calc(var(--fh) * 0); }
+  .pet-anim-poke { animation: none; background-position: 0 calc(var(--fh) * 1); }
+  .pet-anim-dance { animation: none; background-position: 0 calc(var(--fh) * 2); }
+  .pet-anim-drag { animation: none; background-position: 0 calc(var(--fh) * 3); }
   .poke-bounce,
-  .feed-fx {
+  .feed-fx,
+  .walk-bob,
+  .chew,
+  .morph-spin {
     animation: none;
   }
 }
