@@ -12,6 +12,11 @@ export interface VersionEntry {
 
 export const versions: VersionEntry[] = [
   {
+    v: 'v2.21.0',
+    date: '2026-09',
+    note: '修复文章正文渲染泄漏 frontmatter 元数据；确立博客写作规范（内容/表达/语气/自检四门）',
+  },
+  {
     v: 'v2.20.0',
     date: '2026-09',
     note: '全站体检与文档订正：真实浏览器逐页复验（首页/关于/项目/博客/日志/友邻/留言/版本 + 移动端视口），核对 README 与线上内容一致性；订正关于页时间线（新增「星港全站体检」节点）与 UPDATED 档案行（2026-08→2026-09）、/now 飞行日志更新到 v2.18/v2.15/v2.14 线、站点元信息（title/description/og）改为 Starlight 星港口径；清理 index.html 中 PWA 模板残留，.codegraph 本地索引入 gitignore',

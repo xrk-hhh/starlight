@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420" font-family="'JetBrains Mono','SF Mono',Consolas,monospace">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#56b6c2"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e06c75"/>
+    </marker>
+  </defs>
+  <rect width="900" height="420" rx="14" fill="#1b1f27"/>
+  <rect x="1" y="1" width="898" height="418" rx="14" fill="none" stroke="#3a4150"/>
+  <text x="30" y="42" fill="#abb2bf" font-size="15">静态资源请求链路：为什么 JS 请求会拿到 HTML</text>
+  <line x1="30" y1="58" x2="870" y2="58" stroke="#3a4150"/>
+
+  <!-- browser -->
+  <rect x="30" y="90" width="200" height="96" rx="10" fill="#21252e" stroke="#3a4150"/>
+  <text x="46" y="118" fill="#22d3ee" font-size="13">浏览器</text>
+  <text x="46" y="142" fill="#abb2bf" font-size="11">GET /starlight/assets/</text>
+  <text x="46" y="160" fill="#abb2bf" font-size="11">        index-xxxx.js</text>
+  <text x="46" y="178" fill="#5c6370" font-size="11">期望：text/javascript</text>
+
+  <!-- server -->
+  <rect x="330" y="90" width="240" height="96" rx="10" fill="#21252e" stroke="#3a4150"/>
+  <text x="346" y="118" fill="#8b5cf6" font-size="13">预览服务器</text>
+  <text x="346" y="142" fill="#abb2bf" font-size="11">① 未匹配到静态文件</text>
+  <text x="346" y="160" fill="#e5c07b" font-size="11">② SPA 回退生效</text>
+  <text x="346" y="178" fill="#5c6370" font-size="11">→ 返回 index.html</text>
+
+  <!-- response -->
+  <rect x="660" y="90" width="210" height="96" rx="10" fill="#21252e" stroke="#e06c75"/>
+  <text x="676" y="118" fill="#e06c75" font-size="13">实际响应</text>
+  <text x="676" y="142" fill="#abb2bf" font-size="11">200 OK</text>
+  <text x="676" y="160" fill="#e06c75" font-size="11">Content-Type: text/html</text>
+  <text x="676" y="178" fill="#5c6370" font-size="11">body: &lt;!doctype html&gt;…</text>
+
+  <line x1="230" y1="138" x2="326" y2="138" stroke="#56b6c2" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <line x1="570" y1="138" x2="656" y2="138" stroke="#e06c75" stroke-width="1.6" marker-end="url(#arrowRed)"/>
+
+  <text x="30" y="228" fill="#e06c75" font-size="11">✕ 浏览器把 HTML 当 JavaScript 解析 → 静默失败，控制台无报错，正文区域空白</text>
+
+  <line x1="30" y1="252" x2="870" y2="252" stroke="#3a4150"/>
+  <text x="30" y="282" fill="#abb2bf" font-size="14">叠在一起的三层噪音</text>
+
+  <rect x="30" y="300" width="266" height="88" rx="10" fill="#21252e" stroke="#3a4150"/>
+  <text x="46" y="326" fill="#e5c07b" font-size="12">① IPv6-only 监听</text>
+  <text x="46" y="348" fill="#abb2bf" font-size="11">localhost 先解析 IPv4</text>
+  <text x="46" y="366" fill="#5c6370" font-size="11">→ 请求打到无人监听的地址</text>
+
+  <rect x="317" y="300" width="266" height="88" rx="10" fill="#21252e" stroke="#3a4150"/>
+  <text x="333" y="326" fill="#e5c07b" font-size="12">② SPA 回退分支</text>
+  <text x="333" y="348" fill="#abb2bf" font-size="11">未命中即返回 index.html</text>
+  <text x="333" y="366" fill="#5c6370" font-size="11">→ JS 被 HTML 顶替</text>
+
+  <rect x="604" y="300" width="266" height="88" rx="10" fill="#21252e" stroke="#3a4150"/>
+  <text x="620" y="326" fill="#e5c07b" font-size="12">③ 子路径 base</text>
+  <text x="620" y="348" fill="#abb2bf" font-size="11">/starlight/ 前缀</text>
+  <text x="620" y="366" fill="#5c6370" font-size="11">→ 直连资源与线上不一致</text>
+</svg>

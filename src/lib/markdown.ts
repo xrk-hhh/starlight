@@ -85,6 +85,18 @@ md.renderer.rules.image = (tokens, idx, options, env, self) => {
     : self.renderToken(tokens, idx, options)
 }
 
+// v2.21：渲染入口统一剥离 frontmatter。
+// 背景：正文走 ?raw 懒加载取原始 Markdown（含 frontmatter），若在此直接渲染，
+// 元数据块会被当作正文标题输出，同时污染文章目录（TOC）首项。
+// 正则与 lib/blog-parse 的 parseBlogPost、vite.config 的 ?blogmeta 插件同构，
+// 保证「解析」「渲染」两条路径对 frontmatter 的判定始终一致。
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
+
+export function stripFrontmatter(src: string): string {
+  const match = src.match(FRONTMATTER_RE)
+  return match ? src.slice(match[0].length) : src
+}
+
 export function renderMarkdown(src: string): string {
-  return md.render(src)
+  return md.render(stripFrontmatter(src))
 }
