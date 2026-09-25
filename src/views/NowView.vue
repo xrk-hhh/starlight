@@ -11,9 +11,9 @@ useGsapReveal(scopeRef)
 // reduced-motion 直出全部行。纯前端小动画，字符合计 <300，零开销。
 const LOG_LINES = [
   '$ tail -f /var/log/starport.log',
-  '[v2.6] 知识库质检完成：35 篇文章 · 30 张星图',
-  '[v2.5] 阅读系统升级：漫游/翻篇/放大镜上线',
-  '[v2.4] 引擎轻量化：wasm 清零，RSS 开通',
+  '[v2.18] 博客数据构建期分层：列表 chunk gzip -92%',
+  '[v2.15] 桌宠 v6：CSS steps() 帧动画 + 行为动画',
+  '[v2.14] 留言板「传输仪式」彩蛋上线',
   `[now] 航向：数模备战 · deepseek harness 研究`,
   '[ok] 星港运行正常，欢迎登舰 ✦',
 ]

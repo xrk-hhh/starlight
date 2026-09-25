@@ -55,6 +55,7 @@ export const profile = {
     { date: '2026-06', title: 'Art Style Transfer', desc: 'PySide6 + OpenCV 桌面应用，六种艺术风格滤镜，云端/离线双引擎。' },
     { date: '2026-07', title: '2048 Strategy Arena', desc: '14 种 AI 策略同台竞技，Bitboard 引擎 74% 胜率。' },
     { date: '2026-08', title: '星港上线', desc: 'Vue 3 + Three.js + GSAP 搭建，AI Agent 驱动开发，GitHub Pages 自动部署——持续迭代至今。' },
+    { date: '2026-09', title: '星港全站体检', desc: '接入真实浏览器逐页走查：五主题视觉、移动端降级、版本星图与内容一致性复核，订正内容陈旧漂移，补齐站点元信息。' },
     { date: '现在', title: '星港巡航中', desc: `本站迭代至 ${SITE_VERSION} · 备战数模（高教社）与数竞（CMC）· deepseek harness 研究 · 洛谷/牛客保持手感。` },
   ] as TimelineItem[],
   socials: [
@@ -65,7 +66,7 @@ export const profile = {
     { label: 'TECH', value: 'Vue · TS · Three.js · Python · Java' },
     { label: 'FOCUS', value: '算法 · 数模 · AI Agent' },
     { label: 'NOW', value: '数模 · 数竞赛备战中' },
-    { label: 'UPDATED', value: '2026-08' },
+    { label: 'UPDATED', value: '2026-09' },
   ] as QuickFact[],
   // /now 星港日志（v1.8）：改这里即可更新「现在」页
   now: {
@@ -73,7 +74,7 @@ export const profile = {
       '备战数模（高教社杯）：真题模拟 + LaTeX 排版训练',
       '备战数竞（CMC 非数学 A）：微积分/线代/概统重难点轮刷',
       'deepseek harness × deepseek-v4-flash：插件性能调优与循环编排',
-      '星港迭代（当前 ' + SITE_VERSION + '）：知识库 31 篇题解 + 五主题 + 桌宠 v5',
+      '星港迭代（当前 ' + SITE_VERSION + '）：知识库 36 篇（31 篇题解）+ 五主题 + 桌宠 v6',
     ],
     reading: ['数学建模算法与应用（司守奎）', 'Vue 3 官方文档·响应式原理', '《算法竞赛》罗勇军（选读）'],
     learning: ['数模新方向：机器学习建模与智能优化算法', '用 agent 辅助数模研究（选题/建模/求解流水线）', 'deepseek harness 插件体系：专注其对性能提升的研究', 'CMC 真题套路：构造性证明与计算技巧'],

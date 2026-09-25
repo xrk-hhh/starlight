@@ -83,7 +83,7 @@ router.afterEach((to) => {
   } catch {
     /* 静默 */
   }
-  const siteName = '个人网站'
+  const siteName = 'Starlight 星港'
   document.title = to.meta.title ? `${to.meta.title} | ${siteName}` : siteName
   particlesState.density = to.meta.particles ?? 'low'
 })

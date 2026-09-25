@@ -12,6 +12,11 @@ export interface VersionEntry {
 
 export const versions: VersionEntry[] = [
   {
+    v: 'v2.20.0',
+    date: '2026-09',
+    note: '全站体检与文档订正：真实浏览器逐页复验（首页/关于/项目/博客/日志/友邻/留言/版本 + 移动端视口），核对 README 与线上内容一致性；订正关于页时间线（新增「星港全站体检」节点）与 UPDATED 档案行（2026-08→2026-09）、/now 飞行日志更新到 v2.18/v2.15/v2.14 线、站点元信息（title/description/og）改为 Starlight 星港口径；清理 index.html 中 PWA 模板残留，.codegraph 本地索引入 gitignore',
+  },
+  {
     v: 'v2.19.0',
     date: '2026-08',
     note: '版本星图七条历史重建（v2.15.1–v2.18.1）+ 发版体系根治：事故链——CRLF 行尾使历次顶部插入的正则静默失配，而首条用 v: SITE_VERSION 常量引用导致版本号随发版漂移、守护测试恒绿，七条记录无声丢失（用户发现星图未更新）。修复：全部条目字面量化；新增源码级断言禁止常量引用 + 条目总量基线（42）；发版脚本 scripts/release.mjs（行级处理免疫 CRLF，写后自校验条目数/首条/去重/降序，本次发版即用它完成）',
